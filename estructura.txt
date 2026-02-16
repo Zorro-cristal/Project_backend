@@ -1,0 +1,87 @@
+project-root/
+│
+├── api/
+│   └── index.py                        # Vercel entry point
+│
+├── src/
+│   ├── __init__.py
+│   │
+│   ├── core/                           # 🔵 FUNCTIONAL CORE (Pure Functions)
+│   │   ├── __init__.py
+│   │   │
+│   │   ├── domain/                     # Tipos y entidades inmutables
+│   │   │   ├── __init__.py
+│   │   │   ├── user.py                 # @dataclass(frozen=True)
+│   │   │   └── product.py
+│   │   │
+│   │   ├── business_logic/             # Lógica de negocio PURA
+│   │   │   ├── __init__.py
+│   │   │   ├── user_rules.py           # Funciones puras
+│   │   │   ├── pricing.py
+│   │   │   └── inventory.py
+│   │   │
+│   │   ├── validators/                 # Validaciones puras
+│   │   │   ├── __init__.py
+│   │   │   ├── email.py
+│   │   │   └── price.py
+│   │   │
+│   │   └── transformers/               # Transformaciones puras
+│   │       ├── __init__.py
+│   │       ├── user_transformer.py
+│   │       └── product_transformer.py
+│   │
+│   ├── shell/                          # 🟢 IMPERATIVE SHELL (Side Effects)
+│   │   ├── __init__.py
+│   │   │
+│   │   ├── workflows/                  # Orquestación de operaciones
+│   │   │   ├── __init__.py
+│   │   │   ├── create_user_workflow.py
+│   │   │   ├── process_order_workflow.py
+│   │   │   └── send_email_workflow.py
+│   │   │
+│   │   ├── adapters/                   # Conexiones externas
+│   │   │   ├── __init__.py
+│   │   │   ├── database/
+│   │   │   │   ├── __init__.py
+│   │   │   │   ├── supabase.py
+│   │   │   │   └── queries.py          # SQL queries
+│   │   │   │
+│   │   │   └── external/
+│   │   │       ├── __init__.py
+│   │   │       ├── email_client.py
+│   │   │       └── payment_gateway.py
+│   │   │
+│   │   └── api/                        # FastAPI (I/O boundary)
+│   │       ├── __init__.py
+│   │       ├── app.py
+│   │       ├── routes/
+│   │       │   ├── __init__.py
+│   │       │   ├── users.py
+│   │       │   └── products.py
+│   │       │
+│   │       └── schemas/
+│   │           ├── __init__.py
+│   │           ├── user_schema.py
+│   │           └── response.py
+│   │
+│   ├── config/
+│   │   ├── __init__.py
+│   │   └── settings.py
+│   │
+│   └── shared/                         # Utilidades compartidas
+│       ├── __init__.py
+│       ├── types.py                    # Type aliases
+│       ├── errors.py                   # Excepciones custom
+│       └── result.py                   # Result type (Either monad)
+│
+├── tests/
+│   ├── core/                           # Tests del core (fáciles!)
+│   │   ├── test_user_rules.py
+│   │   └── test_validators.py
+│   └── shell/                          # Tests con mocks
+│       └── test_workflows.py
+│
+├── .env.example
+├── vercel.json
+├── requirements.txt
+└── README.md
