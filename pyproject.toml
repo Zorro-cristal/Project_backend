@@ -10,3 +10,6 @@ dependencies = [
 ]
 
 [tool.vercel.scripts]
+
+[tool.fastapi]
+app = "src.api.index:app"
