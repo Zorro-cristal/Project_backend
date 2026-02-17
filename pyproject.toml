@@ -13,3 +13,6 @@ dependencies = [
 
 [tool.fastapi]
 app = "src.api.index:app"
+
+[project.scripts]
+app = "src.api.index:app"
