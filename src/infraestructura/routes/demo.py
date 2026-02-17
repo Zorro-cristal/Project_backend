@@ -20,3 +20,7 @@ async def read_root():
     except Exception as e:
         print(f"\n❌ Error inesperado: {str(e)}")
     return {"detail": result}
+
+@router.get("/")
+async def read_root2():
+    return {"detail": "hello world"}
