@@ -7,7 +7,9 @@ dependencies = [
 	"uvicorn==0.22.0",
 	"supabase==2.27.2",
 	"pydantic-settings==2.12.0",
-	"pytest==9.0.2"
+	"pytest==9.0.2",
+	"pandas==3.0.1",
+	"Scikit-Learn==1.8.0"
 ]
 
 [tool.vercel.scripts]
