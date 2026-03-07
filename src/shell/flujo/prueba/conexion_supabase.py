@@ -16,6 +16,7 @@ async def conexion_supabase(verificar_autenticacion: bool = False, tabla_prueba:
     Retorna un dict con keys: `conexion` (bool), `codigo_estado` (int|None),
     `autenticacion_exitosa` (bool|None) y `mensaje`.
     """
+
     configuracion = get_settings()
     url = f"{configuracion.SUPABASE_URL.rstrip('/')}/rest/v1/{tabla_prueba}?limit=0"
     encabezados = {
@@ -77,7 +78,10 @@ async def conexion_supabase(verificar_autenticacion: bool = False, tabla_prueba:
             resultado["autenticacion_exitosa"] = False
             resultado["mensaje"] += f"; error al crear cliente supabase: {str(e)}"
 
-    test= await get('demo')
+    test = None  # Initialize test to None
+    try:
+        test= await get('demo')
+    except Exception as e:
+        resultado["mensaje"] += f"; Error al obtener datos de la tabla demo: {str(e)}"
     print(test)
-    return resultado
     return resultado
