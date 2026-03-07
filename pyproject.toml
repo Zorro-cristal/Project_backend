@@ -9,7 +9,11 @@ dependencies = [
 	"pydantic-settings==2.12.0",
 	"pytest==9.0.2",
 	"pandas==3.0.1",
-	"Scikit-Learn==1.8.0"
+	"Scikit-Learn==1.8.0",
+	"openmeteo-requests==1.7.5",
+	"requests-cache==0.9.7",
+	"retry-requests==2.0.0",
+	"urllib3==1.26.18"
 ]
 
 [tool.vercel.scripts]
