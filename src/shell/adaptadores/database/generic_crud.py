@@ -22,7 +22,7 @@ async def get(
     filters: Optional[dict] = None,
     limit: int = 100,
     offset: int = 0,
-    order_by: str = "id",
+    order_by: str = None,
     order_desc: bool = True
 ) -> list[dict]:
     client = get_supabase_client()
@@ -32,10 +32,16 @@ async def get(
     # Aplicar filtros
     if filters:
         for field, value in filters.items():
-            query = query.eq(field, value)
+            if ("inicio" in field):
+                query = query.gte(field, value)
+            elif ("fin" in field):
+                query = query.lte(field, value)
+            else:
+                query = query.eq(field, value)
     
     # Ordenamiento
-    query = query.order(order_by, desc=order_desc)
+    if (order_by):     
+        query = query.order(order_by, desc=order_desc)
     
     # Paginación
     response = query.range(offset, offset + limit - 1).execute()

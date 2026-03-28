@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from src.shell.adaptadores.externals.openmeteo import obtenerInformacionClimatica
+from src.infraestructura.routes import usuario
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
 router = APIRouter()
@@ -14,3 +15,5 @@ async def root():
 async def pruebaClima():
     result = obtenerInformacionClimatica(-25.801843, -56.437743, ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain", "showers", "snowfall", "weather_code", "cloud_cover", "pressure_msl", "surface_pressure", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"])
     return {"message": result} 
+
+router.include_router(usuario.router, prefix="/usuarios", tags=["Usuarios"])
