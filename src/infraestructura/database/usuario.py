@@ -1,11 +1,10 @@
-from src.shell.adaptadores.database.generic_crud import get
+from src.shell.adaptadores.database.generic_crud import get, insert, update
 
 async def obtenerUsuarios(filtros, limite, offset):
     return await get('usuarios', filtros, limite, offset)
 
 async def actualizarUsuario(datos, id= 0):
-    if (id == 0) {
+    if (id == 0):
         return insert('usuario', datos)
-    } else {
+    else:
         return update('usuario', id, datos)
-    }

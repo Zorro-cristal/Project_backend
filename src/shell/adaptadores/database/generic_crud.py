@@ -23,11 +23,12 @@ async def get(
     limit: int = 100,
     offset: int = 0,
     order_by: str = None,
-    order_desc: bool = True
+    order_desc: bool = True,
+    columns: str = "*" # Nuevo parámetro para especificar los campos a seleccionar, incluyendo relaciones
 ) -> list[dict]:
     client = get_supabase_client()
     
-    query = client.table(table).select("*")
+    query = client.table(table).select(columns)
     
     # Aplicar filtros
     if filters:
