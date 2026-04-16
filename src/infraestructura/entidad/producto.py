@@ -1,20 +1,24 @@
 from dataclasses import dataclass
+from typing import Optional
+
 from src.infraestructura.entidad.categoria import Categoria
-from src.infraestructura.entidad.marca import Marca
 from src.infraestructura.entidad.detalle_producto import Detalle_producto
+from src.infraestructura.entidad.marca import Marca
 
 @dataclass(frozen=True)
 class Producto:
-    id: int
     nombre: str
-    descripcion: Optional[str]= None
-    estado: Optional[int]= 1
     impuesto: int
     pesable: bool
-    perecedero: Optional[bool]= false
     costeo: int
     unidad_medida: str
-    es_ingrediente: Optional[bool]= true
-    categoria: Categoria
-    marca: Marca
-    detalles_producto: Detalle_producto[]
+    categoria_id: int
+    marca_id: int
+    descripcion: Optional[str] = None
+    estado: int = 1
+    perecedero: bool = False
+    es_ingrediente: Optional[bool] = None
+    categoria: Optional[Categoria] = None
+    marca: Optional[Marca] = None
+    detalles_producto: Optional[list[Detalle_producto]] = None
+    id: Optional[int] = None
