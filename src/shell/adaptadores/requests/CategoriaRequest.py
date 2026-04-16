@@ -7,7 +7,7 @@ class CategoriaRequest(BaseModel):
     descripcion: Optional[str]= None
     
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True
     
 class CategoriaUpdateRequest(BaseModel):
     nombre: Optional[str]= None
@@ -15,4 +15,4 @@ class CategoriaUpdateRequest(BaseModel):
     descripcion: Optional[str]= None
     
     class Config:
-        allow_population_by_field_name = True
+        validate_by_name = True

@@ -1,8 +1,9 @@
 from dataclasses import dataclass
+from typing import Optional
 
 @dataclass(frozen=True)
 class Marca:
-    id: int
     nombre: str
-    estado: Optional[int]= 1
+    estado: int= 1
+    id: Optional[int]= None
     

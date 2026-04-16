@@ -1,13 +1,14 @@
 from src.infraestructura.config.supabase import get_supabase_client
-from typing import TypeVar, Generic, Optional, Any
-from datetime import datetime
+from typing import Any, Generic, Optional, TypeVar
+from datetime import datetime, timezone # Importar timezone
 
 T = TypeVar('T')
 
 async def insert(table: str, data: dict) -> dict:
     client= get_supabase_client()
+    print(datetime.now(timezone.utc).isoformat())
     if "fecha_creado" not in data:
-        data["fecha_creado"] = datetime.utcnow().isoformat()
+        data["fecha_creado"] = datetime.now(timezone.utc).isoformat()
     
     response = client.table(table).insert(data).execute()
     
@@ -54,7 +55,7 @@ async def update(table: str, id: str, updates: dict) -> dict:
     client = get_supabase_client()
     
     # Agregar timestamp de actualización
-    updates["fecha_edit"] = datetime.utcnow().isoformat()
+    updates["fecha_edit"] = datetime.now(timezone.utc).isoformat() # Usar datetime.now(timezone.utc)
     
     response = client.table(table).update(updates).eq("id", id).execute()
     
@@ -65,7 +66,7 @@ async def update(table: str, id: str, updates: dict) -> dict:
 
 async def soft_delete(table: str, id: str) -> dict:
     return await update(table, id, {
-        "fecha_edit": datetime.utcnow().isoformat(),
+        "fecha_edit": datetime.now(timezone.utc).isoformat(), # Usar datetime.now(timezone.utc)
         "estado": 'inactivo'
     })
 

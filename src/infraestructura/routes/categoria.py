@@ -13,7 +13,7 @@ async def actualizarCategoriaApi(id: int, requestBody: CategoriaUpdateRequest):
 
 @router.patch("/{id}")
 async def patchCategoriaApi(id: int, requestBody: CategoriaUpdateRequest):
-    return actualizarCategoriaApi(id, requestBody)
+    return await actualizarCategoriaApi(id, requestBody)
 
 @router.post("/")
 async def agregarCategoriaApi(requestBody: CategoriaRequest):
