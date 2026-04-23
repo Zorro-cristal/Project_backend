@@ -1,5 +1,4 @@
-from src.infraestructura.database.producto import (actualizarProducto,
-                                                   obtenerProducto)
+from src.infraestructura.database.producto import (actualizarProducto, obtenerProducto)
 from src.infraestructura.entidad.producto import Producto
 
 
@@ -8,7 +7,7 @@ def build_producto_entity(payload: dict) -> Producto:
     return Producto(**valid_fields)
 
 
-async def obtener_productos(columns: str = '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado)'):
+async def obtener_productos(columns: str = '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado), categorias(categoria_id:id, categoria_nombre:nombre, categoria_estado:estado)'):
     return await obtenerProducto(columnas=columns)
 
 

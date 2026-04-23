@@ -1,7 +1,7 @@
 from dataclasses import asdict, is_dataclass
 from typing import Any, Dict, Optional, Union
 
-def prepare_payload_for_db(
+def prepararPayloadDb(
     data: Union[Any, Dict],
     exclude_fields: Optional[list[str]] = None
 ) -> Dict:
@@ -22,10 +22,3 @@ def prepare_payload_for_db(
             payload.pop(field, None)
 
     return payload
-
-def filter_none_values(data: Dict) -> Dict:
-    """
-    Filtra un diccionario para remover entradas donde el valor es None.
-    Útil para actualizaciones parciales (PATCH) donde solo se envían los campos modificados.
-    """
-    return {k: v for k, v in data.items() if v is not None}

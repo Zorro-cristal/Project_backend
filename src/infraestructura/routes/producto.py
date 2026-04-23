@@ -1,8 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from src.shell.adaptadores.requests.ProductoRequest import ProductoRequest, ProductoUpdateRequest
-from src.infraestructura.logica.producto import (actualizar_producto,
-                                                 crear_producto,
-                                                 obtener_productos)
+from src.infraestructura.logica.producto import (actualizar_producto, crear_producto, obtener_productos)
 
 router = APIRouter()
 
