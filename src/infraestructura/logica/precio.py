@@ -5,8 +5,8 @@ def build_precio_entity(payload: dict) -> Precio:
     valid_fields = {key: value for key, value in payload.items() if key in Precio.__annotations__}
     return Precio(**valid_fields)
 
-async def obtener_precios(columns: str = '*'):
-    return await obtenerPrecio(columnas=columns)
+async def obtener_precios(filtros: dict= None, columnas: str = '*'):
+    return await obtenerPrecio(columnas=columnas, filtros=filtros)
 
 async def crear_precio(payload: dict):
     precio = build_precio_entity(payload)

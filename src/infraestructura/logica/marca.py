@@ -7,8 +7,8 @@ def build_marca_entity(payload: dict) -> Marca:
     return Marca(**valid_fields)
 
 
-async def obtener_marcas(columns: str = '*'):
-    return await obtenerMarca(columnas=columns)
+async def obtener_marcas(filtros: dict= None, columnas: str = '*'):
+    return await obtenerMarca(columnas=columnas, filtros=filtros)
 
 
 async def crear_marca(payload: dict):

@@ -7,8 +7,8 @@ def build_producto_entity(payload: dict) -> Producto:
     return Producto(**valid_fields)
 
 
-async def obtener_productos(columns: str = '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado), categorias(categoria_id:id, categoria_nombre:nombre, categoria_estado:estado)'):
-    return await obtenerProducto(columnas=columns)
+async def obtener_productos(filtros=None, columnas: str= '*'):
+    return await obtenerProducto(filtros=filtros,columnas=columnas)
 
 
 async def crear_producto(payload: dict):

@@ -7,8 +7,8 @@ def build_categoria_entity(payload: dict) -> Categoria:
     valid_fields = {key: value for key, value in payload.items() if key in Categoria.__annotations__}
     return Categoria(**valid_fields)
 
-async def obtener_categorias():
-    return await obtenerCategoria()
+async def obtener_categorias(filtros: dict = None, columnas: str= "*"):
+    return await obtenerCategoria(filtros=filtros, columnas=columnas)
 
 
 async def crear_categoria(payload: dict):
