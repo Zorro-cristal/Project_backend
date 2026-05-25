@@ -1,5 +1,5 @@
 from src.infraestructura.logica.usuario import crear_usuario, actualizar_usuario, obtenerUsuarios
-from shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
+from src.shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
 
 async def crear_o_actualizar_usuario(payload: dict):
     alias = payload.get('alias')

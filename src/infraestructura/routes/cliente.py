@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from shell.flujo.cliente.crearActualizarCliente import (
+from src.shell.flujo.cliente.crearActualizarCliente import (
     actualizar_cliente_por_id,
     crear_o_actualizar_cliente,
 )
