@@ -6,10 +6,10 @@ from src.shell.adaptadores.requests.PersonaRequest import (
 )
 
 class ClienteRequest(BaseModel):
-    ruc: int
-    razon_social: str
     estado: Optional[int] = 1
     persona_fisica: Optional[int] = 1
+    ruc: Optional[int] = None
+    razon_social: Optional[str] = None
     id_personaFK: Optional[int] = None
     persona: Optional[PersonaRequest] = None
 
