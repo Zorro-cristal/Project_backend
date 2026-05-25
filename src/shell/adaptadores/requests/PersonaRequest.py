@@ -5,7 +5,6 @@ class PersonaRequest(BaseModel):
     cedula: int
     nombres: str
     apellidos: str
-    estado: Optional[int] = 1
     telefono: Optional[int] = None
     direccion: Optional[str] = None
     nacionalidad: Optional[str] = None
@@ -19,7 +18,6 @@ class PersonaUpdateRequest(BaseModel):
     cedula: Optional[int] = None
     nombres: Optional[str] = None
     apellidos: Optional[str] = None
-    estado: Optional[int] = None
     telefono: Optional[int] = None
     direccion: Optional[str] = None
     nacionalidad: Optional[str] = None
