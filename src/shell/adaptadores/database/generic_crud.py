@@ -34,7 +34,9 @@ async def get(
     # Aplicar filtros
     if filters:
         for field, value in filters.items():
-            if ("inicio" in field):
+            if isinstance(value, (list, tuple)):
+                query = query.in_(field, list(value))
+            elif ("inicio" in field):
                 query = query.gte(field, value)
             elif ("fin" in field):
                 query = query.lte(field, value)
@@ -51,16 +53,16 @@ async def get(
     return response.data
 
 
-async def update(table: str, id: str, updates: dict) -> dict:
+async def update(table: str, id: str, updates: dict, key: str = 'id') -> dict:
     client = get_supabase_client()
     
     # Agregar timestamp de actualización
     updates["fecha_edit"] = datetime.now(timezone.utc).isoformat() # Usar datetime.now(timezone.utc)
     
-    response = client.table(table).update(updates).eq("id", id).execute()
+    response = client.table(table).update(updates).eq(key, id).execute()
     
     if not response.data:
-        raise Exception(f"No se encontró registro con id {id} en {table}")
+        raise Exception(f"No se encontró registro con {key} {id} en {table}")
     
     return response.data[0]
 

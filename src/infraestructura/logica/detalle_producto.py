@@ -12,10 +12,18 @@ async def obtener_detalle_productos(filtros: dict= None, columnas: str = '*'):
 
 async def crear_detalle_producto(payload: dict):
     detalle_producto = build_detalle_producto_entity(payload)
+
+    # Si se proporciona cod_barra, verificar existencia y actualizar en lugar de crear
+    cod = detalle_producto.cod_barra
+    if cod:
+        existentes = await obtenerDetalleProducto({'cod_barra': cod})
+        if existentes and len(existentes) > 0:
+            return await actualizarDetalleProducto(payload, cod)
+
     return await actualizarDetalleProducto(detalle_producto)
 
 
-async def actualizar_detalle_producto(id: int, payload: dict):
+async def actualizar_detalle_producto(cod_barra: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
-    return await actualizarDetalleProducto(payload, id)
+    return await actualizarDetalleProducto(payload, cod_barra)

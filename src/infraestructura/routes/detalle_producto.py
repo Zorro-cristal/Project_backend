@@ -9,15 +9,15 @@ from src.shell.adaptadores.requests.DetalleProductoRequest import (DetalleProduc
 
 router = APIRouter()
 
-@router.put("/{id}", summary="Actualizar detalle de producto", description="Actualiza un detalle de producto existente por su ID.")
-async def actualizarDetalleProductoApi(id: int, requestBody: DetalleProductoUpdateRequest):
+@router.put("/{cod_barra}", summary="Actualizar detalle de producto", description="Actualiza un detalle de producto existente por su código de barra.")
+async def actualizarDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_detalle_producto(id, payload)
+    result = await actualizar_detalle_producto(cod_barra, payload)
     return {"message": result}
 
-@router.patch("/{id}", summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su ID.")
-async def patchDetalleProductoApi(id: int, requestBody: DetalleProductoUpdateRequest):
-    return await actualizarDetalleProductoApi(id, requestBody)
+@router.patch("/{cod_barra}", summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su código de barra.")
+async def patchDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUpdateRequest):
+    return await actualizarDetalleProductoApi(cod_barra, requestBody)
 
 @router.post("/", summary="Crear detalle de producto", description="Crea un nuevo detalle de producto.")
 async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest):

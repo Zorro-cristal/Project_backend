@@ -3,11 +3,11 @@ from typing import Optional
 
 
 @dataclass(frozen=True)
-class Usuario:
+class Persona:
     cedula: int
-    nombres: int
+    nombres: str
     apellidos: str
     estado: int = 1
-    telefono: Optional[int]
-    direccion: Optional[str]
-    nacionalidad: Optional[str]
+    telefono: Optional[int] = None
+    direccion: Optional[str] = None
+    nacionalidad: Optional[str] = None

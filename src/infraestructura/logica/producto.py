@@ -1,7 +1,5 @@
 from src.infraestructura.database.producto import (actualizarProducto, obtenerProducto)
 from src.infraestructura.entidad.producto import Producto
-
-
 def build_producto_entity(payload: dict) -> Producto:
     valid_fields = {key: value for key, value in payload.items() if key in Producto.__annotations__}
     return Producto(**valid_fields)

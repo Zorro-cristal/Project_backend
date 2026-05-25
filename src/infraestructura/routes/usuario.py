@@ -5,11 +5,11 @@ from pydantic import BaseModel
 
 from src.infraestructura.entidad.usuario import Usuario
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
-from src.infraestructura.logica.usuario import (
-    actualizar_usuario,
-    crear_usuario,
-    obtener_usuarios,
+from src.shell.flujo.usuario.gestion import (
+    actualizar_usuario_por_id,
+    crear_o_actualizar_usuario,
 )
+from src.infraestructura.logica.usuario import obtener_usuarios
 from src.shell.adaptadores.requests.UsuarioRequest import (
     UsuarioRequest,
     UsuarioUpdateRequest,
@@ -34,7 +34,7 @@ async def login(request_body: UsuarioLoginRequest):
 @router.put("/{id}", summary="Actualizar usuario", description="Actualiza un usuario existente por su ID.")
 async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_usuario(id, payload)
+    result = await actualizar_usuario_por_id(id, payload)
     return {"message": result}
 
 
@@ -46,7 +46,7 @@ async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
 @router.post("/", summary="Crear usuario", description="Crea un nuevo usuario.")
 async def agregarUsuarioApi(requestBody: UsuarioRequest):
     payload = requestBody.model_dump()
-    result = await crear_usuario(payload)
+    result = await crear_o_actualizar_usuario(payload)
     return {"message": result}
 
 
@@ -55,6 +55,7 @@ async def obtenerUsuariosApi(
     id: Optional[str] = None,
     alias: Optional[str] = None,
     estado: Optional[int] = None,
+    id_personaFK: Optional[int] = None,
 ):
     filtros = {}
     if id is not None:
@@ -63,6 +64,8 @@ async def obtenerUsuariosApi(
         filtros["alias"] = alias
     if estado is not None:
         filtros["estado"] = estado
+    if id_personaFK is not None:
+        filtros["id_personaFK"] = id_personaFK
 
     result = await obtener_usuarios(filtros)
     return {"message": result}
