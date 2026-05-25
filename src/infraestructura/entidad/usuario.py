@@ -10,3 +10,4 @@ class Usuario:
     estado: int = 1
     Roles_id: int= None
     rol: Optional[Rol] = None
+    id_personaFK: Optional[int] = None
