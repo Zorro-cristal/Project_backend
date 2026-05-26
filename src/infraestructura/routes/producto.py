@@ -53,3 +53,4 @@ async def obtenerProductosApi(
         filtros["perecedero"] = perecedero
 
     result = await obtener_productos(filtros, '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado)')
+    return {"message": result}
