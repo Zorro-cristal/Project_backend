@@ -22,3 +22,18 @@ def prepararPayloadDb(
             payload.pop(field, None)
 
     return payload
+
+
+def normalizar_booleanos(
+    payload: dict,
+    boolean_fields: list[str],
+    on_insert: bool = True,
+) -> dict:
+    """Convierte valores booleanos a enteros y normaliza None para inserciones."""
+    for field in boolean_fields:
+        if field in payload:
+            if isinstance(payload[field], bool):
+                payload[field] = 1 if payload[field] else 0
+            elif payload[field] is None and on_insert:
+                payload[field] = 0
+    return payload
