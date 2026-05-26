@@ -1,4 +1,4 @@
-from src.infraestructura.logica.cliente import crear_cliente, actualizar_cliente
+from src.infraestructura.services.cliente_service import crear_cliente, actualizar_cliente
 from src.shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
 
 async def crear_o_actualizar_cliente(payload: dict):

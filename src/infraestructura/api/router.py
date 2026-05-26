@@ -1,0 +1,31 @@
+from fastapi import APIRouter
+
+from src.infraestructura.api import (categoria_api as categoria, marca_api as marca, precio_api as precio, producto_api as producto,
+                                        usuario_api as usuario, ingrediente_api as ingrediente, rol_api as rol, detalle_producto_api as detalle_producto, cliente_api as cliente, persona_api as persona, permiso_api as permiso)
+from src.shell.adapters.externals.openmeteo import \
+    obtenerInformacionClimatica
+from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
+
+router = APIRouter()
+
+@router.get("/health", summary="Verificar salud del servicio", description="Verifica la conexión a la base de datos y el estado general del servicio.")
+async def root():
+    result = await conexion_supabase(True)
+    return {"message": result} 
+
+@router.get("/weather", summary="Obtener información climática", description="Obtiene datos climáticos actuales para una ubicación específica.")
+async def pruebaClima():
+    result = obtenerInformacionClimatica(-25.801843, -56.437743, ["temperature_2m", "relative_humidity_2m", "apparent_temperature", "precipitation", "rain", "showers", "snowfall", "weather_code", "cloud_cover", "pressure_msl", "surface_pressure", "wind_speed_10m", "wind_direction_10m", "wind_gusts_10m"])
+    return {"message": result} 
+
+router.include_router(usuario.router, prefix="/usuario", tags=["Usuario"])
+router.include_router(producto.router, prefix="/producto", tags=["Producto"])
+router.include_router(categoria.router, prefix="/categoria", tags=["Categoria"])
+router.include_router(marca.router, prefix="/marca", tags=["Marca"])
+router.include_router(precio.router, prefix="/precio", tags=["Precio"])
+router.include_router(ingrediente.router, prefix="/ingrediente", tags=["Ingrediente"])
+router.include_router(rol.router, prefix="/rol", tags=["Rol"])
+router.include_router(permiso.router, prefix="/permiso", tags=["Permiso"])
+router.include_router(detalle_producto.router, prefix="/detalle_producto", tags=["Detalle Producto"])
+router.include_router(cliente.router, prefix="/cliente", tags=["Cliente"])
+router.include_router(persona.router, prefix="/persona", tags=["Persona"])

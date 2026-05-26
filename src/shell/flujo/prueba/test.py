@@ -2,7 +2,7 @@ import os
 import pytest
 from src.configs.settings import get_settings
 from src.infraestructura.config.supabase import get_supabase_client
-from src.shell.adaptadores.database.generic_crud import (count, get, insert,
+from src.shell.adapters.database.generic_crud import (count, get, insert,
                                                          soft_delete, update)
 
 

@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 from src.api.index import app
-from src.shell.adaptadores.database.generic_crud import get
+from src.shell.adapters.database.generic_crud import get
 
 tester= TestClient(app)
 

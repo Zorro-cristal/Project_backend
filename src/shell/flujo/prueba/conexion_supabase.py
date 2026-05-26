@@ -2,7 +2,7 @@ import httpx
 
 from src.configs.settings import get_settings
 from src.infraestructura.config.supabase import get_supabase_client
-from src.shell.adaptadores.database.generic_crud import get
+from src.shell.adapters.database.generic_crud import get
 
 
 async def conexion_supabase(verificar_autenticacion: bool = False, tabla_prueba: str = "demo") -> dict:

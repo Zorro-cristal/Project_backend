@@ -1,5 +1,5 @@
-from src.infraestructura.database.usuario import obtenerUsuarios
-from src.infraestructura.entidad.usuario import Usuario
+from src.infraestructura.repositories.usuario_repository import obtenerUsuarios
+from src.infraestructura.models.usuario import Usuario
 
 async def procesarLogin(usuario: Usuario):
     filtro= {

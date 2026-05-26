@@ -1,4 +1,4 @@
-from src.infraestructura.logica.persona import crear_persona, obtener_personas, actualizar_persona
+from src.infraestructura.services.persona_service import crear_persona, obtener_personas, actualizar_persona
 
 async def crear_o_actualizar_persona(payload: dict):
     cedula = payload.get('cedula')

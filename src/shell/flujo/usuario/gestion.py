@@ -1,4 +1,4 @@
-from src.infraestructura.logica.usuario import crear_usuario, actualizar_usuario, obtenerUsuarios
+from src.infraestructura.services.usuario_service import crear_usuario, actualizar_usuario, obtenerUsuarios
 from src.shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
 
 async def crear_o_actualizar_usuario(payload: dict):
