@@ -1,13 +1,10 @@
 from typing import Optional
 from pydantic import BaseModel
+from datetime import datetime
 
 class PermisoRequest(BaseModel):
     nombre: str
-    crear: bool = False
-    editar: bool = False
-    eliminar: bool = False
-    leer: bool = False
-    id_rolFK: int
+    fecha_edit: Optional[datetime] = None
 
     class Config:
         validate_by_name = True
@@ -15,11 +12,7 @@ class PermisoRequest(BaseModel):
 
 class PermisoUpdateRequest(BaseModel):
     nombre: Optional[str] = None
-    crear: Optional[bool] = None
-    editar: Optional[bool] = None
-    eliminar: Optional[bool] = None
-    leer: Optional[bool] = None
-    id_rolFK: Optional[int] = None
+    fecha_edit: Optional[datetime] = None
 
     class Config:
         validate_by_name = True

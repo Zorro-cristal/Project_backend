@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from src.configs.settings import get_settings
-from src.infraestructura.api.api import router as api_router
+from src.infraestructura.api.router import router as api_router
 
 settings = get_settings()
 app = FastAPI()

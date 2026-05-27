@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.infraestructura.api import (categoria_api as categoria, marca_api as marca, precio_api as precio, producto_api as producto,
-                                        usuario_api as usuario, ingrediente_api as ingrediente, rol_api as rol, detalle_producto_api as detalle_producto, cliente_api as cliente, persona_api as persona, permiso_api as permiso)
+                                        usuario_api as usuario, ingrediente_api as ingrediente, rol_api as rol, detalle_producto_api as detalle_producto, cliente_api as cliente, persona_api as persona, permiso_api as permiso, permiso_rol_api as permiso_rol)
 from src.shell.adapters.externals.openmeteo import \
     obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
@@ -26,6 +26,7 @@ router.include_router(precio.router, prefix="/precio", tags=["Precio"])
 router.include_router(ingrediente.router, prefix="/ingrediente", tags=["Ingrediente"])
 router.include_router(rol.router, prefix="/rol", tags=["Rol"])
 router.include_router(permiso.router, prefix="/permiso", tags=["Permiso"])
+router.include_router(permiso_rol.router, prefix="/permiso_rol", tags=["Permiso Rol"])
 router.include_router(detalle_producto.router, prefix="/detalle_producto", tags=["Detalle Producto"])
 router.include_router(cliente.router, prefix="/cliente", tags=["Cliente"])
 router.include_router(persona.router, prefix="/persona", tags=["Persona"])

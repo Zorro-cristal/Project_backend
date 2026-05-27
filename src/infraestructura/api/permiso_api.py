@@ -34,27 +34,12 @@ async def agregarPermisoApi(requestBody: PermisoRequest):
 async def obtenerPermisosApi(
     id: Optional[int] = Query(None, description="Filtrar permisos por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar permisos por nombre"),
-    id_rolFK: Optional[int] = Query(None, description="Filtrar permisos por rol"),
-    crear: Optional[bool] = Query(None, description="Filtrar permisos por permiso de crear"),
-    editar: Optional[bool] = Query(None, description="Filtrar permisos por permiso de editar"),
-    eliminar: Optional[bool] = Query(None, description="Filtrar permisos por permiso de eliminar"),
-    leer: Optional[bool] = Query(None, description="Filtrar permisos por permiso de lectura"),
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
     if nombre is not None:
         filtros["nombre"] = nombre
-    if id_rolFK is not None:
-        filtros["id_rolFK"] = id_rolFK
-    if crear is not None:
-        filtros["crear"] = crear
-    if editar is not None:
-        filtros["editar"] = editar
-    if eliminar is not None:
-        filtros["eliminar"] = eliminar
-    if leer is not None:
-        filtros["leer"] = leer
 
     result = await obtener_permisos(filtros=filtros)
     return {"message": result}

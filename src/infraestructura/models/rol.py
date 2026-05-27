@@ -7,5 +7,6 @@ class Rol:
     nombre: str
     observacion: str
     estado: int
-    fecha_creado: Optional[datetime] = None
+    fecha_create: Optional[datetime] = None
+    id_rol: Optional[int] = None
     

@@ -1,13 +1,10 @@
 from dataclasses import dataclass
+from datetime import datetime
 from typing import Optional
 
 
 @dataclass(frozen=True)
 class Permiso:
     nombre: str
-    crear: bool
-    editar: bool
-    eliminar: bool
-    leer: bool
-    id_rolFK: int
+    fecha_edit: Optional[datetime] = None
     id: Optional[int] = None
