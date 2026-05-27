@@ -1,0 +1,14 @@
+
+from dataclasses import dataclass
+from typing import Optional
+
+from src.infraestructura.models.local import Local
+
+
+@dataclass(frozen=True)
+class Mesa:
+    nombre: str
+    estado: bool
+    id_localFK: Optional[int]= None
+    local: Optional[Local]= None
+    id: Optional[int] = None
