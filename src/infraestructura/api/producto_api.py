@@ -1,14 +1,15 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Query
 
-from src.infraestructura.services.producto_service import (actualizar_producto,
-                                                 crear_producto,
-                                                 obtener_productos)
+from src.infraestructura.services.producto_service import (
+    actualizar_producto, crear_producto, obtener_detallesProducto,
+    obtener_producto, obtener_productos)
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
 
 router = APIRouter()
+
 
 @router.put("/{id}", summary="Actualizar producto", description="Actualiza un producto existente por su ID.")
 async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest):
@@ -54,3 +55,22 @@ async def obtenerProductosApi(
 
     result = await obtener_productos(filtros, '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado)')
     return {"message": result}
+
+
+@router.get("/{id}", summary="Obtener producto", description="Obtiene un producto por su ID.")
+async def obtenerProductoApi(
+    id: int,
+    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesProducto"),
+):
+    if include == "detallesProducto":
+        result = await obtener_producto(id, include_detallesProducto=True)
+    else:
+        result = await obtener_producto(id, include_detallesProducto=False)
+    return {"message": result}
+
+
+@router.get("/{id}/detallesProducto", summary="Obtener detallesProducto", description="Obtiene solo los detallesProducto (detalles_producto) de un producto.")
+async def obtenerDetallesProductoApi(id: int):
+    result = await obtener_detallesProducto(id)
+    return {"message": result}
+

@@ -1,13 +1,28 @@
 from typing import Optional, Union
 
 from src.infraestructura.models.producto import Producto
+from src.infraestructura.repositories.precio_repository import (
+    actualizarPrecio, crear_precio, vincular_precio_detalle)
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import normalizar_booleanos, prepararPayloadDb
-from src.infraestructura.repositories.precio_repository import crear_precio, vincular_precio_detalle, actualizarPrecio
 
 
 async def obtenerProducto(filtros: Optional[dict] = None, limite: Optional[int]= 100, offset: Optional[int]= 0, columnas: str= "*"):
     return await get('productos', filtros, limite, offset, columns=columnas)
+
+
+async def obtenerProductoConDetallesProducto(id: int):
+    # DetallesProducto = detalles_producto asociados al producto
+    return await obtenerProducto(
+        filtros={"id": id},
+        columnas='*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
+    )
+
+
+async def obtenerDetallesProducto(id: int):
+    # Lista de detalles_producto asociados a un producto
+    return await get('detalle_producto', filters={"id_productoFK": id}, limit=100, offset=0, columns='*')
+
 
 async def actualizarProducto(datos: Union[Producto, dict], id: Optional[int] = None):
     campos_excluir = ['categoria', 'marca', 'detalles_producto', 'ingredientes']

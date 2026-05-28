@@ -3,7 +3,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerPrecio(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('precios', filtros, limite, offset, columns=columnas)
+    return await get('precios', filters=filtros, limit=limite, offset=offset, columns=columnas)
 
 
 async def crear_precio(datos: dict) -> dict:

@@ -6,7 +6,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerDetalleVenta(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('detalle_venta', filtros, limite, offset)
+    return await get('detalle_venta', filters=filtros, limit=limite, offset=offset)
 
 
 async def actualizarDetalleVenta(datos: Union[Detalle_venta, dict], id: Optional[int] = None):
