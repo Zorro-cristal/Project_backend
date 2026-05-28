@@ -2,15 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
+from src.infraestructura.services.compra_service import (
+    obtener_compra_con_detalles, obtener_compra_solo, obtener_compras)
+from src.shell.adapters.requests.compra_request import (CompraRequest,
+                                                        CompraUpdateRequest)
 from src.shell.flujo.compra.crearActualizarCompra import (
-    actualizar_compra_por_id,
-    crear_o_actualizar_compra,
-)
-from src.infraestructura.services.compra_service import obtener_compras
-from src.shell.adapters.requests.compra_request import (
-    CompraRequest,
-    CompraUpdateRequest,
-)
+    actualizar_compra_por_id, crear_o_actualizar_compra)
 
 router = APIRouter()
 
@@ -62,9 +59,23 @@ async def obtenerComprasApi(
 
 
 @router.get("/{id}", summary="Obtener compra por ID", description="Obtiene una compra específica por su ID.")
-async def obtenerCompraPorIdApi(id: int):
-    filtros = {"id": id}
-    result = await obtener_compras(filtros)
+async def obtenerCompraPorIdApi(
+    id: int,
+    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detalleCompra"),
+):
+    if include == "detalleCompra":
+        result = await obtener_compra_con_detalles(id)
+    else:
+        result = await obtener_compra_solo(id)
+
     if not result:
         return {"message": f"Compra con ID {id} no encontrada"}
-    return {"message": result[0] if isinstance(result, list) else result}
+    return {"message": result}
+
+
+@router.get("/{id}/detalleCompra", summary="Obtener detalles de compra", description="Obtiene solo los detalle_compra asociados a una compra.")
+async def obtenerDetalleCompraPorIdApi(id: int):
+    result = await obtener_compra_con_detalles(id, solo_detalles=True)
+    return {"message": result}
+
+

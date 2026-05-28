@@ -2,15 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import (
-    actualizar_detalle_compra_por_id,
-    crear_o_actualizar_detalle_compra,
-)
-from src.infraestructura.services.detalle_compra_service import obtener_detalle_compras
+from src.infraestructura.services.detalle_compra_service import \
+    obtener_detalle_compras
 from src.shell.adapters.requests.detalle_compra_request import (
-    DetalleCompraRequest,
-    DetalleCompraUpdateRequest,
-)
+    DetalleCompraRequest, DetalleCompraUpdateRequest)
+from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import (
+    actualizar_detalle_compra_por_id, crear_o_actualizar_detalle_compra)
 
 router = APIRouter()
 
@@ -59,3 +56,11 @@ async def obtenerDetalleCompraPorIdApi(id: int):
     if not result:
         return {"message": f"Detalle de compra con ID {id} no encontrado"}
     return {"message": result[0] if isinstance(result, list) else result}
+
+
+@router.get("/compra/{id_compra}/detalles", summary="Obtener subproductos de compra", description="Obtiene solo los detalles de compra (detalle_compra) asociados a una compra.")
+async def obtenerDetallesCompraApi(id_compra: int):
+    filtros = {"id_compraFK": id_compra}
+    result = await obtener_detalle_compras(filtros)
+    return {"message": result}
+

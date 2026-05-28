@@ -1,11 +1,13 @@
 from typing import Optional
 
-from src.infraestructura.repositories.compra_repository import actualizarCompra, obtenerCompra
 from src.infraestructura.models.compra import Compra
+from src.infraestructura.repositories.compra_repository import (
+    actualizarCompra, obtenerCompra)
+from src.infraestructura.repositories.detalle_compra_repository import \
+    obtenerDetalleCompra
 from src.infraestructura.services.cliente_service import obtener_clientes
 from src.infraestructura.services.local_service import obtener_locales
 from src.infraestructura.services.proveedor_service import obtener_proveedores
-from src.infraestructura.repositories.detalle_compra_repository import obtenerDetalleCompra
 
 
 def build_compra_entity(payload: dict) -> Compra:
@@ -54,10 +56,56 @@ async def attach_related_data(compras: list[dict]) -> list[dict]:
 
 
 async def obtener_compras(filtros: dict = None, columnas: str = '*'):
+    """Obtiene compras e incluye datos relacionados (incluye detalles)."""
     compras = await obtenerCompra(filtros=filtros, columnas=columnas)
     if not compras:
         return compras
     return await attach_related_data(compras)
+
+
+async def obtener_compra_solo(id: int):
+    """Obtiene una compra sin adjuntar detalles (detalle_compra)."""
+    compras = await obtenerCompra(filtros={"id": id}, columnas='*')
+    if not compras:
+        return compras
+
+    compra = compras[0] if isinstance(compras, list) else compras
+    # Mantener relaciones básicas (cliente/local/proveedor) sin detalles
+    cliente_id = compra.get('id_clienteFK')
+    local_id = compra.get('id_localFK')
+    proveedor_id = compra.get('id_proveedorFK')
+
+    # Cargar relaciones si existen
+    compra['cliente'] = None
+    compra['local'] = None
+    compra['proveedor'] = None
+
+    if cliente_id:
+        clientes = await obtener_clientes({'id': [cliente_id]})
+        compra['cliente'] = (clientes or [None])[0] if clientes else None
+
+    if local_id:
+        locales = await obtener_locales({'id': [local_id]})
+        compra['local'] = (locales or [None])[0] if locales else None
+
+    if proveedor_id:
+        proveedores = await obtener_proveedores({'id': [proveedor_id]})
+        compra['proveedor'] = (proveedores or [None])[0] if proveedores else None
+
+    return compra
+
+
+async def obtener_compra_con_detalles(id: int, solo_detalles: bool = False):
+    """Obtiene compra con sus detalle_compra. Si solo_detalles=True, devuelve solo detalles."""
+    compras = await obtener_compras(filtros={"id": id})
+    if not compras:
+        return compras
+
+    compra = compras[0] if isinstance(compras, list) else compras
+    if solo_detalles:
+        return compra.get('detalles', [])
+    return compra
+
 
 
 async def crear_compra(payload: dict):
