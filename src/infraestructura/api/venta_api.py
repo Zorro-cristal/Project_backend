@@ -2,7 +2,9 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.venta_service import obtener_ventas
+from src.infraestructura.services.venta_service import (
+    obtener_detalle_venta_por_venta_id, obtener_venta_por_id_con_detalles,
+    obtener_venta_por_id_sin_detalles)
 from src.shell.adapters.requests.venta_request import (VentaRequest,
                                                        VentaUpdateRequest)
 from src.shell.flujo.venta.crearActualizarVenta import (
@@ -57,6 +59,7 @@ async def obtenerVentasApi(
         filtros["id_localFK"] = id_localFK
 
     result = await obtener_ventas(filtros)
+
     return {"message": result}
 
 
@@ -66,28 +69,24 @@ async def obtenerVentaPorIdApi(
     include: Optional[str] = Query(None, description="include=detalleVenta para incluir detalle_venta")
 ):
     filtros = {"id": id}
-    result = await obtener_ventas(filtros)
-    if not result:
-        return {"message": f"Venta con ID {id} no encontrada"}
-
-    venta = result[0] if isinstance(result, list) else result
 
     if include == "detalleVenta":
-        return {"message": venta}
+        venta = await obtener_venta_por_id_con_detalles(filtros)
+    else:
+        venta = await obtener_venta_por_id_sin_detalles(filtros)
 
-    # Contrato: GET /venta/{id} debe devolver solo la venta (sin detalles)
-    if isinstance(venta, dict) and "detalles" in venta:
-        venta = {k: v for k, v in venta.items() if k != "detalles"}
+    if not venta:
+        return {"message": f"Venta con ID {id} no encontrada"}
 
     return {"message": venta}
 
 
+
 @router.get("/{id}/detalleVenta", summary="Obtener detalles de venta", description="Obtiene solo el detalle_venta asociado a una venta.")
 async def obtenerDetalleVentaPorVentaIdApi(id: int):
-    from src.infraestructura.services.detalle_venta_service import \
-        obtener_detalle_ventas
-
     filtros = {"id_ventaFK": id}
-    result = await obtener_detalle_ventas(filtros)
+    result = await obtener_detalle_venta_por_venta_id(filtros)
     return {"message": result if result else []}
+
+
 

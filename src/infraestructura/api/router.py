@@ -1,9 +1,28 @@
 from fastapi import APIRouter
 
-from src.infraestructura.api import (categoria_api as categoria, marca_api as marca, precio_api as precio, producto_api as producto,
-                                        usuario_api as usuario, ingrediente_api as ingrediente, rol_api as rol, detalle_producto_api as detalle_producto, cliente_api as cliente, persona_api as persona, permiso_api as permiso, permiso_rol_api as permiso_rol, vendedor_api as vendedor, proveedor_api as proveedor, local_api as local, mesa_api as mesa, stock_api as stock, caja_api as caja, venta_api as venta, detalle_venta_api as detalle_venta, compra_api as compra, detalle_compra_api as detalle_compra)
-from src.shell.adapters.externals.openmeteo import \
-    obtenerInformacionClimatica
+from src.infraestructura.api import caja_api as caja
+from src.infraestructura.api import categoria_api as categoria
+from src.infraestructura.api import cliente_api as cliente
+from src.infraestructura.api import compra_api as compra
+from src.infraestructura.api import detalle_compra_api as detalle_compra
+from src.infraestructura.api import detalle_producto_api as detalle_producto
+from src.infraestructura.api import detalle_venta_api as detalle_venta
+from src.infraestructura.api import ingrediente_api as ingrediente
+from src.infraestructura.api import local_api as local
+from src.infraestructura.api import marca_api as marca
+from src.infraestructura.api import mesa_api as mesa
+from src.infraestructura.api import permiso_api as permiso
+from src.infraestructura.api import permiso_rol_api as permiso_rol
+from src.infraestructura.api import persona_api as persona
+from src.infraestructura.api import precio_api as precio
+from src.infraestructura.api import producto_api as producto
+from src.infraestructura.api import proveedor_api as proveedor
+from src.infraestructura.api import rol_api as rol
+from src.infraestructura.api import stock_api as stock
+from src.infraestructura.api import usuario_api as usuario
+from src.infraestructura.api import vendedor_api as vendedor
+from src.infraestructura.api import venta_api as venta
+from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
 router = APIRouter()
@@ -11,7 +30,9 @@ router = APIRouter()
 @router.get("/health", summary="Verificar salud del servicio", description="Verifica la conexión a la base de datos y el estado general del servicio.")
 async def root():
     result = await conexion_supabase(True)
-    return {"message": result} 
+    return result
+
+
 
 @router.get("/weather", summary="Obtener información climática", description="Obtiene datos climáticos actuales para una ubicación específica.")
 async def pruebaClima():

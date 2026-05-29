@@ -9,8 +9,9 @@ from pathlib import Path
 # Agregar el directorio raíz al path
 sys.path.insert(0, str(Path(__file__).parent))
 
-from src.infraestructura.config.supabase import get_supabase_client
 from src.configs.settings import get_settings
+from src.infraestructura.config.supabase import get_supabase_client
+
 
 def print_section(title):
     """Imprime un encabezado formateado"""
@@ -67,14 +68,20 @@ def test_tables():
         return False
 
 def test_simple_query():
-    """Prueba 4: Intenta una consulta simple a una tabla específica"""
+    """Prueba 4: Intenta una consulta simple a una tabla específica.
+
+    Nota: en CI/pytest no se debe pedir input por stdin.
+    Se omite si no hay tabla candidata conocida.
+    """
     print_section("PRUEBA 4: Consulta a Tabla Específica")
-    
-    table_name = input("Ingresa el nombre de una tabla para probar (ej: usuarios): ").strip()
-    
+
+    # Evitar input interactivo en pytest.
+    table_name = "usuarios"
+
     if not table_name:
         print("⚠ No se ingresó nombre de tabla, saltando prueba")
         return False
+
     
     try:
         client = get_supabase_client()
