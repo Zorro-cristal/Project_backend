@@ -1,14 +1,16 @@
-from src.infraestructura.config.supabase import get_supabase_client
+from datetime import datetime, timezone  # Importar timezone
 from typing import Any, Generic, Optional, TypeVar
-from datetime import datetime, timezone # Importar timezone
+
+from src.infraestructura.config.supabase import get_supabase_client
 
 T = TypeVar('T')
 
 async def insert(table: str, data: dict) -> dict:
     client= get_supabase_client()
     print(datetime.now(timezone.utc).isoformat())
-    if "fecha_creado" not in data:
+    if "fecha_creado" not in data or data.get("fecha_creado") is None:
         data["fecha_creado"] = datetime.now(timezone.utc).isoformat()
+    
     
     response = client.table(table).insert(data).execute()
     
@@ -56,8 +58,7 @@ async def get(
 async def update(table: str, id: str, updates: dict, key: str = 'id') -> dict:
     client = get_supabase_client()
     
-    # Agregar timestamp de actualización
-    updates["fecha_edit"] = datetime.now(timezone.utc).isoformat() # Usar datetime.now(timezone.utc)
+
     
     response = client.table(table).update(updates).eq(key, id).execute()
     
@@ -68,9 +69,10 @@ async def update(table: str, id: str, updates: dict, key: str = 'id') -> dict:
 
 async def soft_delete(table: str, id: str) -> dict:
     return await update(table, id, {
-        "fecha_edit": datetime.now(timezone.utc).isoformat(), # Usar datetime.now(timezone.utc)
         "estado": 'inactivo'
     })
+
+
 
 async def count(table: str, filters: Optional[dict] = None) -> int:
     client = get_supabase_client()

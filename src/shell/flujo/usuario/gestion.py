@@ -1,12 +1,16 @@
-from src.infraestructura.services.usuario_service import crear_usuario, actualizar_usuario, obtenerUsuarios
-from src.shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
+from src.infraestructura.services.usuario_service import (actualizar_usuario,
+                                                          crear_usuario,
+                                                          obtenerUsuarios)
+from src.shell.flujo.persona.crearActualizarPersona import \
+    crear_o_actualizar_persona
+
 
 async def crear_o_actualizar_usuario(payload: dict):
     alias = payload.get('alias')
     persona_payload = payload.pop('persona', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
-        payload['id_personaFK'] = persona.get('cedula')
+        payload['id_personafk'] = persona.get('cedula')
 
     if alias is not None:
         existentes = await obtenerUsuarios({'alias': alias}, 1, 0)
@@ -21,6 +25,6 @@ async def actualizar_usuario_por_id(id_usuario: int, payload: dict):
     persona_payload = payload.pop('persona', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
-        payload['id_personaFK'] = persona.get('cedula')
+        payload['id_personafk'] = persona.get('cedula')
 
     return await actualizar_usuario(id_usuario, payload)
