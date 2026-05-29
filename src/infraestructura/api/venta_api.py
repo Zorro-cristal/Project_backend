@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.venta.crearActualizarVenta import (
-    actualizar_venta_por_id,
-    crear_o_actualizar_venta,
-)
 from src.infraestructura.services.venta_service import obtener_ventas
-from src.shell.adapters.requests.venta_request import (
-    VentaRequest,
-    VentaUpdateRequest,
-)
+from src.shell.adapters.requests.venta_request import (VentaRequest,
+                                                       VentaUpdateRequest)
+from src.shell.flujo.venta.crearActualizarVenta import (
+    actualizar_venta_por_id, crear_o_actualizar_venta)
 
 router = APIRouter()
 
@@ -64,10 +60,34 @@ async def obtenerVentasApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener venta por ID", description="Obtiene una venta específica por su ID.")
-async def obtenerVentaPorIdApi(id: int):
+@router.get("/{id}", summary="Obtener venta por ID", description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.")
+async def obtenerVentaPorIdApi(
+    id: int,
+    include: Optional[str] = Query(None, description="include=detalleVenta para incluir detalle_venta")
+):
     filtros = {"id": id}
     result = await obtener_ventas(filtros)
     if not result:
         return {"message": f"Venta con ID {id} no encontrada"}
-    return {"message": result[0] if isinstance(result, list) else result}
+
+    venta = result[0] if isinstance(result, list) else result
+
+    if include == "detalleVenta":
+        return {"message": venta}
+
+    # Contrato: GET /venta/{id} debe devolver solo la venta (sin detalles)
+    if isinstance(venta, dict) and "detalles" in venta:
+        venta = {k: v for k, v in venta.items() if k != "detalles"}
+
+    return {"message": venta}
+
+
+@router.get("/{id}/detalleVenta", summary="Obtener detalles de venta", description="Obtiene solo el detalle_venta asociado a una venta.")
+async def obtenerDetalleVentaPorVentaIdApi(id: int):
+    from src.infraestructura.services.detalle_venta_service import \
+        obtener_detalle_ventas
+
+    filtros = {"id_ventaFK": id}
+    result = await obtener_detalle_ventas(filtros)
+    return {"message": result if result else []}
+
