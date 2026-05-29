@@ -5,7 +5,7 @@ async def obtenerUsuarios(filtros, limite, offset):
     return await get('usuarios', filtros, limite, offset)
 
 async def actualizarUsuario(datos, id= 0):
-    payload = prepararPayloadDb(datos, exclude_fields=['persona'])
+    payload = prepararPayloadDb(datos, exclude_fields=['persona','rol'])
     if id == 0:
         return await insert('usuarios', payload)
     return await update('usuarios', id, payload)

@@ -12,6 +12,8 @@ def build_usuario_entity(payload: dict) -> Usuario:
     return Usuario(**valid_fields)
 
 
+
+
 def _hash_if_needed(payload: dict) -> dict:
     """Hashea la contraseña si viene en el payload.
 
