@@ -32,8 +32,8 @@ async def obtenerProductosApi(
     id: Optional[str] = Query(None, description="Filtrar productos por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar productos por nombre parcial"),
     estado: Optional[int] = Query(None, description="Filtrar productos por estado (1 para activo, 0 para inactivo)"),
-    categoria_id: Optional[int] = Query(None, description="Filtrar productos por ID de categoría"),
-    marca_id: Optional[int] = Query(None, description="Filtrar productos por ID de marca"),
+    id_categoriafk: Optional[int] = Query(None, description="Filtrar productos por ID de categoría"),
+    id_marcafk: Optional[int] = Query(None, description="Filtrar productos por ID de marca"),
     pesable: Optional[bool] = Query(None, description="Filtrar productos que son pesables"),
     perecedero: Optional[bool] = Query(None, description="Filtrar productos que son perecederos"),
 ):
@@ -44,16 +44,16 @@ async def obtenerProductosApi(
         filtros["nombre"] = nombre
     if estado is not None:
         filtros["estado"] = estado
-    if categoria_id is not None:
-        filtros["categoria_id"] = categoria_id
-    if marca_id is not None:
-        filtros["marca_id"] = marca_id
+    if id_categoriafk is not None:
+        filtros["id_categoriafk"] = id_categoriafk
+    if id_marcafk is not None:
+        filtros["id_marcafk"] = id_marcafk
     if pesable is not None:
         filtros["pesable"] = pesable
     if perecedero is not None:
         filtros["perecedero"] = perecedero
 
-    result = await obtener_productos(filtros, '*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado)')
+    result = await obtener_productos(filtros, '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)')
     return {"message": result}
 
 

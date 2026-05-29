@@ -15,13 +15,13 @@ async def obtenerProductoConDetallesProducto(id: int):
     # DetallesProducto = detalles_producto asociados al producto
     return await obtenerProducto(
         filtros={"id": id},
-        columnas='*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
+        columnas='*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
     )
 
 
 async def obtenerDetallesProducto(id: int):
     # Lista de detalles_producto asociados a un producto
-    return await get('detalle_producto', filters={"id_productoFK": id}, limit=100, offset=0, columns='*')
+    return await get('detalle_producto', filters={"id_productofk": id}, limit=100, offset=0, columns='*')
 
 
 async def actualizarProducto(datos: Union[Producto, dict], id: Optional[int] = None):

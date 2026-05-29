@@ -1,5 +1,7 @@
 from typing import Optional
+
 from pydantic import BaseModel, Field
+
 
 class ProductoRequest(BaseModel):
     nombre: str
@@ -11,8 +13,10 @@ class ProductoRequest(BaseModel):
     costeo: int
     unidad_medida: str
     es_ingrediente: Optional[bool] = None
-    categoria_id: int = Field(..., alias="id_categoriaFK")
-    marca_id: int = Field(..., alias="id_marcaFK")
+
+    # Keep original aliases (capitalization varies in client payload)
+    id_categoriafk: int = Field(..., alias="id_categoriafk")
+    id_marcafk: int = Field(..., alias="id_marcafk")
 
     class Config:
         validate_by_name = True
@@ -28,8 +32,9 @@ class ProductoUpdateRequest(BaseModel):
     costeo: Optional[int] = None
     unidad_medida: Optional[str] = None
     es_ingrediente: Optional[bool] = None
-    categoria_id: Optional[int] = Field(None, alias="id_categoriaFK")
-    marca_id: Optional[int] = Field(None, alias="id_marcaFK")
+    id_categoriafk: Optional[int] = Field(None, alias="id_categoriafk")
+    id_marcafk: Optional[int] = Field(None, alias="id_marcafk")
 
     class Config:
         validate_by_name = True
+

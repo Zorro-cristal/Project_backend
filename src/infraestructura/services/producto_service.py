@@ -16,7 +16,7 @@ async def obtener_productos(filtros=None, columnas: str = '*'):
 async def obtener_producto(id: int, include_detallesProducto: bool = False):
     if include_detallesProducto:
         return await obtenerProductoConDetallesProducto(id)
-    return await obtenerProducto(filtros={"id": id}, columnas='*, marcas(marca_id:id, marca_nombre:nombre, marca_estado:estado)')
+    return await obtenerProducto(filtros={"id": id}, columnas='*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)')
 
 
 async def obtener_detallesProducto(id: int):
