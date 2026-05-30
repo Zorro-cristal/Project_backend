@@ -37,7 +37,7 @@ async def obtenerClientesApi(
     razon_social: Optional[str] = Query(None, description="Filtrar clientes por razón social parcial"),
     estado: Optional[int] = Query(None, description="Filtrar clientes por estado (1 activo, 0 inactivo)"),
     persona_fisica: Optional[int] = Query(None, description="Filtrar clientes por tipo de persona física"),
-    id_personaFK: Optional[int] = Query(None, description="Filtrar clientes por ID de persona asociada")
+    id_personafk: Optional[int] = Query(None, description="Filtrar clientes por ID de persona asociada")
 ):
     filtros = {}
     if id is not None:
@@ -50,8 +50,8 @@ async def obtenerClientesApi(
         filtros["estado"] = estado
     if persona_fisica is not None:
         filtros["persona_fisica"] = persona_fisica
-    if id_personaFK is not None:
-        filtros["id_personaFK"] = id_personaFK
+    if id_personafk is not None:
+        filtros["id_personafk"] = id_personafk
 
     result = await obtener_clientes(filtros)
     return {"message": result}

@@ -7,8 +7,8 @@ class DetalleVentaRequest(BaseModel):
     cantidad: int
     precio: float
     descuento: Optional[float] = None
-    id_productoFK: Optional[int] = None
-    id_ventaFK: Optional[int] = None
+    id_productofk: Optional[int] = None
+    id_ventafk: Optional[int] = None
     producto: Optional[ProductoRequest] = None
 
     class Config:
@@ -19,8 +19,8 @@ class DetalleVentaUpdateRequest(BaseModel):
     cantidad: Optional[int] = None
     precio: Optional[float] = None
     descuento: Optional[float] = None
-    id_productoFK: Optional[int] = None
-    id_ventaFK: Optional[int] = None
+    id_productofk: Optional[int] = None
+    id_ventafk: Optional[int] = None
     producto: Optional[ProductoRequest] = None
 
     class Config:

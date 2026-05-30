@@ -9,8 +9,8 @@ from src.infraestructura.models.compra import Compra
 class Detalle_compra:
     cantidad: int
     precio: float
-    id_compraFK: Optional[int] = None
-    id_productoFK: Optional[int] = None
+    id_comprafk: Optional[int] = None
+    id_productofk: Optional[int] = None
     producto: Optional[Producto] = None
     compra: Optional[Compra] = None
     id: Optional[int] = None

@@ -16,9 +16,9 @@ def build_compra_entity(payload: dict) -> Compra:
 
 
 async def attach_related_data(compras: list[dict]) -> list[dict]:
-    cliente_ids = {compra.get('id_clienteFK') for compra in compras if compra.get('id_clienteFK')}
-    local_ids = {compra.get('id_localFK') for compra in compras if compra.get('id_localFK')}
-    proveedor_ids = {compra.get('id_proveedorFK') for compra in compras if compra.get('id_proveedorFK')}
+    cliente_ids = {compra.get('id_clientefk') for compra in compras if compra.get('id_clientefk')}
+    local_ids = {compra.get('id_localfk') for compra in compras if compra.get('id_localfk')}
+    proveedor_ids = {compra.get('id_proveedorfk') for compra in compras if compra.get('id_proveedorfk')}
     compra_ids = {compra.get('id') for compra in compras if compra.get('id')}
 
     cliente_map = {}
@@ -38,18 +38,18 @@ async def attach_related_data(compras: list[dict]) -> list[dict]:
 
     detalle_map = {}
     if compra_ids:
-        detalles = await obtenerDetalleCompra({'id_compraFK': list(compra_ids)})
+        detalles = await obtenerDetalleCompra({'id_comprafk': list(compra_ids)})
         for detalle in (detalles or []):
-            compra_id = detalle.get('id_compraFK')
+            compra_id = detalle.get('id_comprafk')
             if compra_id not in detalle_map:
                 detalle_map[compra_id] = []
             detalle_map[compra_id].append(detalle)
 
     for compra in compras:
         compra_id = compra.get('id')
-        compra['cliente'] = cliente_map.get(compra.get('id_clienteFK'))
-        compra['local'] = local_map.get(compra.get('id_localFK'))
-        compra['proveedor'] = proveedor_map.get(compra.get('id_proveedorFK'))
+        compra['cliente'] = cliente_map.get(compra.get('id_clientefk'))
+        compra['local'] = local_map.get(compra.get('id_localfk'))
+        compra['proveedor'] = proveedor_map.get(compra.get('id_proveedorfk'))
         compra['detalles'] = detalle_map.get(compra_id, [])
 
     return compras
@@ -71,9 +71,9 @@ async def obtener_compra_solo(id: int):
 
     compra = compras[0] if isinstance(compras, list) else compras
     # Mantener relaciones básicas (cliente/local/proveedor) sin detalles
-    cliente_id = compra.get('id_clienteFK')
-    local_id = compra.get('id_localFK')
-    proveedor_id = compra.get('id_proveedorFK')
+    cliente_id = compra.get('id_clientefk')
+    local_id = compra.get('id_localfk')
+    proveedor_id = compra.get('id_proveedorfk')
 
     # Cargar relaciones si existen
     compra['cliente'] = None

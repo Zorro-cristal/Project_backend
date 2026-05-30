@@ -13,7 +13,7 @@ def build_proveedor_entity(payload: dict) -> Proveedor:
 
 
 async def attach_persona_data(proveedores: list[dict]) -> list[dict]:
-    persona_ids = {proveedor.get('id_personaFK') for proveedor in proveedores if proveedor.get('id_personaFK')}
+    persona_ids = {proveedor.get('id_personafk') for proveedor in proveedores if proveedor.get('id_personafk')}
     if not persona_ids:
         return proveedores
 
@@ -22,7 +22,7 @@ async def attach_persona_data(proveedores: list[dict]) -> list[dict]:
 
     persona_map = {persona['cedula']: persona for persona in (personas or [])}
     for proveedor in proveedores:
-        persona_id = proveedor.get('id_personaFK')
+        persona_id = proveedor.get('id_personafk')
         proveedor['persona'] = persona_map.get(persona_id)
     return proveedores
 

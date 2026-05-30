@@ -12,6 +12,6 @@ class Caja:
     fecha_creacion: datetime
     monto_cierre: Optional[float]= None
     fecha_cierre: Optional[datetime] = None
-    id_usuarioFK: Optional[int]= None
+    id_usuariofk: Optional[int]= None
     usuario: Optional[Usuario] = None
     id: Optional[int] = None

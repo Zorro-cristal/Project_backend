@@ -9,6 +9,6 @@ from src.infraestructura.models.local import Local
 class Mesa:
     nombre: str
     estado: bool
-    id_localFK: Optional[int]= None
+    id_localfk: Optional[int]= None
     local: Optional[Local]= None
     id: Optional[int] = None

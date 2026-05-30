@@ -35,9 +35,9 @@ async def agregarCompraApi(requestBody: CompraRequest):
 async def obtenerComprasApi(
     id: Optional[int] = Query(None, description="Filtrar compras por ID"),
     nro: Optional[str] = Query(None, description="Filtrar compras por número"),
-    id_localFK: Optional[int] = Query(None, description="Filtrar compras por ID de local"),
-    id_clienteFK: Optional[int] = Query(None, description="Filtrar compras por ID de cliente"),
-    id_proveedorFK: Optional[int] = Query(None, description="Filtrar compras por ID de proveedor"),
+    id_localfk: Optional[int] = Query(None, description="Filtrar compras por ID de local"),
+    id_clientefk: Optional[int] = Query(None, description="Filtrar compras por ID de cliente"),
+    id_proveedorfk: Optional[int] = Query(None, description="Filtrar compras por ID de proveedor"),
     estado: Optional[int] = Query(None, description="Filtrar compras por estado")
 ):
     filtros = {}
@@ -45,12 +45,12 @@ async def obtenerComprasApi(
         filtros["id"] = id
     if nro is not None:
         filtros["nro"] = nro
-    if id_localFK is not None:
-        filtros["id_localFK"] = id_localFK
-    if id_clienteFK is not None:
-        filtros["id_clienteFK"] = id_clienteFK
-    if id_proveedorFK is not None:
-        filtros["id_proveedorFK"] = id_proveedorFK
+    if id_localfk is not None:
+        filtros["id_localfk"] = id_localfk
+    if id_clientefk is not None:
+        filtros["id_clientefk"] = id_clientefk
+    if id_proveedorfk is not None:
+        filtros["id_proveedorfk"] = id_proveedorfk
     if estado is not None:
         filtros["estado"] = estado
 

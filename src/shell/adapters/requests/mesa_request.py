@@ -9,7 +9,7 @@ from src.shell.adapters.requests.local_request import (
 class MesaRequest(BaseModel):
     nombre: str
     estado: Optional[bool] = True
-    id_localFK: Optional[int] = None
+    id_localfk: Optional[int] = None
     local: Optional[LocalRequest] = None
 
     class Config:
@@ -19,7 +19,7 @@ class MesaRequest(BaseModel):
 class MesaUpdateRequest(BaseModel):
     nombre: Optional[str] = None
     estado: Optional[bool] = None
-    id_localFK: Optional[int] = None
+    id_localfk: Optional[int] = None
     local: Optional[LocalUpdateRequest] = None
 
     class Config:

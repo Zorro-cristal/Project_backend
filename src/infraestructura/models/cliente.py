@@ -10,6 +10,6 @@ class Cliente:
     persona_fisica: int = 1
     ruc: Optional[int] = None
     razon_social: Optional[str] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     id: Optional[int] = None
     persona: Optional[Persona] = None

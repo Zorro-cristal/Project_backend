@@ -4,7 +4,7 @@ from pydantic import BaseModel, Field
 
 class PrecioRequest(BaseModel):
     monto: int
-    producto_id: int
+    id_detalleProductofk: int
     valido_desde: datetime
     valido_hasta: Optional[datetime]= None
     

@@ -38,9 +38,9 @@ async def obtenerVentasApi(
     nro: Optional[str] = Query(None, description="Filtrar ventas por número"),
     fecha: Optional[str] = Query(None, description="Filtrar ventas por fecha"),
     estado: Optional[int] = Query(None, description="Filtrar ventas por estado"),
-    id_usuarioFK: Optional[int] = Query(None, description="Filtrar ventas por ID de usuario"),
-    id_clienteFK: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
-    id_localFK: Optional[int] = Query(None, description="Filtrar ventas por ID de local")
+    id_usuariofk: Optional[int] = Query(None, description="Filtrar ventas por ID de usuario"),
+    id_clientefk: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
+    id_localfk: Optional[int] = Query(None, description="Filtrar ventas por ID de local")
 ):
     filtros = {}
     if id is not None:
@@ -51,12 +51,12 @@ async def obtenerVentasApi(
         filtros["fecha"] = fecha
     if estado is not None:
         filtros["estado"] = estado
-    if id_usuarioFK is not None:
-        filtros["id_usuarioFK"] = id_usuarioFK
-    if id_clienteFK is not None:
-        filtros["id_clienteFK"] = id_clienteFK
-    if id_localFK is not None:
-        filtros["id_localFK"] = id_localFK
+    if id_usuariofk is not None:
+        filtros["id_usuariofk"] = id_usuariofk
+    if id_clientefk is not None:
+        filtros["id_clientefk"] = id_clientefk
+    if id_localfk is not None:
+        filtros["id_localfk"] = id_localfk
 
     result = await obtener_ventas(filtros)
 
@@ -84,7 +84,7 @@ async def obtenerVentaPorIdApi(
 
 @router.get("/{id}/detalleVenta", summary="Obtener detalles de venta", description="Obtiene solo el detalle_venta asociado a una venta.")
 async def obtenerDetalleVentaPorVentaIdApi(id: int):
-    filtros = {"id_ventaFK": id}
+    filtros = {"id_ventafk": id}
     result = await obtener_detalle_venta_por_venta_id(filtros)
     return {"message": result if result else []}
 

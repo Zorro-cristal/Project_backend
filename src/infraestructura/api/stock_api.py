@@ -37,18 +37,18 @@ async def agregarStockApi(requestBody: StockRequest):
 @router.get("/", summary="Obtener stocks", description="Obtiene una lista de stocks con filtros opcionales.")
 async def obtenerStocksApi(
     id: Optional[str] = Query(None, description="Filtrar stocks por ID"),
-    id_localFK: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
-    id_detalleProductoFK: Optional[int] = Query(None, description="Filtrar stocks por ID de detalle de producto"),
+    id_localfk: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
+    id_detalleProductofk: Optional[int] = Query(None, description="Filtrar stocks por ID de detalle de producto"),
     lote: Optional[str] = Query(None, description="Filtrar stocks por lote"),
     fecha_vencimiento: Optional[str] = Query(None, description="Filtrar stocks por fecha de vencimiento")
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if id_localFK is not None:
-        filtros["id_localFK"] = id_localFK
-    if id_detalleProductoFK is not None:
-        filtros["id_detalleProductoFK"] = id_detalleProductoFK
+    if id_localfk is not None:
+        filtros["id_localfk"] = id_localfk
+    if id_detalleProductofk is not None:
+        filtros["id_detalleProductofk"] = id_detalleProductofk
     if lote is not None:
         filtros["lote"] = lote
     if fecha_vencimiento is not None:

@@ -10,7 +10,7 @@ class ClienteRequest(BaseModel):
     persona_fisica: Optional[int] = 1
     ruc: Optional[int] = None
     razon_social: Optional[str] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaRequest] = None
 
     class Config:
@@ -22,7 +22,7 @@ class ClienteUpdateRequest(BaseModel):
     razon_social: Optional[str] = None
     estado: Optional[int] = None
     persona_fisica: Optional[int] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaUpdateRequest] = None
 
     class Config:

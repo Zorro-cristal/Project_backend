@@ -13,7 +13,7 @@ def build_vendedor_entity(payload: dict) -> Vendedor:
 
 
 async def attach_persona_data(vendedores: list[dict]) -> list[dict]:
-    persona_ids = {vendedor.get('id_personaFK') for vendedor in vendedores if vendedor.get('id_personaFK')}
+    persona_ids = {vendedor.get('id_personafk') for vendedor in vendedores if vendedor.get('id_personafk')}
     if not persona_ids:
         return vendedores
 
@@ -22,7 +22,7 @@ async def attach_persona_data(vendedores: list[dict]) -> list[dict]:
 
     persona_map = {persona['cedula']: persona for persona in (personas or [])}
     for vendedor in vendedores:
-        persona_id = vendedor.get('id_personaFK')
+        persona_id = vendedor.get('id_personafk')
         vendedor['persona'] = persona_map.get(persona_id)
     return vendedores
 

@@ -37,16 +37,16 @@ async def agregarDetalleVentaApi(requestBody: DetalleVentaRequest):
 @router.get("/", summary="Obtener detalles de venta", description="Obtiene una lista de detalles de venta con filtros opcionales.")
 async def obtenerDetalleVentasApi(
     id: Optional[int] = Query(None, description="Filtrar detalles de venta por ID"),
-    id_productoFK: Optional[int] = Query(None, description="Filtrar detalles por ID de producto"),
-    id_ventaFK: Optional[int] = Query(None, description="Filtrar detalles por ID de venta")
+    id_productofk: Optional[int] = Query(None, description="Filtrar detalles por ID de producto"),
+    id_ventafk: Optional[int] = Query(None, description="Filtrar detalles por ID de venta")
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if id_productoFK is not None:
-        filtros["id_productoFK"] = id_productoFK
-    if id_ventaFK is not None:
-        filtros["id_ventaFK"] = id_ventaFK
+    if id_productofk is not None:
+        filtros["id_productofk"] = id_productofk
+    if id_ventafk is not None:
+        filtros["id_ventafk"] = id_ventafk
 
     result = await obtener_detalle_ventas(filtros)
     return {"message": result}

@@ -10,17 +10,17 @@ async def crear_o_actualizar_venta(payload: dict):
     usuario_payload = payload.pop('usuario', None)
     if usuario_payload is not None:
         usuario = await crear_usuario(usuario_payload)
-        payload['id_usuarioFK'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
+        payload['id_usuariofk'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
 
     cliente_payload = payload.pop('cliente', None)
     if cliente_payload is not None:
         cliente = await crear_cliente(cliente_payload)
-        payload['id_clienteFK'] = cliente.get('id') if isinstance(cliente, dict) else getattr(cliente, 'id', None)
+        payload['id_clientefk'] = cliente.get('id') if isinstance(cliente, dict) else getattr(cliente, 'id', None)
 
     local_payload = payload.pop('local', None)
     if local_payload is not None:
         local = await crear_local(local_payload)
-        payload['id_localFK'] = local.get('id') if isinstance(local, dict) else getattr(local, 'id', None)
+        payload['id_localfk'] = local.get('id') if isinstance(local, dict) else getattr(local, 'id', None)
 
     detalles = payload.pop('detalles', None)
     venta = await crear_venta(payload)
@@ -28,7 +28,7 @@ async def crear_o_actualizar_venta(payload: dict):
     if detalles and venta:
         venta_id = venta.get('id') if isinstance(venta, dict) else getattr(venta, 'id', None)
         for detalle_payload in detalles:
-            detalle_payload['id_ventaFK'] = venta_id
+            detalle_payload['id_ventafk'] = venta_id
             await crear_o_actualizar_detalle_venta(detalle_payload)
 
     return venta
@@ -38,17 +38,17 @@ async def actualizar_venta_por_id(id_venta: int, payload: dict):
     usuario_payload = payload.pop('usuario', None)
     if usuario_payload is not None:
         usuario = await crear_usuario(usuario_payload)
-        payload['id_usuarioFK'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
+        payload['id_usuariofk'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
 
     cliente_payload = payload.pop('cliente', None)
     if cliente_payload is not None:
         cliente = await crear_cliente(cliente_payload)
-        payload['id_clienteFK'] = cliente.get('id') if isinstance(cliente, dict) else getattr(cliente, 'id', None)
+        payload['id_clientefk'] = cliente.get('id') if isinstance(cliente, dict) else getattr(cliente, 'id', None)
 
     local_payload = payload.pop('local', None)
     if local_payload is not None:
         local = await crear_local(local_payload)
-        payload['id_localFK'] = local.get('id') if isinstance(local, dict) else getattr(local, 'id', None)
+        payload['id_localfk'] = local.get('id') if isinstance(local, dict) else getattr(local, 'id', None)
 
     detalles = payload.pop('detalles', None)
     venta = await actualizar_venta(id_venta, payload)
@@ -56,7 +56,7 @@ async def actualizar_venta_por_id(id_venta: int, payload: dict):
     if detalles and venta:
         venta_id = id_venta
         for detalle_payload in detalles:
-            detalle_payload['id_ventaFK'] = venta_id
+            detalle_payload['id_ventafk'] = venta_id
             await crear_o_actualizar_detalle_venta(detalle_payload)
 
     return venta

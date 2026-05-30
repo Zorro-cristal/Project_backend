@@ -55,7 +55,7 @@ async def obtenerUsuariosApi(
     id: Optional[str] = None,
     alias: Optional[str] = None,
     estado: Optional[int] = None,
-    id_personaFK: Optional[int] = None,
+    id_personafk: Optional[int] = None,
 ):
     filtros = {}
     if id is not None:
@@ -64,8 +64,8 @@ async def obtenerUsuariosApi(
         filtros["alias"] = alias
     if estado is not None:
         filtros["estado"] = estado
-    if id_personaFK is not None:
-        filtros["id_personaFK"] = id_personaFK
+    if id_personafk is not None:
+        filtros["id_personafk"] = id_personafk
 
     result = await obtener_usuarios(filtros)
     return {"message": result}

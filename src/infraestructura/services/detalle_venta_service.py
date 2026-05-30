@@ -9,7 +9,7 @@ def build_detalle_venta_entity(payload: dict) -> Detalle_venta:
 
 
 async def attach_related_data(detalles: list[dict]) -> list[dict]:
-    producto_ids = {detalle.get('id_productoFK') for detalle in detalles if detalle.get('id_productoFK')}
+    producto_ids = {detalle.get('id_productofk') for detalle in detalles if detalle.get('id_productofk')}
 
     producto_map = {}
     if producto_ids:
@@ -17,7 +17,7 @@ async def attach_related_data(detalles: list[dict]) -> list[dict]:
         producto_map = {producto['id']: producto for producto in (productos or [])}
 
     for detalle in detalles:
-        detalle['producto'] = producto_map.get(detalle.get('id_productoFK'))
+        detalle['producto'] = producto_map.get(detalle.get('id_productofk'))
     return detalles
 
 

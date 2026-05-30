@@ -8,6 +8,6 @@ class PermisoRol:
     editar: bool
     eliminar: bool
     leer: bool
-    id_permisoFK: int
-    id_rolFK: int
+    id_permisofk: int
+    id_rolfk: int
     id: Optional[int] = None

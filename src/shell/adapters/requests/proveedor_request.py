@@ -11,7 +11,7 @@ class ProveedorRequest(BaseModel):
     ruc: int
     estado: Optional[bool] = True
     correo: Optional[str] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaRequest] = None
 
     class Config:
@@ -23,7 +23,7 @@ class ProveedorUpdateRequest(BaseModel):
     ruc: Optional[int] = None
     estado: Optional[bool] = None
     correo: Optional[str] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaUpdateRequest] = None
 
     class Config:

@@ -11,5 +11,5 @@ class Precio:
 
 @dataclass(frozen=True)
 class Detalles_precio:
-    producto_id: int
-    precio_id: int
+    id_detalleProductofk: int
+    id_preciofk: int

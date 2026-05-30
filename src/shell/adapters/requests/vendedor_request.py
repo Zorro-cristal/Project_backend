@@ -10,7 +10,7 @@ class VendedorRequest(BaseModel):
     salario: float
     comision: float
     estado: Optional[bool] = True
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaRequest] = None
 
     class Config:
@@ -21,7 +21,7 @@ class VendedorUpdateRequest(BaseModel):
     salario: Optional[float] = None
     comision: Optional[float] = None
     estado: Optional[bool] = None
-    id_personaFK: Optional[int] = None
+    id_personafk: Optional[int] = None
     persona: Optional[PersonaUpdateRequest] = None
 
     class Config:

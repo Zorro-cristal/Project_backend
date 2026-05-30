@@ -20,12 +20,22 @@ def prepararPayloadDb(
 
     Resultado: solo viajan primitives (str/int/float/bool/None) y campos FK
     (id_*) que normalmente ya son int/str.
+
+    Nota: para evitar violaciones NOT NULL, este helper NO envía campos con
+    valor None si existen en el payload.
     """
+
 
     if is_dataclass(data):
         payload = asdict(data)
     else:
         payload = dict(data)  # Asegura que sea un dict mutable
+
+    # Evita violaciones NOT NULL en BD: no mandes claves con valor None.
+    for key in list(payload.keys()):
+        if payload[key] is None:
+            payload.pop(key, None)
+
 
     # El 'id' se maneja por separado (en la URL, etc.)
     payload.pop("id", None)

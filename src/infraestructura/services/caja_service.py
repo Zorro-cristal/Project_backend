@@ -9,7 +9,7 @@ def build_caja_entity(payload: dict) -> Caja:
 
 
 async def attach_usuario_data(cajas: list[dict]) -> list[dict]:
-    usuario_ids = {caja.get('id_usuarioFK') for caja in cajas if caja.get('id_usuarioFK')}
+    usuario_ids = {caja.get('id_usuariofk') for caja in cajas if caja.get('id_usuariofk')}
     if not usuario_ids:
         return cajas
 
@@ -18,7 +18,7 @@ async def attach_usuario_data(cajas: list[dict]) -> list[dict]:
 
     usuario_map = {usuario['id']: usuario for usuario in (usuarios or [])}
     for caja in cajas:
-        usuario_id = caja.get('id_usuarioFK')
+        usuario_id = caja.get('id_usuariofk')
         caja['usuario'] = usuario_map.get(usuario_id)
     return cajas
 

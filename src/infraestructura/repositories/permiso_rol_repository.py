@@ -26,9 +26,9 @@ async def actualizarPermisoRol(datos: Union[PermisoRol, dict], id: Optional[int]
 
 async def obtenerPermisosPorRol(id_rol: int):
     """Obtiene todos los permisos asignados a un rol específico."""
-    return await get('permisos_roles', {'id_rolFK': id_rol}, limit=1000, columns="*, permisos(nombre)")
+    return await get('permisos_roles', {'id_rolfk': id_rol}, limit=1000, columns="*, permisos(nombre)")
 
 
 async def obtenerRolesPorPermiso(id_permiso: int):
     """Obtiene todos los roles que tienen asignado un permiso específico."""
-    return await get('permisos_roles', {'id_permisoFK': id_permiso}, limit=1000, columns="*, roles(nombre)")
+    return await get('permisos_roles', {'id_permisofk': id_permiso}, limit=1000, columns="*, roles(nombre)")

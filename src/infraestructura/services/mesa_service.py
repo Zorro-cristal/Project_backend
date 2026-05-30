@@ -9,7 +9,7 @@ def build_mesa_entity(payload: dict) -> Mesa:
 
 
 async def attach_local_data(mesas: list[dict]) -> list[dict]:
-    local_ids = {mesa.get('id_localFK') for mesa in mesas if mesa.get('id_localFK')}
+    local_ids = {mesa.get('id_localfk') for mesa in mesas if mesa.get('id_localfk')}
     if not local_ids:
         return mesas
 
@@ -18,7 +18,7 @@ async def attach_local_data(mesas: list[dict]) -> list[dict]:
 
     local_map = {local['id']: local for local in (locales or [])}
     for mesa in mesas:
-        local_id = mesa.get('id_localFK')
+        local_id = mesa.get('id_localfk')
         mesa['local'] = local_map.get(local_id)
     return mesas
 

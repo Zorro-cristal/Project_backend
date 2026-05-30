@@ -6,8 +6,8 @@ class PermisoRolRequest(BaseModel):
     editar: bool = False
     eliminar: bool = False
     leer: bool = False
-    id_permisoFK: int
-    id_rolFK: int
+    id_permisofk: int
+    id_rolfk: int
 
     class Config:
         validate_by_name = True
@@ -18,8 +18,8 @@ class PermisoRolUpdateRequest(BaseModel):
     editar: Optional[bool] = None
     eliminar: Optional[bool] = None
     leer: Optional[bool] = None
-    id_permisoFK: Optional[int] = None
-    id_rolFK: Optional[int] = None
+    id_permisofk: Optional[int] = None
+    id_rolfk: Optional[int] = None
 
     class Config:
         validate_by_name = True

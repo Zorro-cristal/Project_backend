@@ -35,8 +35,8 @@ async def agregarPermisoRolApi(requestBody: PermisoRolRequest):
 @router.get("/", summary="Obtener asignaciones de permisos a roles", description="Obtiene una lista de asignaciones con filtros opcionales.")
 async def obtenerPermisosRolesApi(
     id: Optional[int] = Query(None, description="Filtrar por ID de asignación"),
-    id_permisoFK: Optional[int] = Query(None, description="Filtrar por permiso"),
-    id_rolFK: Optional[int] = Query(None, description="Filtrar por rol"),
+    id_permisofk: Optional[int] = Query(None, description="Filtrar por permiso"),
+    id_rolfk: Optional[int] = Query(None, description="Filtrar por rol"),
     crear: Optional[bool] = Query(None, description="Filtrar por permiso de crear"),
     editar: Optional[bool] = Query(None, description="Filtrar por permiso de editar"),
     eliminar: Optional[bool] = Query(None, description="Filtrar por permiso de eliminar"),
@@ -45,10 +45,10 @@ async def obtenerPermisosRolesApi(
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if id_permisoFK is not None:
-        filtros["id_permisoFK"] = id_permisoFK
-    if id_rolFK is not None:
-        filtros["id_rolFK"] = id_rolFK
+    if id_permisofk is not None:
+        filtros["id_permisofk"] = id_permisofk
+    if id_rolfk is not None:
+        filtros["id_rolfk"] = id_rolfk
     if crear is not None:
         filtros["crear"] = crear
     if editar is not None:

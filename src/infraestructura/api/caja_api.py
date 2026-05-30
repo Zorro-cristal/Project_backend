@@ -37,15 +37,15 @@ async def agregarCajaApi(requestBody: CajaRequest):
 @router.get("/", summary="Obtener cajas", description="Obtiene una lista de cajas con filtros opcionales.")
 async def obtenerCajasApi(
     id: Optional[str] = Query(None, description="Filtrar cajas por ID"),
-    id_usuarioFK: Optional[int] = Query(None, description="Filtrar cajas por ID de usuario asociado"),
+    id_usuariofk: Optional[int] = Query(None, description="Filtrar cajas por ID de usuario asociado"),
     fecha_creacion: Optional[str] = Query(None, description="Filtrar cajas por fecha de creación"),
     fecha_cierre: Optional[str] = Query(None, description="Filtrar cajas por fecha de cierre")
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if id_usuarioFK is not None:
-        filtros["id_usuarioFK"] = id_usuarioFK
+    if id_usuariofk is not None:
+        filtros["id_usuariofk"] = id_usuariofk
     if fecha_creacion is not None:
         filtros["fecha_creacion"] = fecha_creacion
     if fecha_cierre is not None:

@@ -34,16 +34,16 @@ async def agregarDetalleCompraApi(requestBody: DetalleCompraRequest):
 @router.get("/", summary="Obtener detalles de compra", description="Obtiene una lista de detalles de compra con filtros opcionales.")
 async def obtenerDetalleComprasApi(
     id: Optional[int] = Query(None, description="Filtrar detalles de compra por ID"),
-    id_compraFK: Optional[int] = Query(None, description="Filtrar detalles por ID de compra"),
-    id_productoFK: Optional[int] = Query(None, description="Filtrar detalles por ID de producto")
+    id_comprafk: Optional[int] = Query(None, description="Filtrar detalles por ID de compra"),
+    id_productofk: Optional[int] = Query(None, description="Filtrar detalles por ID de producto")
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if id_compraFK is not None:
-        filtros["id_compraFK"] = id_compraFK
-    if id_productoFK is not None:
-        filtros["id_productoFK"] = id_productoFK
+    if id_comprafk is not None:
+        filtros["id_comprafk"] = id_comprafk
+    if id_productofk is not None:
+        filtros["id_productofk"] = id_productofk
 
     result = await obtener_detalle_compras(filtros)
     return {"message": result}
@@ -60,7 +60,7 @@ async def obtenerDetalleCompraPorIdApi(id: int):
 
 @router.get("/compra/{id_compra}/detalles", summary="Obtener subproductos de compra", description="Obtiene solo los detalles de compra (detalle_compra) asociados a una compra.")
 async def obtenerDetallesCompraApi(id_compra: int):
-    filtros = {"id_compraFK": id_compra}
+    filtros = {"id_comprafk": id_compra}
     result = await obtener_detalle_compras(filtros)
     return {"message": result}
 

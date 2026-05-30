@@ -13,7 +13,7 @@ def build_cliente_entity(payload: dict) -> Cliente:
 
 
 async def attach_persona_data(clientes: list[dict]) -> list[dict]:
-    persona_ids = {cliente.get('id_personaFK') for cliente in clientes if cliente.get('id_personaFK')}
+    persona_ids = {cliente.get('id_personafk') for cliente in clientes if cliente.get('id_personafk')}
     if not persona_ids:
         return clientes
 
@@ -22,7 +22,7 @@ async def attach_persona_data(clientes: list[dict]) -> list[dict]:
 
     persona_map = {persona['cedula']: persona for persona in (personas or [])}
     for cliente in clientes:
-        persona_id = cliente.get('id_personaFK')
+        persona_id = cliente.get('id_personafk')
         cliente['persona'] = persona_map.get(persona_id)
     return clientes
 
