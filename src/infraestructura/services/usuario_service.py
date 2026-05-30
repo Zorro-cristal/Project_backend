@@ -4,6 +4,7 @@ from src.infraestructura.repositories.usuario_repository import (
 from src.infraestructura.services.persona_service import (actualizar_persona,
                                                           crear_persona,
                                                           obtener_personas)
+from src.infraestructura.services.rol_service import obtener_roles
 from src.shared.security.password_hasher import hash_password
 
 
@@ -55,11 +56,29 @@ async def attach_persona_data(usuarios: list[dict]) -> list[dict]:
     return usuarios
 
 
+async def attach_rol_data(usuarios: list[dict]) -> list[dict]:
+    rol_ids = {usuario.get('id_rolfk') for usuario in usuarios if usuario.get('id_rolfk')}
+    if not rol_ids:
+        return usuarios
+
+    filtros = {'id': list(rol_ids)}
+    roles = await obtener_roles(filtros=filtros)
+
+    rol_map = {rol['id']: rol for rol in (roles or []) if rol.get('id') is not None}
+    for usuario in usuarios:
+        rol_id = usuario.get('id_rolfk')
+        usuario['rol'] = rol_map.get(rol_id)
+    return usuarios
+
+
 async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
-    return await attach_persona_data(usuarios)
+
+    usuarios = await attach_persona_data(usuarios)
+    return await attach_rol_data(usuarios)
+
 
 
 async def crear_usuario(payload: dict):
