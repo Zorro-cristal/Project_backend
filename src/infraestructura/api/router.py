@@ -5,8 +5,8 @@ from src.infraestructura.api import categoria_api as categoria
 from src.infraestructura.api import cliente_api as cliente
 from src.infraestructura.api import compra_api as compra
 from src.infraestructura.api import detalle_compra_api as detalle_compra
-from src.infraestructura.api import detalle_producto_api as detalle_producto
 from src.infraestructura.api import detalle_venta_api as detalle_venta
+from src.infraestructura.api import detalles_producto_api as detalles_producto
 from src.infraestructura.api import ingrediente_api as ingrediente
 from src.infraestructura.api import local_api as local
 from src.infraestructura.api import marca_api as marca
@@ -48,7 +48,7 @@ router.include_router(ingrediente.router, prefix="/ingrediente", tags=["Ingredie
 router.include_router(rol.router, prefix="/rol", tags=["Rol"])
 router.include_router(permiso.router, prefix="/permiso", tags=["Permiso"])
 router.include_router(permiso_rol.router, prefix="/permiso_rol", tags=["Permiso Rol"])
-router.include_router(detalle_producto.router, prefix="/detalle_producto", tags=["Detalle Producto"])
+router.include_router(detalles_producto.router, prefix="/detalles_producto", tags=["Detalle Producto"])
 router.include_router(cliente.router, prefix="/cliente", tags=["Cliente"])
 router.include_router(persona.router, prefix="/persona", tags=["Persona"])
 router.include_router(vendedor.router, prefix="/vendedor", tags=["Vendedor"])

@@ -31,6 +31,6 @@ async def actualizarPrecio(datos: dict, id: int | None = None) -> dict:
 async def vincular_precio_detalle(precio_id: int, detalle_cod: str) -> dict:
     payload = {
         'precio_id': precio_id,
-        'detalle_producto_cod': detalle_cod
+        'detalles_producto_cod': detalle_cod
     }
     return await insert('detalles_precio', payload)

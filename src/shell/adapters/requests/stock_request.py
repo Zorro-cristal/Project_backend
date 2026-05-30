@@ -1,14 +1,12 @@
-from typing import Optional
-from pydantic import BaseModel
 from datetime import datetime
-from src.shell.adapters.requests.local_request import (
-    LocalRequest,
-    LocalUpdateRequest,
-)
-from src.shell.adapters.requests.detalle_producto_request import (
-    DetalleProductoRequest,
-    DetalleProductoUpdateRequest,
-)
+from typing import Optional
+
+from pydantic import BaseModel
+
+from src.shell.adapters.requests.detalles_producto_request import (
+    DetalleProductoRequest, DetalleProductoUpdateRequest)
+from src.shell.adapters.requests.local_request import (LocalRequest,
+                                                       LocalUpdateRequest)
 
 
 class StockRequest(BaseModel):
@@ -17,10 +15,10 @@ class StockRequest(BaseModel):
     precio: float
     cant_reservado: int
     lote: str
-    id_localFK: Optional[int] = None
-    id_detalleProductoFK: Optional[int] = None
+    id_localfk: Optional[int] = None
+    id_detalleProductofk: Optional[int] = None
     local: Optional[LocalRequest] = None
-    detalle_producto: Optional[DetalleProductoRequest] = None
+    detalles_producto: Optional[DetalleProductoRequest] = None
     fecha_vencimiento: Optional[datetime] = None
 
     class Config:
@@ -33,10 +31,10 @@ class StockUpdateRequest(BaseModel):
     precio: Optional[float] = None
     cant_reservado: Optional[int] = None
     lote: Optional[str] = None
-    id_localFK: Optional[int] = None
-    id_detalleProductoFK: Optional[int] = None
+    id_localfk: Optional[int] = None
+    id_detalleProductofk: Optional[int] = None
     local: Optional[LocalUpdateRequest] = None
-    detalle_producto: Optional[DetalleProductoUpdateRequest] = None
+    detalles_producto: Optional[DetalleProductoUpdateRequest] = None
     fecha_vencimiento: Optional[datetime] = None
 
     class Config:

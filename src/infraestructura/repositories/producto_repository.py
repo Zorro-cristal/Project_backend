@@ -21,7 +21,7 @@ async def obtenerProductoConDetallesProducto(id: int):
 
 async def obtenerDetallesProducto(id: int):
     # Lista de detalles_producto asociados a un producto
-    return await get('detalle_producto', filters={"id_productofk": id}, limit=100, offset=0, columns='*')
+    return await get('detalles_producto', filters={"id_productofk": id}, limit=100, offset=0, columns='*')
 
 
 async def actualizarProducto(datos: Union[Producto, dict], id: Optional[int] = None):

@@ -1,7 +1,9 @@
-from src.infraestructura.repositories.stock_repository import actualizarStock, obtenerStock
 from src.infraestructura.models.stock import Stock
+from src.infraestructura.repositories.stock_repository import (actualizarStock,
+                                                               obtenerStock)
+from src.infraestructura.services.detalles_producto_service import \
+    obtener_detalles_productos
 from src.infraestructura.services.local_service import obtener_locales
-from src.infraestructura.services.detalle_producto_service import obtener_detalle_productos
 
 
 def build_stock_entity(payload: dict) -> Stock:
@@ -10,8 +12,8 @@ def build_stock_entity(payload: dict) -> Stock:
 
 
 async def attach_related_data(stocks: list[dict]) -> list[dict]:
-    local_ids = {stock.get('id_localFK') for stock in stocks if stock.get('id_localFK')}
-    detalle_ids = {stock.get('id_detalleProductoFK') for stock in stocks if stock.get('id_detalleProductoFK')}
+    local_ids = {stock.get('id_localfk') for stock in stocks if stock.get('id_localfk')}
+    detalle_ids = {stock.get('id_detalleProductofk') for stock in stocks if stock.get('id_detalleProductofk')}
 
     if local_ids:
         filtros_local = {'id': list(local_ids)}
@@ -22,16 +24,16 @@ async def attach_related_data(stocks: list[dict]) -> list[dict]:
 
     if detalle_ids:
         filtros_detalle = {'cod_barra': list(detalle_ids)}
-        detalles = await obtener_detalle_productos(filtros_detalle)
+        detalles = await obtener_detalles_productos(filtros_detalle)
         detalle_map = {detalle.get('cod_barra') or detalle.get('id'): detalle for detalle in (detalles or [])}
     else:
         detalle_map = {}
 
     for stock in stocks:
-        local_id = stock.get('id_localFK')
+        local_id = stock.get('id_localfk')
         stock['local'] = local_map.get(local_id)
-        detalle_id = stock.get('id_detalleProductoFK')
-        stock['detalle_producto'] = detalle_map.get(detalle_id)
+        detalle_id = stock.get('id_detalleProductofk')
+        stock['detalles_producto'] = detalle_map.get(detalle_id)
     return stocks
 
 

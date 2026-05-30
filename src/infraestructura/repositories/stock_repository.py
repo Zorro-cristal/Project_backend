@@ -10,7 +10,7 @@ async def obtenerStock(filtros=None, limite=100, offset=0, columnas="*"):
 
 
 async def actualizarStock(datos: Union[Stock, dict], id: Optional[int] = None):
-    payload = prepararPayloadDb(datos, exclude_fields=['local', 'detalle_producto'])
+    payload = prepararPayloadDb(datos, exclude_fields=['local', 'detalles_producto'])
 
     if id is None:
         return await insert('stocks', payload)

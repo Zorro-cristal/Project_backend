@@ -2,7 +2,7 @@ from dataclasses import dataclass
 from typing import Optional
 
 from src.infraestructura.models.categoria import Categoria
-from src.infraestructura.models.detalle_producto import Detalle_producto
+from src.infraestructura.models.detalles_producto import detalles_producto
 from src.infraestructura.models.ingrediente import Ingrediente
 from src.infraestructura.models.marca import Marca
 
@@ -23,6 +23,6 @@ class Producto:
     es_comida: Optional[bool] = None
     categoria: Optional[Categoria] = None
     marca: Optional[Marca] = None
-    detalles_producto: Optional[list[Detalle_producto]] = None
+    detalles_producto: Optional[list[detalles_producto]] = None
     ingredientes: Optional[list[Ingrediente]] = None
     id: Optional[int] = None

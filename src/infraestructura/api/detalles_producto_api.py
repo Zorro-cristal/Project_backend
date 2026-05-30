@@ -2,17 +2,18 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.detalle_producto_service import (actualizar_detalle_producto, crear_detalle_producto,
-                                              obtener_detalle_productos)
-from src.shell.adapters.requests.detalle_producto_request import (DetalleProductoRequest,
-                                                         DetalleProductoUpdateRequest)
+from src.infraestructura.services.detalles_producto_service import (
+    actualizar_detalles_producto, crear_detalles_producto,
+    obtener_detalles_productos)
+from src.shell.adapters.requests.detalles_producto_request import (
+    DetalleProductoRequest, DetalleProductoUpdateRequest)
 
 router = APIRouter()
 
 @router.put("/{cod_barra}", summary="Actualizar detalle de producto", description="Actualiza un detalle de producto existente por su código de barra.")
 async def actualizarDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_detalle_producto(cod_barra, payload)
+    result = await actualizar_detalles_producto(cod_barra, payload)
     return {"message": result}
 
 @router.patch("/{cod_barra}", summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su código de barra.")
@@ -22,7 +23,7 @@ async def patchDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUp
 @router.post("/", summary="Crear detalle de producto", description="Crea un nuevo detalle de producto.")
 async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest):
     payload = requestBody.model_dump()
-    result = await crear_detalle_producto(payload)
+    result = await crear_detalles_producto(payload)
     return {"message": result}
 
 @router.get("/", summary="Obtener detalles de productos", description="Obtiene una lista de detalles de productos con filtros opcionales.")
@@ -45,5 +46,5 @@ async def obtenerDetallesProductosApi(
     if unidad_por_lote is not None:
         filtros["unidad_por_lote"] = unidad_por_lote
     
-    result = await obtener_detalle_productos(filtros)
+    result = await obtener_detalles_productos(filtros)
     return {"message": result}
