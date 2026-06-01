@@ -2,10 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.precio_service import (actualizar_precio, crear_precio,
-                                               obtener_precios)
+from src.infraestructura.services.precio_service import (actualizar_precio,
+                                                         crear_precio,
+                                                         obtener_precios)
 from src.shell.adapters.requests.precio_request import (PrecioRequest,
-                                                          PrecioUpdateRequest)
+                                                        PrecioUpdateRequest)
 
 router = APIRouter()
 
@@ -42,5 +43,13 @@ async def obtenerPreciosApi(
     if valido_hasta is not None:
         filtros["valido_hasta"] = valido_hasta
 
-    result = await obtener_precios(filtros=filtros, columnas='*, productos(producto_id:id, producto_nombre:nombre)')
+    # Relación indirecta: precios -> detalles_precio -> detalles_producto -> productos.
+    # La tabla intermedia que mapea productos es `detalles_producto` (por `detalles_precio.detalles_producto_cod`).
+    # Nota: el FK directo en bdd.sql es detalles_precio -> precios, detalles_precio -> productos(vía id_productofk),
+    # y detalles_precio -> detalles_producto.
+    # Este select intenta traer el producto a través de los datos del detalle.
+    result = await obtener_precios(
+        filtros=filtros,
+        columnas='*, detalles_precio(*, detalles_producto(*, productos(*)))'
+    )
     return {"message": result}

@@ -44,11 +44,18 @@ def prepararPayloadDb(
         for field in exclude_fields:
             payload.pop(field, None)
 
+    # Ajuste para fechas: si vienen como datetime, conviértelos a ISO string
+    # antes de aplicar el filtro de primitividad.
+    for key in ("valido_desde", "valido_hasta"):
+        if key in payload and hasattr(payload[key], "isoformat"):
+            payload[key] = payload[key].isoformat()
+
     # Filtro global: remueve campos cuyo valor sea un objeto/dict/list anidado.
     # (Esto evita que 'rol': {..} o 'persona': {..} se manden como columna.)
     for key in list(payload.keys()):
         if not _is_json_primitive(payload[key]):
             payload.pop(key, None)
+
 
     return payload
 
