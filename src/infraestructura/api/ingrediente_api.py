@@ -3,14 +3,9 @@ from typing import Optional
 from fastapi import APIRouter, Query
 
 from src.infraestructura.services.ingrediente_service import (
-    actualizar_ingrediente,
-    crear_ingrediente,
-    obtener_ingredientes,
-)
+    actualizar_ingrediente, crear_ingrediente, obtener_ingredientes)
 from src.shell.adapters.requests.ingrediente_request import (
-    IngredienteRequest,
-    IngredienteUpdateRequest,
-)
+    IngredienteRequest, IngredienteUpdateRequest)
 
 router = APIRouter()
 
@@ -39,8 +34,8 @@ async def obtenerIngredientesApi(
     id: Optional[str] = Query(None, description="Filtrar ingredientes por ID"),
     cantidad: Optional[int] = Query(None, description="Filtrar ingredientes por cantidad"),
     unidad_medida: Optional[str] = Query(None, description="Filtrar ingredientes por unidad de medida"),
-    producto_id_ingrediente: Optional[int] = Query(None, description="Filtrar por producto ingrediente"),
-    producto_id_final: Optional[int] = Query(None, description="Filtrar por producto final"),
+    id_producto_ingredientefk: Optional[int] = Query(None, description="Filtrar por producto ingrediente"),
+    id_producto_finalfk: Optional[int] = Query(None, description="Filtrar por producto final"),
 ):
     filtros = {}
     if id is not None:
@@ -49,10 +44,10 @@ async def obtenerIngredientesApi(
         filtros["cantidad"] = cantidad
     if unidad_medida is not None:
         filtros["unidad_medida"] = unidad_medida
-    if producto_id_ingrediente is not None:
-        filtros["producto_id_ingrediente"] = producto_id_ingrediente
-    if producto_id_final is not None:
-        filtros["producto_id_final"] = producto_id_final
+    if id_producto_ingredientefk is not None:
+        filtros["id_producto_ingredientefk"] = id_producto_ingredientefk
+    if id_producto_finalfk is not None:
+        filtros["id_producto_finalfk"] = id_producto_finalfk
 
     result = await obtener_ingredientes(filtros)
     return {"message": result}

@@ -1,5 +1,6 @@
-from src.infraestructura.repositories.ingrediente_repository import actualizarIngrediente, obtenerIngrediente
 from src.infraestructura.models.ingrediente import Ingrediente
+from src.infraestructura.repositories.ingrediente_repository import (
+    actualizarIngrediente, obtenerIngrediente)
 
 
 def build_ingrediente_entity(payload: dict) -> Ingrediente:
@@ -12,6 +13,8 @@ async def obtener_ingredientes(filtros: dict = None, columnas: str = '*'):
 
 
 async def crear_ingrediente(payload: dict):
+    # En creación, el `id` normalmente lo genera la BD, por eso no debe venir en el payload.
+    # build_ingrediente_entity filtra los campos que existen en la dataclass.
     ingrediente = build_ingrediente_entity(payload)
     return await actualizarIngrediente(ingrediente)
 
