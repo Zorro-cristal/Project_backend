@@ -17,7 +17,6 @@ async def obtenerPersonasApi(
     cedula: Optional[int] = Query(None, description="Filtrar personas por cédula"),
     nombres: Optional[str] = Query(None, description="Filtrar personas por nombre parcial"),
     apellidos: Optional[str] = Query(None, description="Filtrar personas por apellido parcial"),
-    estado: Optional[int] = Query(None, description="Filtrar personas por estado"),
     telefono: Optional[int] = Query(None, description="Filtrar personas por teléfono"),
     direccion: Optional[str] = Query(None, description="Filtrar personas por dirección parcial"),
     nacionalidad: Optional[str] = Query(None, description="Filtrar personas por nacionalidad"),
@@ -29,8 +28,6 @@ async def obtenerPersonasApi(
         filtros["nombres"] = nombres
     if apellidos is not None:
         filtros["apellidos"] = apellidos
-    if estado is not None:
-        filtros["estado"] = estado
     if telefono is not None:
         filtros["telefono"] = telefono
     if direccion is not None:

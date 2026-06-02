@@ -6,7 +6,6 @@ from src.infraestructura.models.persona import Persona
 
 @dataclass(frozen=True)
 class Cliente:
-    estado: int = 1
     persona_fisica: int = 1
     ruc: Optional[int] = None
     razon_social: Optional[str] = None
