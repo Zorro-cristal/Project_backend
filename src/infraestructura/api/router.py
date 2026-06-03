@@ -11,6 +11,7 @@ from src.infraestructura.api import ingrediente_api as ingrediente
 from src.infraestructura.api import local_api as local
 from src.infraestructura.api import marca_api as marca
 from src.infraestructura.api import mesa_api as mesa
+from src.infraestructura.api import orden_api as orden
 from src.infraestructura.api import permiso_api as permiso
 from src.infraestructura.api import permiso_rol_api as permiso_rol
 from src.infraestructura.api import persona_api as persona
@@ -26,6 +27,7 @@ from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
 router = APIRouter()
+
 
 @router.get("/health", summary="Verificar salud del servicio", description="Verifica la conexión a la base de datos y el estado general del servicio.")
 async def root():
@@ -59,5 +61,9 @@ router.include_router(stock.router, prefix="/stock", tags=["Stock"])
 router.include_router(caja.router, prefix="/caja", tags=["Caja"])
 router.include_router(venta.router, prefix="/venta", tags=["Venta"])
 router.include_router(detalle_venta.router, prefix="/detalle_venta", tags=["Detalle Venta"])
+from src.infraestructura.api import orden_api as orden
+
 router.include_router(compra.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra.router, prefix="/detalle_compra", tags=["Detalle Compra"])
+router.include_router(orden.router, prefix="/orden", tags=["Orden"])
+

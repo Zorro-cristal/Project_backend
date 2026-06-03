@@ -14,7 +14,7 @@ class Stock:
     cant_reservado: int
     lote: str
     id_localfk: Optional[int]= None
-    id_detalleProductofk: Optional[int]= None
+    id_detalleproductofk: Optional[str]= None
     local: Optional[Local]= None
     fecha_vencimiento: Optional[datetime] = None
     id: Optional[int] = None

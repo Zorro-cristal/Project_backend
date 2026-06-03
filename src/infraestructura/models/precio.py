@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
+
 @dataclass(frozen=True)
 class Precio:
     monto: int
@@ -11,5 +12,5 @@ class Precio:
 
 @dataclass(frozen=True)
 class Detalles_precio:
-    id_detalleProductofk: int
+    id_detalleproductofk: int
     id_preciofk: int

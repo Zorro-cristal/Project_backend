@@ -16,7 +16,7 @@ class StockRequest(BaseModel):
     cant_reservado: int
     lote: str
     id_localfk: Optional[int] = None
-    id_detalleProductofk: Optional[int] = None
+    id_detalleproductofk: Optional[str] = None
     local: Optional[LocalRequest] = None
     detalles_producto: Optional[DetalleProductoRequest] = None
     fecha_vencimiento: Optional[datetime] = None
@@ -32,7 +32,7 @@ class StockUpdateRequest(BaseModel):
     cant_reservado: Optional[int] = None
     lote: Optional[str] = None
     id_localfk: Optional[int] = None
-    id_detalleProductofk: Optional[int] = None
+    id_detalleproductofk: Optional[str] = None
     local: Optional[LocalUpdateRequest] = None
     detalles_producto: Optional[DetalleProductoUpdateRequest] = None
     fecha_vencimiento: Optional[datetime] = None

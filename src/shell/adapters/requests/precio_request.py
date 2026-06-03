@@ -1,10 +1,12 @@
 from datetime import datetime
 from typing import Optional
+
 from pydantic import BaseModel, Field
+
 
 class PrecioRequest(BaseModel):
     monto: int
-    id_detalleProductofk: int
+    id_detalleproductofk: int
     valido_desde: datetime
     valido_hasta: Optional[datetime]= None
     

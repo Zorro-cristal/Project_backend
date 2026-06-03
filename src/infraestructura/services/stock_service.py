@@ -13,7 +13,7 @@ def build_stock_entity(payload: dict) -> Stock:
 
 async def attach_related_data(stocks: list[dict]) -> list[dict]:
     local_ids = {stock.get('id_localfk') for stock in stocks if stock.get('id_localfk')}
-    detalle_ids = {stock.get('id_detalleProductofk') for stock in stocks if stock.get('id_detalleProductofk')}
+    detalle_ids = {stock.get('id_detalleproductofk') for stock in stocks if stock.get('id_detalleproductofk')}
 
     if local_ids:
         filtros_local = {'id': list(local_ids)}
@@ -32,7 +32,7 @@ async def attach_related_data(stocks: list[dict]) -> list[dict]:
     for stock in stocks:
         local_id = stock.get('id_localfk')
         stock['local'] = local_map.get(local_id)
-        detalle_id = stock.get('id_detalleProductofk')
+        detalle_id = stock.get('id_detalleproductofk')
         stock['detalles_producto'] = detalle_map.get(detalle_id)
     return stocks
 

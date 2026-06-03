@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.stock.crearActualizarStock import (
-    actualizar_stock_por_id,
-    crear_o_actualizar_stock,
-)
 from src.infraestructura.services.stock_service import obtener_stocks
-from src.shell.adapters.requests.stock_request import (
-    StockRequest,
-    StockUpdateRequest,
-)
+from src.shell.adapters.requests.stock_request import (StockRequest,
+                                                       StockUpdateRequest)
+from src.shell.flujo.stock.crearActualizarStock import (
+    actualizar_stock_por_id, crear_o_actualizar_stock)
 
 router = APIRouter()
 
@@ -38,7 +34,7 @@ async def agregarStockApi(requestBody: StockRequest):
 async def obtenerStocksApi(
     id: Optional[str] = Query(None, description="Filtrar stocks por ID"),
     id_localfk: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
-    id_detalleProductofk: Optional[int] = Query(None, description="Filtrar stocks por ID de detalle de producto"),
+    id_detalleproductofk: Optional[int] = Query(None, description="Filtrar stocks por ID de detalle de producto"),
     lote: Optional[str] = Query(None, description="Filtrar stocks por lote"),
     fecha_vencimiento: Optional[str] = Query(None, description="Filtrar stocks por fecha de vencimiento")
 ):
@@ -47,8 +43,8 @@ async def obtenerStocksApi(
         filtros["id"] = id
     if id_localfk is not None:
         filtros["id_localfk"] = id_localfk
-    if id_detalleProductofk is not None:
-        filtros["id_detalleProductofk"] = id_detalleProductofk
+    if id_detalleproductofk is not None:
+        filtros["id_detalleproductofk"] = id_detalleproductofk
     if lote is not None:
         filtros["lote"] = lote
     if fecha_vencimiento is not None:

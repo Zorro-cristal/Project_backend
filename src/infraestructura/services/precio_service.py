@@ -14,7 +14,7 @@ async def crear_precio(payload: dict):
     precio = build_precio_entity(payload)
     nuevo_precio = await crearPrecio(precio)
     await crearDetallePrecio({
-        'id_detalleProductofk': payload['id_detalleProductofk'],
+        'id_detalleproductofk': payload['id_detalleproductofk'],
         'id_preciofk': nuevo_precio['id']
     })
     return nuevo_precio
