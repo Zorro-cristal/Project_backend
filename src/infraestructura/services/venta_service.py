@@ -1,14 +1,13 @@
 from typing import Optional
 
+from src.shell.utils import attach_grouped, attach_related
+
 from ..models.venta import Venta
-from ..repositories.detalle_venta_repository import \
-    obtenerDetalleVenta
-from ..repositories.venta_repository import (actualizarVenta,
-                                                               obtenerVenta)
+from ..repositories.detalle_venta_repository import obtenerDetalleVenta
+from ..repositories.venta_repository import actualizarVenta, obtenerVenta
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
 from .usuario_service import obtener_usuarios
-from src.shell.utils import attach_related, attach_grouped
 
 
 def build_venta_entity(payload: dict) -> Venta:

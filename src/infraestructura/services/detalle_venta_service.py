@@ -1,7 +1,9 @@
-from ..repositories.detalle_venta_repository import actualizarDetalleVenta, obtenerDetalleVenta
-from ..models.detalle_venta import Detalle_venta
-from .producto_service import obtener_productos
 from src.shell.utils import attach_related
+
+from ..models.detalle_venta import Detalle_venta
+from ..repositories.detalle_venta_repository import (actualizarDetalleVenta,
+                                                     obtenerDetalleVenta)
+from .producto_service import obtener_productos
 
 
 def build_detalle_venta_entity(payload: dict) -> Detalle_venta:

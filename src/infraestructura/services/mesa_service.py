@@ -1,7 +1,8 @@
-from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
-from ..models.mesa import Mesa
-from .local_service import obtener_locales
 from src.shell.utils import attach_related
+
+from ..models.mesa import Mesa
+from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
+from .local_service import obtener_locales
 
 
 def build_mesa_entity(payload: dict) -> Mesa:

@@ -1,12 +1,12 @@
-from ..models.usuario import Usuario
-from ..repositories.usuario_repository import (
-    actualizarUsuario, obtenerUsuarios)
-from .persona_service import (actualizar_persona,
-                                                          crear_persona,
-                                                          obtener_personas)
-from .rol_service import obtener_roles
 from src.shared.security.password_hasher import hash_password
 from src.shell.utils import attach_related
+
+from ..models.usuario import Usuario
+from ..repositories.usuario_repository import (actualizarUsuario,
+                                               obtenerUsuarios)
+from .persona_service import (actualizar_persona, crear_persona,
+                              obtener_personas)
+from .rol_service import obtener_roles
 
 
 def build_usuario_entity(payload: dict) -> Usuario:

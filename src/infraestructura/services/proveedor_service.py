@@ -1,11 +1,10 @@
-from ..repositories.proveedor_repository import actualizarProveedor, obtenerProveedor
-from ..models.proveedor import Proveedor
-from .persona_service import (
-    actualizar_persona,
-    crear_persona,
-    obtener_personas,
-)
 from src.shell.utils import attach_related
+
+from ..models.proveedor import Proveedor
+from ..repositories.proveedor_repository import (actualizarProveedor,
+                                                 obtenerProveedor)
+from .persona_service import (actualizar_persona, crear_persona,
+                              obtener_personas)
 
 
 def build_proveedor_entity(payload: dict) -> Proveedor:

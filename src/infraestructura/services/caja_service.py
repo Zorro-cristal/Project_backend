@@ -1,7 +1,8 @@
-from ..repositories.caja_repository import actualizarCaja, obtenerCaja
-from ..models.caja import Caja
-from .usuario_service import obtener_usuarios
 from src.shell.utils import attach_related
+
+from ..models.caja import Caja
+from ..repositories.caja_repository import actualizarCaja, obtenerCaja
+from .usuario_service import obtener_usuarios
 
 
 def build_caja_entity(payload: dict) -> Caja:

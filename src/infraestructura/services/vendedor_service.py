@@ -1,11 +1,10 @@
-from ..repositories.vendedor_repository import actualizarVendedor, obtenerVendedor
-from ..models.vendedor import Vendedor
-from .persona_service import (
-    actualizar_persona,
-    crear_persona,
-    obtener_personas,
-)
 from src.shell.utils import attach_related
+
+from ..models.vendedor import Vendedor
+from ..repositories.vendedor_repository import (actualizarVendedor,
+                                                obtenerVendedor)
+from .persona_service import (actualizar_persona, crear_persona,
+                              obtener_personas)
 
 
 def build_vendedor_entity(payload: dict) -> Vendedor:

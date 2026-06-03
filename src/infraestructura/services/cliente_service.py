@@ -1,11 +1,9 @@
-from ..repositories.cliente_repository import actualizarCliente, obtenerCliente
-from ..models.cliente import Cliente
-from .persona_service import (
-    actualizar_persona,
-    crear_persona,
-    obtener_personas,
-)
 from src.shell.utils import attach_related
+
+from ..models.cliente import Cliente
+from ..repositories.cliente_repository import actualizarCliente, obtenerCliente
+from .persona_service import (actualizar_persona, crear_persona,
+                              obtener_personas)
 
 
 def build_cliente_entity(payload: dict) -> Cliente:

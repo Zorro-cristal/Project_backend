@@ -1,9 +1,9 @@
+from src.shell.utils import attach_related
+
 from ..models.stock import Stock
-from ..repositories.stock_repository import (actualizarStock,
-                                                               obtenerStock)
+from ..repositories.stock_repository import actualizarStock, obtenerStock
 from .detalles_producto_service import obtener_detalles_productos
 from .local_service import obtener_locales
-from src.shell.utils import attach_related
 
 
 def build_stock_entity(payload: dict) -> Stock:

@@ -1,14 +1,13 @@
 from typing import Optional
 
+from src.shell.utils import attach_grouped, attach_related
+
 from ..models.compra import Compra
-from ..repositories.compra_repository import (
-    actualizarCompra, obtenerCompra)
-from ..repositories.detalle_compra_repository import \
-    obtenerDetalleCompra
+from ..repositories.compra_repository import actualizarCompra, obtenerCompra
+from ..repositories.detalle_compra_repository import obtenerDetalleCompra
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
 from .proveedor_service import obtener_proveedores
-from src.shell.utils import attach_related, attach_grouped
 
 
 def build_compra_entity(payload: dict) -> Compra:
