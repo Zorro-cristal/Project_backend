@@ -36,6 +36,7 @@ async def obtenerProductosApi(
     id_marcafk: Optional[int] = Query(None, description="Filtrar productos por ID de marca"),
     pesable: Optional[bool] = Query(None, description="Filtrar productos que son pesables"),
     perecedero: Optional[bool] = Query(None, description="Filtrar productos que son perecederos"),
+    include: Optional[str] = Query(None, description="include=detallesProducto para incluir detalles_producto"),
 ):
     filtros = {}
     if id is not None:
@@ -53,8 +54,16 @@ async def obtenerProductosApi(
     if perecedero is not None:
         filtros["perecedero"] = perecedero
 
-    result = await obtener_productos(filtros, '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)')
+    # Si el cliente pide include=detallesProducto intentamos incluir detalles_producto.
+    # Nota: Supabase select con relaciones solo funciona si el esquema y/o alias están disponibles.
+    if include == "detallesProducto":
+        columnas = '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
+    else:
+        columnas = '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)'
+
+    result = await obtener_productos(filtros, columnas)
     return {"message": result}
+
 
 
 @router.get("/{id}", summary="Obtener producto", description="Obtiene un producto por su ID.")
