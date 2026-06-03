@@ -8,6 +8,7 @@ from ..repositories.detalle_compra_repository import \
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
 from .proveedor_service import obtener_proveedores
+from src.shell.utils import attach_related, attach_grouped
 
 
 def build_compra_entity(payload: dict) -> Compra:
@@ -16,42 +17,12 @@ def build_compra_entity(payload: dict) -> Compra:
 
 
 async def attach_related_data(compras: list[dict]) -> list[dict]:
-    cliente_ids = {compra.get('id_clientefk') for compra in compras if compra.get('id_clientefk')}
-    local_ids = {compra.get('id_localfk') for compra in compras if compra.get('id_localfk')}
-    proveedor_ids = {compra.get('id_proveedorfk') for compra in compras if compra.get('id_proveedorfk')}
-    compra_ids = {compra.get('id') for compra in compras if compra.get('id')}
-
-    cliente_map = {}
-    if cliente_ids:
-        clientes = await obtener_clientes({'id': list(cliente_ids)})
-        cliente_map = {cliente['id']: cliente for cliente in (clientes or [])}
-
-    local_map = {}
-    if local_ids:
-        locales = await obtener_locales({'id': list(local_ids)})
-        local_map = {local['id']: local for local in (locales or [])}
-
-    proveedor_map = {}
-    if proveedor_ids:
-        proveedores = await obtener_proveedores({'id': list(proveedor_ids)})
-        proveedor_map = {proveedor['id']: proveedor for proveedor in (proveedores or [])}
-
-    detalle_map = {}
-    if compra_ids:
-        detalles = await obtenerDetalleCompra({'id_comprafk': list(compra_ids)})
-        for detalle in (detalles or []):
-            compra_id = detalle.get('id_comprafk')
-            if compra_id not in detalle_map:
-                detalle_map[compra_id] = []
-            detalle_map[compra_id].append(detalle)
-
-    for compra in compras:
-        compra_id = compra.get('id')
-        compra['cliente'] = cliente_map.get(compra.get('id_clientefk'))
-        compra['local'] = local_map.get(compra.get('id_localfk'))
-        compra['proveedor'] = proveedor_map.get(compra.get('id_proveedorfk'))
-        compra['detalles'] = detalle_map.get(compra_id, [])
-
+    # One-to-one attachments
+    compras = await attach_related(compras, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
+    compras = await attach_related(compras, 'id_localfk', obtener_locales, 'id', 'id', 'local')
+    compras = await attach_related(compras, 'id_proveedorfk', obtener_proveedores, 'id', 'id', 'proveedor')
+    # One-to-many: detalles por compra id
+    compras = await attach_grouped(compras, 'id', obtenerDetalleCompra, 'id_comprafk', 'id_comprafk', 'detalles')
     return compras
 
 

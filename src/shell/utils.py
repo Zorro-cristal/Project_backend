@@ -74,3 +74,91 @@ def normalizar_booleanos(
             elif payload[field] is None and on_insert:
                 payload[field] = 0
     return payload
+
+
+async def attach_related(
+    items: list[dict],
+    fk_field: str,
+    fetch_func,
+    fetch_filter_name: str = "id",
+    related_key_field: str = "id",
+    output_field: str | None = None,
+) -> list[dict]:
+    """Adjunta objetos relacionados a una colección de registros.
+
+    - `items`: lista de dicts que contienen la FK (ej. `id_usuariofk`).
+    - `fk_field`: campo en `items` que guarda la FK.
+    - `fetch_func`: coroutine que recibe un dict de filtros y devuelve lista de dicts relacionados.
+    - `fetch_filter_name`: nombre del campo de filtro que espera `fetch_func` (por ejemplo, 'id' o 'cedula').
+    - `related_key_field`: campo en los objetos relacionados que corresponde al valor de FK.
+    - `output_field`: nombre del campo a crear en cada item con el objeto relacionado. Si es None
+      se deriva eliminando prefijos `id_` y sufijos `fk` del `fk_field`.
+
+    Devuelve la lista `items` con los objetos relacionados insertados (no crea copias profundas).
+    """
+    if not items:
+        return items
+
+    ids = {item.get(fk_field) for item in items if item.get(fk_field)}
+    if not ids:
+        return items
+
+    filtros = {fetch_filter_name: list(ids)}
+    related = await fetch_func(filtros)
+
+    related_map = {rel.get(related_key_field): rel for rel in (related or [])}
+
+    if output_field is None:
+        name = fk_field
+        if isinstance(name, str):
+            name = name.removeprefix("id_").removesuffix("fk")
+        output_field = name
+
+    for item in items:
+        key = item.get(fk_field)
+        item[output_field] = related_map.get(key)
+
+    return items
+
+
+async def attach_grouped(
+    items: list[dict],
+    parent_id_field: str,
+    fetch_func,
+    fetch_filter_name: str,
+    child_parent_field: str,
+    output_field: str,
+) -> list[dict]:
+    """Adjunta listas de objetos relacionados (one-to-many) agrupadas por parent id.
+
+    - `items`: lista de dicts que tienen el `parent_id_field` (normalmente 'id').
+    - `parent_id_field`: campo en `items` que identifica al padre (ej. 'id').
+    - `fetch_func`: coroutine que recibe un dict de filtros y devuelve lista de hijos.
+    - `fetch_filter_name`: nombre del filtro que espera `fetch_func` (ej. 'id_comprafk').
+    - `child_parent_field`: campo en los hijos que referencia al padre (ej. 'id_comprafk').
+    - `output_field`: nombre del campo donde se pegará la lista de hijos en cada item.
+    """
+    if not items:
+        return items
+
+    parent_ids = {item.get(parent_id_field) for item in items if item.get(parent_id_field) is not None}
+    if not parent_ids:
+        for item in items:
+            item[output_field] = []
+        return items
+
+    filtros = {fetch_filter_name: list(parent_ids)}
+    children = await fetch_func(filtros)
+
+    grouped: dict = {}
+    for child in (children or []):
+        pid = child.get(child_parent_field)
+        if pid is None:
+            continue
+        grouped.setdefault(pid, []).append(child)
+
+    for item in items:
+        pid = item.get(parent_id_field)
+        item[output_field] = grouped.get(pid, [])
+
+    return items

@@ -8,6 +8,7 @@ from ..repositories.venta_repository import (actualizarVenta,
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
 from .usuario_service import obtener_usuarios
+from src.shell.utils import attach_related, attach_grouped
 
 
 def build_venta_entity(payload: dict) -> Venta:
@@ -16,42 +17,12 @@ def build_venta_entity(payload: dict) -> Venta:
 
 
 async def attach_related_data(ventas: list[dict]) -> list[dict]:
-    usuario_ids = {venta.get('id_usuariofk') for venta in ventas if venta.get('id_usuariofk')}
-    cliente_ids = {venta.get('id_clientefk') for venta in ventas if venta.get('id_clientefk')}
-    local_ids = {venta.get('id_localfk') for venta in ventas if venta.get('id_localfk')}
-    venta_ids = {venta.get('id') for venta in ventas if venta.get('id')}
-
-    usuario_map = {}
-    if usuario_ids:
-        usuarios = await obtener_usuarios({'id': list(usuario_ids)})
-        usuario_map = {usuario['id']: usuario for usuario in (usuarios or [])}
-
-    cliente_map = {}
-    if cliente_ids:
-        clientes = await obtener_clientes({'id': list(cliente_ids)})
-        cliente_map = {cliente['id']: cliente for cliente in (clientes or [])}
-
-    local_map = {}
-    if local_ids:
-        locales = await obtener_locales({'id': list(local_ids)})
-        local_map = {local['id']: local for local in (locales or [])}
-
-    detalle_map = {}
-    if venta_ids:
-        detalles = await obtenerDetalleVenta({'id_ventafk': list(venta_ids)})
-        for detalle in (detalles or []):
-            venta_id = detalle.get('id_ventafk')
-            if venta_id not in detalle_map:
-                detalle_map[venta_id] = []
-            detalle_map[venta_id].append(detalle)
-
-    for venta in ventas:
-        venta_id = venta.get('id')
-        venta['usuario'] = usuario_map.get(venta.get('id_usuariofk'))
-        venta['cliente'] = cliente_map.get(venta.get('id_clientefk'))
-        venta['local'] = local_map.get(venta.get('id_localfk'))
-        venta['detalles'] = detalle_map.get(venta_id, [])
-
+    # One-to-one
+    ventas = await attach_related(ventas, 'id_usuariofk', obtener_usuarios, 'id', 'id', 'usuario')
+    ventas = await attach_related(ventas, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
+    ventas = await attach_related(ventas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
+    # One-to-many detalles
+    ventas = await attach_grouped(ventas, 'id', obtenerDetalleVenta, 'id_ventafk', 'id_ventafk', 'detalles')
     return ventas
 
 

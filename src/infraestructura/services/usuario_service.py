@@ -6,6 +6,7 @@ from .persona_service import (actualizar_persona,
                                                           obtener_personas)
 from .rol_service import obtener_roles
 from src.shared.security.password_hasher import hash_password
+from src.shell.utils import attach_related
 
 
 def build_usuario_entity(payload: dict) -> Usuario:
@@ -41,43 +42,18 @@ def _hash_if_needed(payload: dict) -> dict:
 
 
 
-async def attach_persona_data(usuarios: list[dict]) -> list[dict]:
-    persona_ids = {usuario.get('id_personafk') for usuario in usuarios if usuario.get('id_personafk')}
-    if not persona_ids:
-        return usuarios
-
-    filtros = {'cedula': list(persona_ids)}
-    personas = await obtener_personas(filtros)
-
-    persona_map = {persona['cedula']: persona for persona in (personas or [])}
-    for usuario in usuarios:
-        persona_id = usuario.get('id_personafk')
-        usuario['persona'] = persona_map.get(persona_id)
-    return usuarios
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def attach_rol_data(usuarios: list[dict]) -> list[dict]:
-    rol_ids = {usuario.get('id_rolfk') for usuario in usuarios if usuario.get('id_rolfk')}
-    if not rol_ids:
-        return usuarios
-
-    filtros = {'id': list(rol_ids)}
-    roles = await obtener_roles(filtros=filtros)
-
-    rol_map = {rol['id']: rol for rol in (roles or []) if rol.get('id') is not None}
-    for usuario in usuarios:
-        rol_id = usuario.get('id_rolfk')
-        usuario['rol'] = rol_map.get(rol_id)
-    return usuarios
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
 async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
-
-    usuarios = await attach_persona_data(usuarios)
-    return await attach_rol_data(usuarios)
+    usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    return await attach_related(usuarios, 'id_rolfk', obtener_roles, 'id', 'id', 'rol')
 
 
 

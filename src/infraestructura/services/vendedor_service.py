@@ -5,6 +5,7 @@ from .persona_service import (
     crear_persona,
     obtener_personas,
 )
+from src.shell.utils import attach_related
 
 
 def build_vendedor_entity(payload: dict) -> Vendedor:
@@ -12,26 +13,14 @@ def build_vendedor_entity(payload: dict) -> Vendedor:
     return Vendedor(**valid_fields)
 
 
-async def attach_persona_data(vendedores: list[dict]) -> list[dict]:
-    persona_ids = {vendedor.get('id_personafk') for vendedor in vendedores if vendedor.get('id_personafk')}
-    if not persona_ids:
-        return vendedores
-
-    filtros = {'cedula': list(persona_ids)}
-    personas = await obtener_personas(filtros)
-
-    persona_map = {persona['cedula']: persona for persona in (personas or [])}
-    for vendedor in vendedores:
-        persona_id = vendedor.get('id_personafk')
-        vendedor['persona'] = persona_map.get(persona_id)
-    return vendedores
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
 async def obtener_vendedores(filtros: dict = None, columnas: str = '*'):
     vendedores = await obtenerVendedor(filtros=filtros, columnas=columnas)
     if not vendedores:
         return vendedores
-    return await attach_persona_data(vendedores)
+    return await attach_related(vendedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
 
 
 async def crear_vendedor(payload: dict):

@@ -5,6 +5,7 @@ from .persona_service import (
     crear_persona,
     obtener_personas,
 )
+from src.shell.utils import attach_related
 
 
 def build_proveedor_entity(payload: dict) -> Proveedor:
@@ -12,26 +13,14 @@ def build_proveedor_entity(payload: dict) -> Proveedor:
     return Proveedor(**valid_fields)
 
 
-async def attach_persona_data(proveedores: list[dict]) -> list[dict]:
-    persona_ids = {proveedor.get('id_personafk') for proveedor in proveedores if proveedor.get('id_personafk')}
-    if not persona_ids:
-        return proveedores
-
-    filtros = {'cedula': list(persona_ids)}
-    personas = await obtener_personas(filtros)
-
-    persona_map = {persona['cedula']: persona for persona in (personas or [])}
-    for proveedor in proveedores:
-        persona_id = proveedor.get('id_personafk')
-        proveedor['persona'] = persona_map.get(persona_id)
-    return proveedores
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
 async def obtener_proveedores(filtros: dict = None, columnas: str = '*'):
     proveedores = await obtenerProveedor(filtros=filtros, columnas=columnas)
     if not proveedores:
         return proveedores
-    return await attach_persona_data(proveedores)
+    return await attach_related(proveedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
 
 
 async def crear_proveedor(payload: dict):

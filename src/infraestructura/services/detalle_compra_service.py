@@ -1,6 +1,7 @@
 from ..repositories.detalle_compra_repository import actualizarDetalleCompra, obtenerDetalleCompra
 from ..models.detalle_compra import Detalle_compra
 from .producto_service import obtener_productos
+from src.shell.utils import attach_related
 
 
 def build_detalle_compra_entity(payload: dict) -> Detalle_compra:
@@ -9,16 +10,7 @@ def build_detalle_compra_entity(payload: dict) -> Detalle_compra:
 
 
 async def attach_related_data(detalles: list[dict]) -> list[dict]:
-    producto_ids = {detalle.get('id_productofk') for detalle in detalles if detalle.get('id_productofk')}
-
-    producto_map = {}
-    if producto_ids:
-        productos = await obtener_productos({'id': list(producto_ids)})
-        producto_map = {producto['id']: producto for producto in (productos or [])}
-
-    for detalle in detalles:
-        detalle['producto'] = producto_map.get(detalle.get('id_productofk'))
-    return detalles
+    return await attach_related(detalles, 'id_productofk', obtener_productos, 'id', 'id', 'producto')
 
 
 async def obtener_detalle_compras(filtros: dict = None, columnas: str = '*'):

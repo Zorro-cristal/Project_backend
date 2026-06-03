@@ -1,9 +1,9 @@
 from ..models.stock import Stock
 from ..repositories.stock_repository import (actualizarStock,
                                                                obtenerStock)
-from .detalles_producto_service import \
-    obtener_detalles_productos
+from .detalles_producto_service import obtener_detalles_productos
 from .local_service import obtener_locales
+from src.shell.utils import attach_related
 
 
 def build_stock_entity(payload: dict) -> Stock:
@@ -12,28 +12,27 @@ def build_stock_entity(payload: dict) -> Stock:
 
 
 async def attach_related_data(stocks: list[dict]) -> list[dict]:
-    local_ids = {stock.get('id_localfk') for stock in stocks if stock.get('id_localfk')}
+    # One-to-one: local
+    stocks = await attach_related(stocks, 'id_localfk', obtener_locales, 'id', 'id', 'local')
+
+    # One-to-one/flexible: detalles_producto puede referenciar por 'cod_barra' o por 'id'
     detalle_ids = {stock.get('id_detalleproductofk') for stock in stocks if stock.get('id_detalleproductofk')}
-
-    if local_ids:
-        filtros_local = {'id': list(local_ids)}
-        locales = await obtener_locales(filtros_local)
-        local_map = {local['id']: local for local in (locales or [])}
-    else:
-        local_map = {}
-
+    detalle_map = {}
     if detalle_ids:
+        # Primero intentar buscar por cod_barra
         filtros_detalle = {'cod_barra': list(detalle_ids)}
         detalles = await obtener_detalles_productos(filtros_detalle)
+        if not detalles:
+            # Fallback a buscar por id
+            filtros_detalle = {'id': list(detalle_ids)}
+            detalles = await obtener_detalles_productos(filtros_detalle)
+
         detalle_map = {detalle.get('cod_barra') or detalle.get('id'): detalle for detalle in (detalles or [])}
-    else:
-        detalle_map = {}
 
     for stock in stocks:
-        local_id = stock.get('id_localfk')
-        stock['local'] = local_map.get(local_id)
         detalle_id = stock.get('id_detalleproductofk')
         stock['detalles_producto'] = detalle_map.get(detalle_id)
+
     return stocks
 
 

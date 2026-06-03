@@ -22,6 +22,7 @@ from . import stock_api as stock
 from . import usuario_api as usuario
 from . import vendedor_api as vendedor
 from . import venta_api as venta
+from . import orden_api as orden
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 

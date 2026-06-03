@@ -1,6 +1,7 @@
 from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
 from ..models.mesa import Mesa
 from .local_service import obtener_locales
+from src.shell.utils import attach_related
 
 
 def build_mesa_entity(payload: dict) -> Mesa:
@@ -8,26 +9,14 @@ def build_mesa_entity(payload: dict) -> Mesa:
     return Mesa(**valid_fields)
 
 
-async def attach_local_data(mesas: list[dict]) -> list[dict]:
-    local_ids = {mesa.get('id_localfk') for mesa in mesas if mesa.get('id_localfk')}
-    if not local_ids:
-        return mesas
-
-    filtros = {'id': list(local_ids)}
-    locales = await obtener_locales(filtros)
-
-    local_map = {local['id']: local for local in (locales or [])}
-    for mesa in mesas:
-        local_id = mesa.get('id_localfk')
-        mesa['local'] = local_map.get(local_id)
-    return mesas
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
 async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
     mesas = await obtenerMesa(filtros=filtros, columnas=columnas)
     if not mesas:
         return mesas
-    return await attach_local_data(mesas)
+    return await attach_related(mesas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
 
 
 async def crear_mesa(payload: dict):

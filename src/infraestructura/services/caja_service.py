@@ -1,6 +1,7 @@
 from ..repositories.caja_repository import actualizarCaja, obtenerCaja
 from ..models.caja import Caja
 from .usuario_service import obtener_usuarios
+from src.shell.utils import attach_related
 
 
 def build_caja_entity(payload: dict) -> Caja:
@@ -8,26 +9,14 @@ def build_caja_entity(payload: dict) -> Caja:
     return Caja(**valid_fields)
 
 
-async def attach_usuario_data(cajas: list[dict]) -> list[dict]:
-    usuario_ids = {caja.get('id_usuariofk') for caja in cajas if caja.get('id_usuariofk')}
-    if not usuario_ids:
-        return cajas
-
-    filtros = {'id': list(usuario_ids)}
-    usuarios = await obtener_usuarios(filtros)
-
-    usuario_map = {usuario['id']: usuario for usuario in (usuarios or [])}
-    for caja in cajas:
-        usuario_id = caja.get('id_usuariofk')
-        caja['usuario'] = usuario_map.get(usuario_id)
-    return cajas
+# Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
 async def obtener_cajas(filtros: dict = None, columnas: str = '*'):
     cajas = await obtenerCaja(filtros=filtros, columnas=columnas)
     if not cajas:
         return cajas
-    return await attach_usuario_data(cajas)
+    return await attach_related(cajas, 'id_usuariofk', obtener_usuarios, 'id', 'id', 'usuario')
 
 
 async def crear_caja(payload: dict):
