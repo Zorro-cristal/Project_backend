@@ -2,15 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..services.caja_service import (
-    actualizar_caja,
-    crear_caja,
-    obtener_cajas,
-)
-from src.shell.adapters.requests.caja_request import (
-    CajaRequest,
-    CajaUpdateRequest,
-)
+from src.shell.adapters.requests.caja_request import (CajaRequest,
+                                                      CajaUpdateRequest)
+
+from ..services.caja_service import actualizar_caja, crear_caja, obtener_cajas
 
 router = APIRouter()
 

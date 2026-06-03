@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.proveedor_service import (
-    actualizar_proveedor,
-    crear_proveedor,
-    obtener_proveedores,
-)
 from src.shell.adapters.requests.proveedor_request import (
-    ProveedorRequest,
-    ProveedorUpdateRequest,
-)
+    ProveedorRequest, ProveedorUpdateRequest)
+
+from ..services.proveedor_service import (actualizar_proveedor,
+                                          crear_proveedor, obtener_proveedores)
 
 router = APIRouter()
 

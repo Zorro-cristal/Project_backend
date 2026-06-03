@@ -2,14 +2,14 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.producto_service import (
-    actualizar_producto, crear_producto, obtener_detallesProducto,
-    obtener_producto, obtener_productos)
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
 from src.shell.flujo.producto.consultarProducto import (
-    obtener_producto_con_detalles, obtener_productos_con_detalles,
-)
+    obtener_producto_con_detalles, obtener_productos_con_detalles)
+
+from ..services.producto_service import (actualizar_producto, crear_producto,
+                                         obtener_detallesProducto,
+                                         obtener_producto, obtener_productos)
 
 router = APIRouter()
 

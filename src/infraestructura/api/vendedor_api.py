@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.vendedor_service import (
-    actualizar_vendedor,
-    crear_vendedor,
-    obtener_vendedores,
-)
 from src.shell.adapters.requests.vendedor_request import (
-    VendedorRequest,
-    VendedorUpdateRequest,
-)
+    VendedorRequest, VendedorUpdateRequest)
+
+from ..services.vendedor_service import (actualizar_vendedor, crear_vendedor,
+                                         obtener_vendedores)
 
 router = APIRouter()
 

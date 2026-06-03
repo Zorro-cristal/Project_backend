@@ -2,13 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.stock_service import (
-    crear_stock,
-    actualizar_stock,
-    obtener_stocks,
-)
 from src.shell.adapters.requests.stock_request import (StockRequest,
                                                        StockUpdateRequest)
+
+from ..services.stock_service import (actualizar_stock, crear_stock,
+                                      obtener_stocks)
 
 router = APIRouter()
 

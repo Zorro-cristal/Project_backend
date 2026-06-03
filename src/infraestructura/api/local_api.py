@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.local_service import (
-    actualizar_local,
-    crear_local,
-    obtener_locales,
-)
-from src.shell.adapters.requests.local_request import (
-    LocalRequest,
-    LocalUpdateRequest,
-)
+from src.shell.adapters.requests.local_request import (LocalRequest,
+                                                       LocalUpdateRequest)
+
+from ..services.local_service import (actualizar_local, crear_local,
+                                      obtener_locales)
 
 router = APIRouter()
 

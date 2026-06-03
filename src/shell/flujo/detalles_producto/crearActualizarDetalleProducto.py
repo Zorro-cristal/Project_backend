@@ -1,8 +1,6 @@
 from src.infraestructura.services.detalles_producto_service import (
-    actualizar_detalles_producto,
-    crear_detalles_producto,
-    obtener_detalles_productos,
-)
+    actualizar_detalles_producto, crear_detalles_producto,
+    obtener_detalles_productos)
 
 
 async def crear_o_actualizar_detalle_producto(payload: dict):

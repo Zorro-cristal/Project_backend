@@ -2,15 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..services.mesa_service import (
-    actualizar_mesa,
-    crear_mesa,
-    obtener_mesas,
-)
-from src.shell.adapters.requests.mesa_request import (
-    MesaRequest,
-    MesaUpdateRequest,
-)
+from src.shell.adapters.requests.mesa_request import (MesaRequest,
+                                                      MesaUpdateRequest)
+
+from ..services.mesa_service import actualizar_mesa, crear_mesa, obtener_mesas
 
 router = APIRouter()
 

@@ -2,15 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.cliente_service import (
-    actualizar_cliente,
-    crear_cliente,
-    obtener_clientes,
-)
-from src.shell.adapters.requests.cliente_request import (
-    ClienteRequest,
-    ClienteUpdateRequest,
-)
+from src.shell.adapters.requests.cliente_request import (ClienteRequest,
+                                                         ClienteUpdateRequest)
+
+from ..services.cliente_service import (actualizar_cliente, crear_cliente,
+                                        obtener_clientes)
 
 router = APIRouter()
 

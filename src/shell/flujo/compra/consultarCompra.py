@@ -1,13 +1,13 @@
-from src.shell.utils import attach_grouped, attach_related
-
 from src.infraestructura.services.cliente_service import obtener_clientes
-from src.infraestructura.services.compra_service import (
-    obtener_compras as obtener_compras_service,
-    obtener_compra_solo as obtener_compra_solo_service,
-)
-from src.infraestructura.services.detalle_compra_service import obtener_detalle_compras
+from src.infraestructura.services.compra_service import \
+    obtener_compra_solo as obtener_compra_solo_service
+from src.infraestructura.services.compra_service import \
+    obtener_compras as obtener_compras_service
+from src.infraestructura.services.detalle_compra_service import \
+    obtener_detalle_compras
 from src.infraestructura.services.local_service import obtener_locales
 from src.infraestructura.services.proveedor_service import obtener_proveedores
+from src.shell.utils import attach_grouped, attach_related
 
 
 async def obtener_compras(filtros: dict = None):

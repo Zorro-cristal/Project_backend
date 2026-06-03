@@ -1,8 +1,7 @@
-from src.infraestructura.repositories.precio_repository import crearDetallePrecio
-from src.infraestructura.services.precio_service import (
-    actualizar_precio,
-    crear_precio,
-)
+from src.infraestructura.repositories.precio_repository import \
+    crearDetallePrecio
+from src.infraestructura.services.precio_service import (actualizar_precio,
+                                                         crear_precio)
 
 
 async def crear_o_actualizar_precio(payload: dict):

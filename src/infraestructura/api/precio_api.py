@@ -2,13 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.precio_service import (
-    actualizar_precio,
-    crear_precio,
-    obtener_precios,
-)
 from src.shell.adapters.requests.precio_request import (PrecioRequest,
                                                         PrecioUpdateRequest)
+
+from ..services.precio_service import (actualizar_precio, crear_precio,
+                                       obtener_precios)
 
 router = APIRouter()
 

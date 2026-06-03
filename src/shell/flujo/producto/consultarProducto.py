@@ -1,11 +1,10 @@
 from typing import Any
 
-from src.infraestructura.repositories.detalle_precio_repository import obtenerDetallePrecio
+from src.infraestructura.repositories.detalle_precio_repository import \
+    obtenerDetallePrecio
 from src.infraestructura.services.precio_service import obtener_precios
-from src.infraestructura.services.producto_service import (
-    obtener_producto,
-    obtener_productos,
-)
+from src.infraestructura.services.producto_service import (obtener_producto,
+                                                           obtener_productos)
 
 
 def _extraer_producto_unico(producto: Any) -> Any:

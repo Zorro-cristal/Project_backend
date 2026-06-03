@@ -1,9 +1,8 @@
 from src.infraestructura.services.stock_service import (actualizar_stock,
                                                         crear_stock)
+from src.shell.flujo.detalles_producto.crearActualizarDetalleProducto import \
+    crear_o_actualizar_detalle_producto
 from src.shell.flujo.local.crearActualizarLocal import crear_o_actualizar_local
-from src.shell.flujo.detalles_producto.crearActualizarDetalleProducto import (
-    crear_o_actualizar_detalle_producto,
-)
 
 
 async def crear_o_actualizar_stock(payload: dict):

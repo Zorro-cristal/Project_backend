@@ -2,16 +2,14 @@ from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Query
 
-from ..services.venta_service import (
-    crear_venta,
-    actualizar_venta,
-    obtener_detalle_venta_por_venta_id,
-    obtener_venta_por_id_con_detalles,
-    obtener_venta_por_id_sin_detalles,
-    obtener_ventas,
-)
 from src.shell.adapters.requests.venta_request import (VentaRequest,
                                                        VentaUpdateRequest)
+
+from ..services.venta_service import (actualizar_venta, crear_venta,
+                                      obtener_detalle_venta_por_venta_id,
+                                      obtener_venta_por_id_con_detalles,
+                                      obtener_venta_por_id_sin_detalles,
+                                      obtener_ventas)
 
 router = APIRouter()
 

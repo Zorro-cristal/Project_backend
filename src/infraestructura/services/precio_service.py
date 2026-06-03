@@ -1,6 +1,6 @@
 from ..models.precio import Precio
-from ..repositories.precio_repository import (
-    actualizarPrecio, crearPrecio, obtenerPrecio)
+from ..repositories.precio_repository import (actualizarPrecio, crearPrecio,
+                                              obtenerPrecio)
 
 
 def build_precio_entity(payload: dict) -> Precio:

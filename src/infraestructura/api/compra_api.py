@@ -2,15 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.compra_service import (
-    crear_compra,
-    actualizar_compra,
-    obtener_compra_solo,
-    obtener_compras,
-)
 from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
+
+from ..services.compra_service import (actualizar_compra, crear_compra,
+                                       obtener_compra_solo, obtener_compras)
 
 router = APIRouter()
 

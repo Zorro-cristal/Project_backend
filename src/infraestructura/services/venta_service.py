@@ -1,6 +1,7 @@
 from typing import Optional
 
-from src.shell.utils import attach_grouped, attach_related, validar_fk_existente
+from src.shell.utils import (attach_grouped, attach_related,
+                             validar_fk_existente)
 
 from ..models.venta import Venta
 from ..repositories.detalle_venta_repository import obtenerDetalleVenta

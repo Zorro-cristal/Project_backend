@@ -2,15 +2,12 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.detalle_venta_service import (
-    actualizar_detalle_venta,
-    crear_detalle_venta,
-    obtener_detalle_ventas,
-)
 from src.shell.adapters.requests.detalle_venta_request import (
-    DetalleVentaRequest,
-    DetalleVentaUpdateRequest,
-)
+    DetalleVentaRequest, DetalleVentaUpdateRequest)
+
+from ..services.detalle_venta_service import (actualizar_detalle_venta,
+                                              crear_detalle_venta,
+                                              obtener_detalle_ventas)
 
 router = APIRouter()
 

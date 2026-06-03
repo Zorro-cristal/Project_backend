@@ -3,17 +3,13 @@ from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from ..models.usuario import Usuario
+from src.shell.adapters.requests.usuario_request import (UsuarioRequest,
+                                                         UsuarioUpdateRequest)
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
-from ..services.usuario_service import (
-    crear_usuario,
-    actualizar_usuario,
-    obtener_usuarios,
-)
-from src.shell.adapters.requests.usuario_request import (
-    UsuarioRequest,
-    UsuarioUpdateRequest,
-)
+
+from ..models.usuario import Usuario
+from ..services.usuario_service import (actualizar_usuario, crear_usuario,
+                                        obtener_usuarios)
 
 router = APIRouter()
 
