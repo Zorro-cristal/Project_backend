@@ -1,5 +1,5 @@
-from src.infraestructura.repositories.local_repository import actualizarLocal, obtenerLocal
-from src.infraestructura.models.local import Local
+from ..repositories.local_repository import actualizarLocal, obtenerLocal
+from ..models.local import Local
 
 
 def build_local_entity(payload: dict) -> Local:

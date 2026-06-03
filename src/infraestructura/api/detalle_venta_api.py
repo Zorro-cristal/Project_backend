@@ -6,7 +6,7 @@ from src.shell.flujo.detalle_venta.crearActualizarDetalleVenta import (
     actualizar_detalle_venta_por_id,
     crear_o_actualizar_detalle_venta,
 )
-from src.infraestructura.services.detalle_venta_service import obtener_detalle_ventas
+from ..services.detalle_venta_service import obtener_detalle_ventas
 from src.shell.adapters.requests.detalle_venta_request import (
     DetalleVentaRequest,
     DetalleVentaUpdateRequest,

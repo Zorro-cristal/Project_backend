@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.infraestructura.models.usuario import Usuario
+from .usuario import Usuario
 
 
 @dataclass(frozen=True)

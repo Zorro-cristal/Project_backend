@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.proveedor_repository import actualizarProveedor, obtenerProveedor
-from src.infraestructura.models.proveedor import Proveedor
-from src.infraestructura.services.persona_service import (
+from ..repositories.proveedor_repository import actualizarProveedor, obtenerProveedor
+from ..models.proveedor import Proveedor
+from .persona_service import (
     actualizar_persona,
     crear_persona,
     obtener_personas,

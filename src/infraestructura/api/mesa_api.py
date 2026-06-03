@@ -6,7 +6,7 @@ from src.shell.flujo.mesa.crearActualizarMesa import (
     actualizar_mesa_por_id,
     crear_o_actualizar_mesa,
 )
-from src.infraestructura.services.mesa_service import obtener_mesas
+from ..services.mesa_service import obtener_mesas
 from src.shell.adapters.requests.mesa_request import (
     MesaRequest,
     MesaUpdateRequest,

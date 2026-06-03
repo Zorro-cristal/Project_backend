@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.rol_service import (
+from ..services.rol_service import (
     actualizar_rol,
     crear_rol,
     obtener_roles,

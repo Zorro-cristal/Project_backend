@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.compra_service import (
+from ..services.compra_service import (
     obtener_compra_con_detalles, obtener_compra_solo, obtener_compras)
 from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)

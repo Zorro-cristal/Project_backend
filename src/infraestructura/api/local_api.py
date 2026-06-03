@@ -6,7 +6,7 @@ from src.shell.flujo.local.crearActualizarLocal import (
     actualizar_local_por_id,
     crear_o_actualizar_local,
 )
-from src.infraestructura.services.local_service import obtener_locales
+from ..services.local_service import obtener_locales
 from src.shell.adapters.requests.local_request import (
     LocalRequest,
     LocalUpdateRequest,

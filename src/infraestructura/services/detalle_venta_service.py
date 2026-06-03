@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.detalle_venta_repository import actualizarDetalleVenta, obtenerDetalleVenta
-from src.infraestructura.models.detalle_venta import Detalle_venta
-from src.infraestructura.services.producto_service import obtener_productos
+from ..repositories.detalle_venta_repository import actualizarDetalleVenta, obtenerDetalleVenta
+from ..models.detalle_venta import Detalle_venta
+from .producto_service import obtener_productos
 
 
 def build_detalle_venta_entity(payload: dict) -> Detalle_venta:

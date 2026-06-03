@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.venta_service import (
+from ..services.venta_service import (
     obtener_detalle_venta_por_venta_id, obtener_venta_por_id_con_detalles,
     obtener_venta_por_id_sin_detalles)
 from src.shell.adapters.requests.venta_request import (VentaRequest,

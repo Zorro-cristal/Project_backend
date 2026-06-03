@@ -1,5 +1,5 @@
-from src.infraestructura.repositories.persona_repository import actualizarPersona, obtenerPersona
-from src.infraestructura.models.persona import Persona
+from ..repositories.persona_repository import actualizarPersona, obtenerPersona
+from ..models.persona import Persona
 
 
 def build_persona_entity(payload: dict) -> Persona:

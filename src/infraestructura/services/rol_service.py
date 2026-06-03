@@ -1,5 +1,5 @@
-from src.infraestructura.repositories.rol_repository import actualizarRol, obtenerRol
-from src.infraestructura.models.rol import Rol
+from ..repositories.rol_repository import actualizarRol, obtenerRol
+from ..models.rol import Rol
 
 
 def build_rol_entity(payload: dict) -> Rol:

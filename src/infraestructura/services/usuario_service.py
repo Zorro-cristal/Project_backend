@@ -1,10 +1,10 @@
-from src.infraestructura.models.usuario import Usuario
-from src.infraestructura.repositories.usuario_repository import (
+from ..models.usuario import Usuario
+from ..repositories.usuario_repository import (
     actualizarUsuario, obtenerUsuarios)
-from src.infraestructura.services.persona_service import (actualizar_persona,
+from .persona_service import (actualizar_persona,
                                                           crear_persona,
                                                           obtener_personas)
-from src.infraestructura.services.rol_service import obtener_roles
+from .rol_service import obtener_roles
 from src.shared.security.password_hasher import hash_password
 
 

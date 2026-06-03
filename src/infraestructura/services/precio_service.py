@@ -1,5 +1,5 @@
-from src.infraestructura.models.precio import Precio
-from src.infraestructura.repositories.precio_repository import (
+from ..models.precio import Precio
+from ..repositories.precio_repository import (
     actualizarPrecio, crearDetallePrecio, crearPrecio, obtenerPrecio)
 
 

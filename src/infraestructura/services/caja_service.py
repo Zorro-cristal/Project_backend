@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.caja_repository import actualizarCaja, obtenerCaja
-from src.infraestructura.models.caja import Caja
-from src.infraestructura.services.usuario_service import obtener_usuarios
+from ..repositories.caja_repository import actualizarCaja, obtenerCaja
+from ..models.caja import Caja
+from .usuario_service import obtener_usuarios
 
 
 def build_caja_entity(payload: dict) -> Caja:

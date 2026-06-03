@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.mesa import Mesa
+from .mesa import Mesa
 
 @dataclass(frozen=True)
 class Orden:

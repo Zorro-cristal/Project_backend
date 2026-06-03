@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from src.infraestructura.models.detalle_venta import Detalle_venta
+from ..models.detalle_venta import Detalle_venta
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 

@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.cliente_repository import actualizarCliente, obtenerCliente
-from src.infraestructura.models.cliente import Cliente
-from src.infraestructura.services.persona_service import (
+from ..repositories.cliente_repository import actualizarCliente, obtenerCliente
+from ..models.cliente import Cliente
+from .persona_service import (
     actualizar_persona,
     crear_persona,
     obtener_personas,

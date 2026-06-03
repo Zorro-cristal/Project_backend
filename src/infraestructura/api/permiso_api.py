@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.permiso_service import (
+from ..services.permiso_service import (
     actualizar_permiso,
     crear_permiso,
     obtener_permisos,

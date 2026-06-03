@@ -6,7 +6,7 @@ from src.shell.flujo.cliente.crearActualizarCliente import (
     actualizar_cliente_por_id,
     crear_o_actualizar_cliente,
 )
-from src.infraestructura.services.cliente_service import obtener_clientes
+from ..services.cliente_service import obtener_clientes
 from src.shell.adapters.requests.cliente_request import (
     ClienteRequest,
     ClienteUpdateRequest,

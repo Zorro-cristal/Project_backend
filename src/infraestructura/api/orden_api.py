@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.orden_service import (
+from ..services.orden_service import (
     actualizar_orden_por_id, crear_orden, obtener_ordenes)
 from src.shell.adapters.requests.orden_request import (OrdenRequest,
                                                        OrdenUpdateRequest)

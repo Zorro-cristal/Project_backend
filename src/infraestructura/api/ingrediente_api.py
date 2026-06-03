@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.ingrediente_service import (
+from ..services.ingrediente_service import (
     actualizar_ingrediente, crear_ingrediente, obtener_ingredientes)
 from src.shell.adapters.requests.ingrediente_request import (
     IngredienteRequest, IngredienteUpdateRequest)

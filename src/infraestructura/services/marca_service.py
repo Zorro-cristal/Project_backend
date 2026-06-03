@@ -1,6 +1,6 @@
 
-from src.infraestructura.repositories.marca_repository import actualizarMarca, obtenerMarca
-from src.infraestructura.models.marca import Marca
+from ..repositories.marca_repository import actualizarMarca, obtenerMarca
+from ..models.marca import Marca
 
 def build_marca_entity(payload: dict) -> Marca:
     valid_fields = {key: value for key, value in payload.items() if key in Marca.__annotations__}

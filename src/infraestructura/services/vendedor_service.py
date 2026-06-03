@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.vendedor_repository import actualizarVendedor, obtenerVendedor
-from src.infraestructura.models.vendedor import Vendedor
-from src.infraestructura.services.persona_service import (
+from ..repositories.vendedor_repository import actualizarVendedor, obtenerVendedor
+from ..models.vendedor import Vendedor
+from .persona_service import (
     actualizar_persona,
     crear_persona,
     obtener_personas,

@@ -6,7 +6,7 @@ from src.shell.flujo.vendedor.crearActualizarVendedor import (
     actualizar_vendedor_por_id,
     crear_o_actualizar_vendedor,
 )
-from src.infraestructura.services.vendedor_service import obtener_vendedores
+from ..services.vendedor_service import obtener_vendedores
 from src.shell.adapters.requests.vendedor_request import (
     VendedorRequest,
     VendedorUpdateRequest,

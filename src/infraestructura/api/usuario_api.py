@@ -3,13 +3,13 @@ from typing import Optional
 from fastapi import APIRouter
 from pydantic import BaseModel
 
-from src.infraestructura.models.usuario import Usuario
+from ..models.usuario import Usuario
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
 from src.shell.flujo.usuario.gestion import (
     actualizar_usuario_por_id,
     crear_o_actualizar_usuario,
 )
-from src.infraestructura.services.usuario_service import obtener_usuarios
+from ..services.usuario_service import obtener_usuarios
 from src.shell.adapters.requests.usuario_request import (
     UsuarioRequest,
     UsuarioUpdateRequest,

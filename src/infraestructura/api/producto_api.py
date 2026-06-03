@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.producto_service import (
+from ..services.producto_service import (
     actualizar_producto, crear_producto, obtener_detallesProducto,
     obtener_producto, obtener_productos)
 from src.shell.adapters.requests.producto_request import (

@@ -1,7 +1,7 @@
 from typing import Optional, Union
 
 from src.shell.flujo.producto.actualizar_producto import actualizarDetallesDesdeProducto
-from src.infraestructura.models.producto import Producto
+from ..models.producto import Producto
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import normalizar_booleanos, prepararPayloadDb
 

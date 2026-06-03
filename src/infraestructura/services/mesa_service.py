@@ -1,6 +1,6 @@
-from src.infraestructura.repositories.mesa_repository import actualizarMesa, obtenerMesa
-from src.infraestructura.models.mesa import Mesa
-from src.infraestructura.services.local_service import obtener_locales
+from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
+from ..models.mesa import Mesa
+from .local_service import obtener_locales
 
 
 def build_mesa_entity(payload: dict) -> Mesa:

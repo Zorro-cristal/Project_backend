@@ -1,6 +1,6 @@
 
-from src.infraestructura.repositories.categoria_repository import actualizarCategoria, obtenerCategoria
-from src.infraestructura.models.categoria import Categoria
+from ..repositories.categoria_repository import actualizarCategoria, obtenerCategoria
+from ..models.categoria import Categoria
 
 
 def build_categoria_entity(payload: dict) -> Categoria:

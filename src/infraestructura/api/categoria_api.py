@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.categoria_service import (actualizar_categoria,
+from ..services.categoria_service import (actualizar_categoria,
                                                   crear_categoria,
                                                   obtener_categorias)
 from src.shell.adapters.requests.categoria_request import (

@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.stock_service import obtener_stocks
+from ..services.stock_service import obtener_stocks
 from src.shell.adapters.requests.stock_request import (StockRequest,
                                                        StockUpdateRequest)
 from src.shell.flujo.stock.crearActualizarStock import (

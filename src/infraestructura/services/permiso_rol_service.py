@@ -1,10 +1,10 @@
-from src.infraestructura.repositories.permiso_rol_repository import (
+from ..repositories.permiso_rol_repository import (
     actualizarPermisoRol,
     obtenerPermisoRol,
     obtenerPermisosPorRol,
     obtenerRolesPorPermiso,
 )
-from src.infraestructura.models.permiso_rol import PermisoRol
+from ..models.permiso_rol import PermisoRol
 
 
 def build_permiso_rol_entity(payload: dict) -> PermisoRol:

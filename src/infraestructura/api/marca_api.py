@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.marca_service import (actualizar_marca, crear_marca,
+from ..services.marca_service import (actualizar_marca, crear_marca,
                                               obtener_marcas)
 from src.shell.adapters.requests.marca_request import (MarcaRequest,
                                                          MarcaUpdateRequest)

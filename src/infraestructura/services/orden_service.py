@@ -1,9 +1,9 @@
 from typing import Optional
 
-from src.infraestructura.models.orden import Orden
-from src.infraestructura.repositories.orden_repository import (actualizarOrden,
+from ..models.orden import Orden
+from ..repositories.orden_repository import (actualizarOrden,
                                                                obtenerOrdenes)
-from src.infraestructura.services.mesa_service import obtener_mesas
+from .mesa_service import obtener_mesas
 
 
 def build_orden_entity(payload: dict) -> Orden:

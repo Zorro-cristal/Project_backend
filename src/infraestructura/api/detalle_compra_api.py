@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.detalle_compra_service import \
+from ..services.detalle_compra_service import \
     obtener_detalle_compras
 from src.shell.adapters.requests.detalle_compra_request import (
     DetalleCompraRequest, DetalleCompraUpdateRequest)

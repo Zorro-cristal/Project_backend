@@ -3,7 +3,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.infraestructura.models.persona import Persona
+from .persona import Persona
 
 
 @dataclass(frozen=True)

@@ -2,7 +2,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.infraestructura.services.persona_service import obtener_personas
+from ..services.persona_service import obtener_personas
 
 router = APIRouter()
 

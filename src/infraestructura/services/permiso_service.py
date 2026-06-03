@@ -1,5 +1,5 @@
-from src.infraestructura.repositories.permiso_repository import actualizarPermiso, obtenerPermiso
-from src.infraestructura.models.permiso import Permiso
+from ..repositories.permiso_repository import actualizarPermiso, obtenerPermiso
+from ..models.permiso import Permiso
 
 
 def build_permiso_entity(payload: dict) -> Permiso:

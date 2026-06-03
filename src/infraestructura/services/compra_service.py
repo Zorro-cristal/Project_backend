@@ -1,13 +1,13 @@
 from typing import Optional
 
-from src.infraestructura.models.compra import Compra
-from src.infraestructura.repositories.compra_repository import (
+from ..models.compra import Compra
+from ..repositories.compra_repository import (
     actualizarCompra, obtenerCompra)
-from src.infraestructura.repositories.detalle_compra_repository import \
+from ..repositories.detalle_compra_repository import \
     obtenerDetalleCompra
-from src.infraestructura.services.cliente_service import obtener_clientes
-from src.infraestructura.services.local_service import obtener_locales
-from src.infraestructura.services.proveedor_service import obtener_proveedores
+from .cliente_service import obtener_clientes
+from .local_service import obtener_locales
+from .proveedor_service import obtener_proveedores
 
 
 def build_compra_entity(payload: dict) -> Compra:

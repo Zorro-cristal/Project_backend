@@ -6,7 +6,7 @@ from src.shell.flujo.caja.crearActualizarCaja import (
     actualizar_caja_por_id,
     crear_o_actualizar_caja,
 )
-from src.infraestructura.services.caja_service import obtener_cajas
+from ..services.caja_service import obtener_cajas
 from src.shell.adapters.requests.caja_request import (
     CajaRequest,
     CajaUpdateRequest,

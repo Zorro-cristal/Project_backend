@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from src.infraestructura.models.cliente import Cliente
-from src.infraestructura.models.local import Local
-from src.infraestructura.models.usuario import Usuario
+from .cliente import Cliente
+from .local import Local
+from .usuario import Usuario
 
 
 @dataclass(frozen=True)

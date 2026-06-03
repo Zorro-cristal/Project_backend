@@ -1,10 +1,10 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.categoria import Categoria
-from src.infraestructura.models.detalles_producto import detalles_producto
-from src.infraestructura.models.ingrediente import Ingrediente
-from src.infraestructura.models.marca import Marca
+from .categoria import Categoria
+from .detalles_producto import detalles_producto
+from .ingrediente import Ingrediente
+from .marca import Marca
 
 
 @dataclass(frozen=True)

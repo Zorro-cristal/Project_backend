@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.persona import Persona
-from src.infraestructura.models.rol import Rol
+from .persona import Persona
+from .rol import Rol
 
 
 @dataclass(frozen=True)

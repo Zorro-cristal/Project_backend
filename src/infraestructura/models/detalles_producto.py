@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.precio import Precio
+from .precio import Precio
 
 
 @dataclass(frozen=True)

@@ -1,28 +1,27 @@
 from fastapi import APIRouter
 
-from src.infraestructura.api import caja_api as caja
-from src.infraestructura.api import categoria_api as categoria
-from src.infraestructura.api import cliente_api as cliente
-from src.infraestructura.api import compra_api as compra
-from src.infraestructura.api import detalle_compra_api as detalle_compra
-from src.infraestructura.api import detalle_venta_api as detalle_venta
-from src.infraestructura.api import detalles_producto_api as detalles_producto
-from src.infraestructura.api import ingrediente_api as ingrediente
-from src.infraestructura.api import local_api as local
-from src.infraestructura.api import marca_api as marca
-from src.infraestructura.api import mesa_api as mesa
-from src.infraestructura.api import orden_api as orden
-from src.infraestructura.api import permiso_api as permiso
-from src.infraestructura.api import permiso_rol_api as permiso_rol
-from src.infraestructura.api import persona_api as persona
-from src.infraestructura.api import precio_api as precio
-from src.infraestructura.api import producto_api as producto
-from src.infraestructura.api import proveedor_api as proveedor
-from src.infraestructura.api import rol_api as rol
-from src.infraestructura.api import stock_api as stock
-from src.infraestructura.api import usuario_api as usuario
-from src.infraestructura.api import vendedor_api as vendedor
-from src.infraestructura.api import venta_api as venta
+from . import caja_api as caja
+from . import categoria_api as categoria
+from . import cliente_api as cliente
+from . import compra_api as compra
+from . import detalle_compra_api as detalle_compra
+from . import detalle_venta_api as detalle_venta
+from . import detalles_producto_api as detalles_producto
+from . import ingrediente_api as ingrediente
+from . import local_api as local
+from . import marca_api as marca
+from . import mesa_api as mesa
+from . import permiso_api as permiso
+from . import permiso_rol_api as permiso_rol
+from . import persona_api as persona
+from . import precio_api as precio
+from . import producto_api as producto
+from . import proveedor_api as proveedor
+from . import rol_api as rol
+from . import stock_api as stock
+from . import usuario_api as usuario
+from . import vendedor_api as vendedor
+from . import venta_api as venta
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
@@ -61,7 +60,6 @@ router.include_router(stock.router, prefix="/stock", tags=["Stock"])
 router.include_router(caja.router, prefix="/caja", tags=["Caja"])
 router.include_router(venta.router, prefix="/venta", tags=["Venta"])
 router.include_router(detalle_venta.router, prefix="/detalle_venta", tags=["Detalle Venta"])
-from src.infraestructura.api import orden_api as orden
 
 router.include_router(compra.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra.router, prefix="/detalle_compra", tags=["Detalle Compra"])

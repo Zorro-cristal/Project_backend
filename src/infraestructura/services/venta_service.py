@@ -1,13 +1,13 @@
 from typing import Optional
 
-from src.infraestructura.models.venta import Venta
-from src.infraestructura.repositories.detalle_venta_repository import \
+from ..models.venta import Venta
+from ..repositories.detalle_venta_repository import \
     obtenerDetalleVenta
-from src.infraestructura.repositories.venta_repository import (actualizarVenta,
+from ..repositories.venta_repository import (actualizarVenta,
                                                                obtenerVenta)
-from src.infraestructura.services.cliente_service import obtener_clientes
-from src.infraestructura.services.local_service import obtener_locales
-from src.infraestructura.services.usuario_service import obtener_usuarios
+from .cliente_service import obtener_clientes
+from .local_service import obtener_locales
+from .usuario_service import obtener_usuarios
 
 
 def build_venta_entity(payload: dict) -> Venta:

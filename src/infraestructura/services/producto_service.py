@@ -1,5 +1,5 @@
-from src.infraestructura.models.producto import Producto
-from src.infraestructura.repositories.producto_repository import (
+from ..models.producto import Producto
+from ..repositories.producto_repository import (
     actualizarProducto, obtenerDetallesProducto, obtenerProducto,
     obtenerProductoConDetallesProducto)
 

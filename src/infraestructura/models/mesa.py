@@ -2,7 +2,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.local import Local
+from .local import Local
 
 
 @dataclass(frozen=True)

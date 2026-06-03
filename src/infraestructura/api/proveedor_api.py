@@ -6,7 +6,7 @@ from src.shell.flujo.proveedor.crearActualizarProveedor import (
     actualizar_proveedor_por_id,
     crear_o_actualizar_proveedor,
 )
-from src.infraestructura.services.proveedor_service import obtener_proveedores
+from ..services.proveedor_service import obtener_proveedores
 from src.shell.adapters.requests.proveedor_request import (
     ProveedorRequest,
     ProveedorUpdateRequest,

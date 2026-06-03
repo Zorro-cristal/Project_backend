@@ -1,4 +1,4 @@
-from src.infraestructura.models.clima import PronosticoClimatico
+from ..models.clima import PronosticoClimatico
 
 def pronosticoToArray(valores):
     result= []

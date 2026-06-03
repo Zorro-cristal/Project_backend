@@ -1,6 +1,6 @@
 from typing import Optional, Union
 
-from src.infraestructura.models.rol import Rol
+from ..models.rol import Rol
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 

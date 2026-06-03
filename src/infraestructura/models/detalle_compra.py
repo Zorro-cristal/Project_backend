@@ -1,8 +1,8 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from src.infraestructura.models.producto import Producto
-from src.infraestructura.models.compra import Compra
+from .producto import Producto
+from .compra import Compra
 
 
 @dataclass(frozen=True)

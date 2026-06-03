@@ -1,9 +1,9 @@
-from src.infraestructura.models.stock import Stock
-from src.infraestructura.repositories.stock_repository import (actualizarStock,
+from ..models.stock import Stock
+from ..repositories.stock_repository import (actualizarStock,
                                                                obtenerStock)
-from src.infraestructura.services.detalles_producto_service import \
+from .detalles_producto_service import \
     obtener_detalles_productos
-from src.infraestructura.services.local_service import obtener_locales
+from .local_service import obtener_locales
 
 
 def build_stock_entity(payload: dict) -> Stock:

@@ -1,5 +1,5 @@
-from src.infraestructura.models.ingrediente import Ingrediente
-from src.infraestructura.repositories.ingrediente_repository import (
+from ..models.ingrediente import Ingrediente
+from ..repositories.ingrediente_repository import (
     actualizarIngrediente, obtenerIngrediente)
 
 
