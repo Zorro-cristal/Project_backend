@@ -351,10 +351,10 @@ CREATE TABLE detalle_compra (
     cantidad          INTEGER NOT NULL,
     precio            NUMERIC NOT NULL,
     id_comprafk       INTEGER NOT NULL,
-    id_productofk     INTEGER NOT NULL,
+    id_ordenfk     INTEGER NOT NULL,
     fecha_creado      TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_detcompra_compra   FOREIGN KEY (id_comprafk)   REFERENCES compras (id_compra),
-    CONSTRAINT fk_detcompra_producto FOREIGN KEY (id_productofk) REFERENCES productos (id)
+    CONSTRAINT fk_detcompra_orden FOREIGN KEY (id_ordenfk) REFERENCES ordenes (id)
 );
 
 -- ----------------------------
@@ -367,6 +367,7 @@ CREATE TABLE ordenes (
     cantidad              INTEGER NOT NULL DEFAULT 1,
     observacion           VARCHAR(255),
     id_mesafk             INTEGER,
+    id_usuariofk          INTEGER,
     id_detalleproductofk  VARCHAR(15),
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ordenes_mesa FOREIGN KEY (id_mesafk) REFERENCES mesas (id),

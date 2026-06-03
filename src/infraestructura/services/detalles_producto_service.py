@@ -21,13 +21,6 @@ async def crear_detalles_producto(payload: dict):
     if getattr(detalles_producto, 'id_productofk', None) is None:
         raise ValueError('id_productofk es requerido')
 
-    # Si se proporciona cod_barra, verificar existencia y actualizar en lugar de crear
-    cod = detalles_producto.cod_barra
-    if cod:
-        existentes = await obtenerDetalleProducto({'cod_barra': cod})
-        if existentes and len(existentes) > 0:
-            return await actualizarDetalleProducto(payload, cod)
-
     return await actualizarDetalleProducto(detalles_producto)
 
 

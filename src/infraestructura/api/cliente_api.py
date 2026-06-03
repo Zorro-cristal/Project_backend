@@ -2,11 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.cliente.crearActualizarCliente import (
-    actualizar_cliente_por_id,
-    crear_o_actualizar_cliente,
+from ..services.cliente_service import (
+    actualizar_cliente,
+    crear_cliente,
+    obtener_clientes,
 )
-from ..services.cliente_service import obtener_clientes
 from src.shell.adapters.requests.cliente_request import (
     ClienteRequest,
     ClienteUpdateRequest,
@@ -17,7 +17,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar cliente", description="Actualiza un cliente existente por su ID.")
 async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_cliente_por_id(id, payload)
+    result = await actualizar_cliente(id, payload)
     return {"message": result}
 
 @router.patch("/{id}", summary="Actualizar cliente parcialmente", description="Actualiza parcialmente un cliente existente por su ID.")
@@ -27,7 +27,7 @@ async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest):
 @router.post("/", summary="Crear cliente", description="Crea un nuevo cliente.")
 async def agregarClienteApi(requestBody: ClienteRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_cliente(payload)
+    result = await crear_cliente(payload)
     return {"message": result}
 
 @router.get("/", summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")

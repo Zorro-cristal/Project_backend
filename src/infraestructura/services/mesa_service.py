@@ -1,4 +1,4 @@
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, validar_fk_existente
 
 from ..models.mesa import Mesa
 from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
@@ -21,6 +21,12 @@ async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
 
 
 async def crear_mesa(payload: dict):
+    await validar_fk_existente(
+        payload.get('id_localfk'),
+        obtener_locales,
+        'id',
+        f"Local con ID {payload.get('id_localfk')} no existe",
+    )
     mesa = build_mesa_entity(payload)
     return await actualizarMesa(mesa)
 
@@ -29,4 +35,10 @@ async def actualizar_mesa(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
 
+    await validar_fk_existente(
+        payload.get('id_localfk'),
+        obtener_locales,
+        'id',
+        f"Local con ID {payload.get('id_localfk')} no existe",
+    )
     return await actualizarMesa(payload, id)

@@ -2,11 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.vendedor.crearActualizarVendedor import (
-    actualizar_vendedor_por_id,
-    crear_o_actualizar_vendedor,
+from ..services.vendedor_service import (
+    actualizar_vendedor,
+    crear_vendedor,
+    obtener_vendedores,
 )
-from ..services.vendedor_service import obtener_vendedores
 from src.shell.adapters.requests.vendedor_request import (
     VendedorRequest,
     VendedorUpdateRequest,
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar vendedor", description="Actualiza un vendedor existente por su ID.")
 async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_vendedor_por_id(id, payload)
+    result = await actualizar_vendedor(id, payload)
     return {"message": result}
 
 
@@ -30,7 +30,7 @@ async def patchVendedorApi(id: int, requestBody: VendedorUpdateRequest):
 @router.post("/", summary="Crear vendedor", description="Crea un nuevo vendedor.")
 async def agregarVendedorApi(requestBody: VendedorRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_vendedor(payload)
+    result = await crear_vendedor(payload)
     return {"message": result}
 
 

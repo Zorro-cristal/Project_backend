@@ -1,6 +1,9 @@
+from src.shell.flujo.producto.crearActualizarProducto import (
+    actualizar_producto_por_id, crear_o_actualizar_producto)
+
 from ..models.producto import Producto
 from ..repositories.producto_repository import (
-    actualizarProducto, obtenerDetallesProducto, obtenerProducto,
+    obtenerDetallesProducto, obtenerProducto,
     obtenerProductoConDetallesProducto)
 
 
@@ -26,11 +29,11 @@ async def obtener_detallesProducto(id: int):
 
 async def crear_producto(payload: dict):
     producto = build_producto_entity(payload)
-    return await actualizarProducto(producto)
+    return await crear_o_actualizar_producto(producto)
 
 
 async def actualizar_producto(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
-    return await actualizarProducto(payload, id)
+    return await actualizar_producto_por_id(id, payload)
 

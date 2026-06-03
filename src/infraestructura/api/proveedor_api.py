@@ -2,11 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.proveedor.crearActualizarProveedor import (
-    actualizar_proveedor_por_id,
-    crear_o_actualizar_proveedor,
+from ..services.proveedor_service import (
+    actualizar_proveedor,
+    crear_proveedor,
+    obtener_proveedores,
 )
-from ..services.proveedor_service import obtener_proveedores
 from src.shell.adapters.requests.proveedor_request import (
     ProveedorRequest,
     ProveedorUpdateRequest,
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
 async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_proveedor_por_id(id, payload)
+    result = await actualizar_proveedor(id, payload)
     return {"message": result}
 
 
@@ -30,7 +30,7 @@ async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
 @router.post("/", summary="Crear proveedor", description="Crea un nuevo proveedor.")
 async def agregarProveedorApi(requestBody: ProveedorRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_proveedor(payload)
+    result = await crear_proveedor(payload)
     return {"message": result}
 
 

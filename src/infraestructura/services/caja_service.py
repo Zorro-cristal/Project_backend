@@ -1,4 +1,4 @@
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, validar_fk_existente
 
 from ..models.caja import Caja
 from ..repositories.caja_repository import actualizarCaja, obtenerCaja
@@ -21,6 +21,12 @@ async def obtener_cajas(filtros: dict = None, columnas: str = '*'):
 
 
 async def crear_caja(payload: dict):
+    await validar_fk_existente(
+        payload.get('id_usuariofk'),
+        obtener_usuarios,
+        'id',
+        f"Usuario con ID {payload.get('id_usuariofk')} no existe",
+    )
     caja = build_caja_entity(payload)
     return await actualizarCaja(caja)
 
@@ -29,4 +35,10 @@ async def actualizar_caja(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
 
+    await validar_fk_existente(
+        payload.get('id_usuariofk'),
+        obtener_usuarios,
+        'id',
+        f"Usuario con ID {payload.get('id_usuariofk')} no existe",
+    )
     return await actualizarCaja(payload, id)

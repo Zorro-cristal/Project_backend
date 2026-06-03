@@ -5,11 +5,11 @@ from pydantic import BaseModel
 
 from ..models.usuario import Usuario
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
-from src.shell.flujo.usuario.gestion import (
-    actualizar_usuario_por_id,
-    crear_o_actualizar_usuario,
+from ..services.usuario_service import (
+    crear_usuario,
+    actualizar_usuario,
+    obtener_usuarios,
 )
-from ..services.usuario_service import obtener_usuarios
 from src.shell.adapters.requests.usuario_request import (
     UsuarioRequest,
     UsuarioUpdateRequest,
@@ -34,7 +34,7 @@ async def login(request_body: UsuarioLoginRequest):
 @router.put("/{id}", summary="Actualizar usuario", description="Actualiza un usuario existente por su ID.")
 async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_usuario_por_id(id, payload)
+    result = await actualizar_usuario(id, payload)
     return {"message": result}
 
 
@@ -46,7 +46,7 @@ async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
 @router.post("/", summary="Crear usuario", description="Crea un nuevo usuario.")
 async def agregarUsuarioApi(requestBody: UsuarioRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_usuario(payload)
+    result = await crear_usuario(payload)
     return {"message": result}
 
 

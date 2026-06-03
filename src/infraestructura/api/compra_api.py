@@ -3,11 +3,14 @@ from typing import Optional
 from fastapi import APIRouter, Query
 
 from ..services.compra_service import (
-    obtener_compra_con_detalles, obtener_compra_solo, obtener_compras)
+    crear_compra,
+    actualizar_compra,
+    obtener_compra_solo,
+    obtener_compras,
+)
 from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
-from src.shell.flujo.compra.crearActualizarCompra import (
-    actualizar_compra_por_id, crear_o_actualizar_compra)
+from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
 
 router = APIRouter()
 
@@ -15,7 +18,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
 async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_compra_por_id(id, payload)
+    result = await actualizar_compra(id, payload)
     return {"message": result}
 
 
@@ -27,7 +30,7 @@ async def patchCompraApi(id: int, requestBody: CompraUpdateRequest):
 @router.post("/", summary="Crear compra", description="Crea una nueva compra.")
 async def agregarCompraApi(requestBody: CompraRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_compra(payload)
+    result = await crear_compra(payload)
     return {"message": result}
 
 

@@ -2,11 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.local.crearActualizarLocal import (
-    actualizar_local_por_id,
-    crear_o_actualizar_local,
+from ..services.local_service import (
+    actualizar_local,
+    crear_local,
+    obtener_locales,
 )
-from ..services.local_service import obtener_locales
 from src.shell.adapters.requests.local_request import (
     LocalRequest,
     LocalUpdateRequest,
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar local", description="Actualiza un local existente por su ID.")
 async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_local_por_id(id, payload)
+    result = await actualizar_local(id, payload)
     return {"message": result}
 
 
@@ -30,7 +30,7 @@ async def patchLocalApi(id: int, requestBody: LocalUpdateRequest):
 @router.post("/", summary="Crear local", description="Crea un nuevo local.")
 async def agregarLocalApi(requestBody: LocalRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_local(payload)
+    result = await crear_local(payload)
     return {"message": result}
 
 

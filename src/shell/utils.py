@@ -162,3 +162,24 @@ async def attach_grouped(
         item[output_field] = grouped.get(pid, [])
 
     return items
+
+
+async def validar_fk_existente(
+    fk_value: Any,
+    fetch_func,
+    fetch_filter_name: str = "id",
+    error_message: str | None = None,
+) -> None:
+    """Verifica que un valor de clave foránea exista en la entidad relacionada.
+
+    - `fk_value`: valor de la FK a validar.
+    - `fetch_func`: función asíncrona que recibe filtros y devuelve la lista de entidades relacionadas.
+    - `fetch_filter_name`: nombre del campo de filtro que espera `fetch_func`.
+    - `error_message`: mensaje de error personalizado para ValueError.
+    """
+    if fk_value is None:
+        return
+
+    registros = await fetch_func({fetch_filter_name: [fk_value]})
+    if not registros:
+        raise ValueError(error_message or f"Referencia inválida: {fk_value}")

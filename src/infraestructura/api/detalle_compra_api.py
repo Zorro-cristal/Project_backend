@@ -2,12 +2,13 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.detalle_compra_service import \
-    obtener_detalle_compras
+from ..services.detalle_compra_service import (
+    actualizar_detalle_compra,
+    crear_detalle_compra,
+    obtener_detalle_compras,
+)
 from src.shell.adapters.requests.detalle_compra_request import (
     DetalleCompraRequest, DetalleCompraUpdateRequest)
-from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import (
-    actualizar_detalle_compra_por_id, crear_o_actualizar_detalle_compra)
 
 router = APIRouter()
 
@@ -15,7 +16,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar detalle de compra", description="Actualiza un detalle de compra existente por su ID.")
 async def actualizarDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_detalle_compra_por_id(id, payload)
+    result = await actualizar_detalle_compra(id, payload)
     return {"message": result}
 
 
@@ -27,7 +28,7 @@ async def patchDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest
 @router.post("/", summary="Crear detalle de compra", description="Crea un nuevo detalle de compra.")
 async def agregarDetalleCompraApi(requestBody: DetalleCompraRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_detalle_compra(payload)
+    result = await crear_detalle_compra(payload)
     return {"message": result}
 
 

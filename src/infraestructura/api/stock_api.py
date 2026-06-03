@@ -2,11 +2,13 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from ..services.stock_service import obtener_stocks
+from ..services.stock_service import (
+    crear_stock,
+    actualizar_stock,
+    obtener_stocks,
+)
 from src.shell.adapters.requests.stock_request import (StockRequest,
                                                        StockUpdateRequest)
-from src.shell.flujo.stock.crearActualizarStock import (
-    actualizar_stock_por_id, crear_o_actualizar_stock)
 
 router = APIRouter()
 
@@ -14,7 +16,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
 async def actualizarStockApi(id: int, requestBody: StockUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_stock_por_id(id, payload)
+    result = await actualizar_stock(id, payload)
     return {"message": result}
 
 
@@ -26,7 +28,7 @@ async def patchStockApi(id: int, requestBody: StockUpdateRequest):
 @router.post("/", summary="Crear stock", description="Crea un nuevo stock.")
 async def agregarStockApi(requestBody: StockRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_stock(payload)
+    result = await crear_stock(payload)
     return {"message": result}
 
 

@@ -1,6 +1,6 @@
 from typing import Optional
 
-from src.shell.utils import attach_grouped, attach_related
+from src.shell.utils import attach_grouped, attach_related, validar_fk_existente
 
 from ..models.venta import Venta
 from ..repositories.detalle_venta_repository import obtenerDetalleVenta
@@ -60,6 +60,24 @@ async def obtener_detalle_venta_por_venta_id(filtros: dict = None):
 
 
 async def crear_venta(payload: dict):
+    await validar_fk_existente(
+        payload.get('id_usuariofk'),
+        obtener_usuarios,
+        'id',
+        f"Usuario con ID {payload.get('id_usuariofk')} no existe",
+    )
+    await validar_fk_existente(
+        payload.get('id_clientefk'),
+        obtener_clientes,
+        'id',
+        f"Cliente con ID {payload.get('id_clientefk')} no existe",
+    )
+    await validar_fk_existente(
+        payload.get('id_localfk'),
+        obtener_locales,
+        'id',
+        f"Local con ID {payload.get('id_localfk')} no existe",
+    )
     venta = build_venta_entity(payload)
     return await actualizarVenta(venta)
 
@@ -67,5 +85,24 @@ async def crear_venta(payload: dict):
 async def actualizar_venta(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
+
+    await validar_fk_existente(
+        payload.get('id_usuariofk'),
+        obtener_usuarios,
+        'id',
+        f"Usuario con ID {payload.get('id_usuariofk')} no existe",
+    )
+    await validar_fk_existente(
+        payload.get('id_clientefk'),
+        obtener_clientes,
+        'id',
+        f"Cliente con ID {payload.get('id_clientefk')} no existe",
+    )
+    await validar_fk_existente(
+        payload.get('id_localfk'),
+        obtener_locales,
+        'id',
+        f"Local con ID {payload.get('id_localfk')} no existe",
+    )
     return await actualizarVenta(payload, id)
 

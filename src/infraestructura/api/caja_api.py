@@ -1,12 +1,12 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
-from src.shell.flujo.caja.crearActualizarCaja import (
-    actualizar_caja_por_id,
-    crear_o_actualizar_caja,
+from ..services.caja_service import (
+    actualizar_caja,
+    crear_caja,
+    obtener_cajas,
 )
-from ..services.caja_service import obtener_cajas
 from src.shell.adapters.requests.caja_request import (
     CajaRequest,
     CajaUpdateRequest,
@@ -18,7 +18,10 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar caja", description="Actualiza una caja existente por su ID.")
 async def actualizarCajaApi(id: int, requestBody: CajaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_caja_por_id(id, payload)
+    try:
+        result = await actualizar_caja(id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 
@@ -30,7 +33,10 @@ async def patchCajaApi(id: int, requestBody: CajaUpdateRequest):
 @router.post("/", summary="Crear caja", description="Crea una nueva caja.")
 async def agregarCajaApi(requestBody: CajaRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_caja(payload)
+    try:
+        result = await crear_caja(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 

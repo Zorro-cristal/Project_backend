@@ -1,6 +1,6 @@
 from ..models.precio import Precio
 from ..repositories.precio_repository import (
-    actualizarPrecio, crearDetallePrecio, crearPrecio, obtenerPrecio)
+    actualizarPrecio, crearPrecio, obtenerPrecio)
 
 
 def build_precio_entity(payload: dict) -> Precio:
@@ -12,12 +12,7 @@ async def obtener_precios(filtros: dict= None, columnas: str = '*'):
 
 async def crear_precio(payload: dict):
     precio = build_precio_entity(payload)
-    nuevo_precio = await crearPrecio(precio)
-    await crearDetallePrecio({
-        'id_detalleproductofk': payload['id_detalleproductofk'],
-        'id_preciofk': nuevo_precio['id']
-    })
-    return nuevo_precio
+    return await crearPrecio(precio)
 
 async def actualizar_precio(id: int, payload: dict):
     if not payload:

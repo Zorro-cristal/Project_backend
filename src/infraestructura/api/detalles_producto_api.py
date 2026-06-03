@@ -3,8 +3,10 @@ from typing import Optional
 from fastapi import APIRouter, Query
 
 from ..services.detalles_producto_service import (
-    actualizar_detalles_producto, crear_detalles_producto,
-    obtener_detalles_productos)
+    actualizar_detalles_producto,
+    crear_detalles_producto,
+    obtener_detalles_productos,
+)
 from src.shell.adapters.requests.detalles_producto_request import (
     DetalleProductoRequest, DetalleProductoUpdateRequest)
 

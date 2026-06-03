@@ -1,12 +1,12 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
-from src.shell.flujo.mesa.crearActualizarMesa import (
-    actualizar_mesa_por_id,
-    crear_o_actualizar_mesa,
+from ..services.mesa_service import (
+    actualizar_mesa,
+    crear_mesa,
+    obtener_mesas,
 )
-from ..services.mesa_service import obtener_mesas
 from src.shell.adapters.requests.mesa_request import (
     MesaRequest,
     MesaUpdateRequest,
@@ -18,7 +18,10 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar mesa", description="Actualiza una mesa existente por su ID.")
 async def actualizarMesaApi(id: int, requestBody: MesaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_mesa_por_id(id, payload)
+    try:
+        result = await actualizar_mesa(id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 
@@ -30,7 +33,10 @@ async def patchMesaApi(id: int, requestBody: MesaUpdateRequest):
 @router.post("/", summary="Crear mesa", description="Crea una nueva mesa.")
 async def agregarMesaApi(requestBody: MesaRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_mesa(payload)
+    try:
+        result = await crear_mesa(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 

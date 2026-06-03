@@ -1,9 +1,10 @@
 from typing import Optional, Union
 
-from src.shell.flujo.producto.actualizar_producto import actualizarDetallesDesdeProducto
-from ..models.producto import Producto
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import normalizar_booleanos, prepararPayloadDb
+
+from ..models.producto import Producto
+
 
 async def obtenerProducto(filtros: Optional[dict] = None, limite: Optional[int]= 100, offset: Optional[int]= 0, columnas: str= "*"):
     return await get('productos', filtros, limite, offset, columns=columnas)
@@ -45,16 +46,5 @@ async def actualizarProducto(datos: Union[Producto, dict], id: Optional[int] = N
         detalles = getattr(datos, 'detalles_producto', None)
 
     if id is None:
-        producto = await insert('productos', payload)
-
-        # Si se enviaron detalles con precios, guardarlos y vincularlos
-        if detalles:
-            actualizarDetallesDesdeProducto(detalles)
-        return producto
-    producto_actualizado = await update('productos', id, payload)
-
-    # Si se enviaron detalles con precios al actualizar, procesarlos:
-    if detalles:
-        actualizarDetallesDesdeProducto(detalles)
-        
-    return producto_actualizado
+        return await insert('productos', payload)
+    return await update('productos', id, payload)

@@ -1,14 +1,17 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, HTTPException, Query
 
 from ..services.venta_service import (
-    obtener_detalle_venta_por_venta_id, obtener_venta_por_id_con_detalles,
-    obtener_venta_por_id_sin_detalles)
+    crear_venta,
+    actualizar_venta,
+    obtener_detalle_venta_por_venta_id,
+    obtener_venta_por_id_con_detalles,
+    obtener_venta_por_id_sin_detalles,
+    obtener_ventas,
+)
 from src.shell.adapters.requests.venta_request import (VentaRequest,
                                                        VentaUpdateRequest)
-from src.shell.flujo.venta.crearActualizarVenta import (
-    actualizar_venta_por_id, crear_o_actualizar_venta)
 
 router = APIRouter()
 
@@ -16,7 +19,10 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
 async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_venta_por_id(id, payload)
+    try:
+        result = await actualizar_venta(id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 
@@ -28,7 +34,10 @@ async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
 @router.post("/", summary="Crear venta", description="Crea una nueva venta.")
 async def agregarVentaApi(requestBody: VentaRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_venta(payload)
+    try:
+        result = await crear_venta(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 

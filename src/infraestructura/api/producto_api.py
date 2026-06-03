@@ -7,6 +7,9 @@ from ..services.producto_service import (
     obtener_producto, obtener_productos)
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
+from src.shell.flujo.producto.consultarProducto import (
+    obtener_producto_con_detalles, obtener_productos_con_detalles,
+)
 
 router = APIRouter()
 
@@ -54,14 +57,11 @@ async def obtenerProductosApi(
     if perecedero is not None:
         filtros["perecedero"] = perecedero
 
-    # Si el cliente pide include=detallesProducto intentamos incluir detalles_producto.
-    # Nota: Supabase select con relaciones solo funciona si el esquema y/o alias están disponibles.
     if include == "detallesProducto":
-        columnas = '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
+        result = await obtener_productos_con_detalles(filtros)
     else:
         columnas = '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)'
-
-    result = await obtener_productos(filtros, columnas)
+        result = await obtener_productos(filtros, columnas)
     return {"message": result}
 
 
@@ -72,7 +72,7 @@ async def obtenerProductoApi(
     include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesProducto"),
 ):
     if include == "detallesProducto":
-        result = await obtener_producto(id, include_detallesProducto=True)
+        result = await obtener_producto_con_detalles(id)
     else:
         result = await obtener_producto(id, include_detallesProducto=False)
     return {"message": result}

@@ -2,11 +2,11 @@ from typing import Optional
 
 from fastapi import APIRouter, Query
 
-from src.shell.flujo.detalle_venta.crearActualizarDetalleVenta import (
-    actualizar_detalle_venta_por_id,
-    crear_o_actualizar_detalle_venta,
+from ..services.detalle_venta_service import (
+    actualizar_detalle_venta,
+    crear_detalle_venta,
+    obtener_detalle_ventas,
 )
-from ..services.detalle_venta_service import obtener_detalle_ventas
 from src.shell.adapters.requests.detalle_venta_request import (
     DetalleVentaRequest,
     DetalleVentaUpdateRequest,
@@ -18,7 +18,7 @@ router = APIRouter()
 @router.put("/{id}", summary="Actualizar detalle de venta", description="Actualiza un detalle de venta existente por su ID.")
 async def actualizarDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_detalle_venta_por_id(id, payload)
+    result = await actualizar_detalle_venta(id, payload)
     return {"message": result}
 
 
@@ -30,7 +30,7 @@ async def patchDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest):
 @router.post("/", summary="Crear detalle de venta", description="Crea un nuevo detalle de venta.")
 async def agregarDetalleVentaApi(requestBody: DetalleVentaRequest):
     payload = requestBody.model_dump()
-    result = await crear_o_actualizar_detalle_venta(payload)
+    result = await crear_detalle_venta(payload)
     return {"message": result}
 
 
