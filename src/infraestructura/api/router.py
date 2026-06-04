@@ -1,5 +1,8 @@
 from fastapi import APIRouter
 
+from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
+from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
+
 from . import caja_api as caja
 from . import categoria_api as categoria
 from . import cliente_api as cliente
@@ -11,20 +14,19 @@ from . import ingrediente_api as ingrediente
 from . import local_api as local
 from . import marca_api as marca
 from . import mesa_api as mesa
+from . import orden_api as orden
 from . import permiso_api as permiso
 from . import permiso_rol_api as permiso_rol
 from . import persona_api as persona
 from . import precio_api as precio
 from . import producto_api as producto
 from . import proveedor_api as proveedor
+from . import reserva_api as reserva
 from . import rol_api as rol
 from . import stock_api as stock
 from . import usuario_api as usuario
 from . import vendedor_api as vendedor
 from . import venta_api as venta
-from . import orden_api as orden
-from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
-from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
 router = APIRouter()
 
@@ -65,4 +67,6 @@ router.include_router(detalle_venta.router, prefix="/detalle_venta", tags=["Deta
 router.include_router(compra.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra.router, prefix="/detalle_compra", tags=["Detalle Compra"])
 router.include_router(orden.router, prefix="/orden", tags=["Orden"])
+router.include_router(reserva.router, prefix="/reserva", tags=["Reserva"])
+
 
