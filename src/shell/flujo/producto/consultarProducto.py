@@ -23,20 +23,20 @@ async def attach_precios_a_detalles(detalles: list[dict]) -> list[dict]:
             detalle['precios'] = []
         return detalles
 
-    detalle_precios = await obtenerDetallePrecio(filtros={'detalles_producto_cod': codigos})
+    detalle_precios = await obtenerDetallePrecio(filtros={'id_detalleproductofk': codigos})
     if not detalle_precios:
         for detalle in detalles:
             detalle['precios'] = []
         return detalles
 
-    precio_ids = [rel.get('precio_id') for rel in detalle_precios if rel.get('precio_id') is not None]
+    precio_ids = [rel.get('id_preciofk') for rel in detalle_precios if rel.get('id_preciofk') is not None]
     precios = await obtener_precios({'id': precio_ids}) if precio_ids else []
     precio_map = {precio['id']: precio for precio in (precios or [])}
 
     precios_por_codigo: dict[Any, list[dict]] = {}
     for relacion in detalle_precios:
-        codigo = relacion.get('detalles_producto_cod')
-        precio_id = relacion.get('precio_id')
+        codigo = relacion.get('id_detalleproductofk')
+        precio_id = relacion.get('id_preciofk')
         precio_obj = precio_map.get(precio_id)
         if codigo is None or precio_obj is None:
             continue

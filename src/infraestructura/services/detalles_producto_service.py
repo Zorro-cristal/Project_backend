@@ -9,8 +9,8 @@ def build_detalles_producto_entity(payload: dict) -> detalles_producto:
     return detalles_producto(**valid_fields)
 
 
-async def obtener_detalles_productos(filtros: dict= None, columnas: str = '*'):
-    return await obtenerDetalleProducto(columnas=columnas, filtros=filtros)
+async def obtener_detalles_productos(filtros: dict= None, columnas: str = '*', include_producto: bool = False):
+    return await obtenerDetalleProducto(columnas=columnas, filtros=filtros, include_producto=include_producto)
 
 
 async def crear_detalles_producto(payload: dict):

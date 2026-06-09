@@ -33,7 +33,8 @@ async def obtenerDetallesProductosApi(
     color: Optional[str] = Query(None, description="Filtrar detalles de productos por color"),
     tamanho: Optional[int] = Query(None, description="Filtrar detalles de productos por tamaño"),
     cod_barra: Optional[int] = Query(None, description="Filtrar detalles de productos por código de barra"),
-    unidad_por_lote: Optional[int] = Query(None, description="Filtrar detalles de productos por unidades por lote")
+    unidad_por_lote: Optional[int] = Query(None, description="Filtrar detalles de productos por unidades por lote"),
+    include: Optional[str] = Query(None, description="include=producto para incluir datos del producto (sin detalles_producto)")
 ):
     filtros = {}
     if id is not None:
@@ -47,5 +48,6 @@ async def obtenerDetallesProductosApi(
     if unidad_por_lote is not None:
         filtros["unidad_por_lote"] = unidad_por_lote
     
-    result = await obtener_detalles_productos(filtros)
+    include_producto = include == "producto"
+    result = await obtener_detalles_productos(filtros, include_producto=include_producto)
     return {"message": result}
