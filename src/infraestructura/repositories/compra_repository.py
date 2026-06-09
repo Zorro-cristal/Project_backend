@@ -1,8 +1,9 @@
 from typing import Optional, Union
 
-from ..models.compra import Compra
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
+
+from ..models.compra import Compra
 
 
 async def obtenerCompra(filtros=None, limite=100, offset=0, columnas="*"):
@@ -10,7 +11,7 @@ async def obtenerCompra(filtros=None, limite=100, offset=0, columnas="*"):
 
 
 async def actualizarCompra(datos: Union[Compra, dict], id: Optional[int] = None):
-    payload = prepararPayloadDb(datos, exclude_fields=['local', 'cliente', 'proveedor', 'detalles'])
+    payload = prepararPayloadDb(datos, exclude_fields=['local', 'cliente', 'proveedor', 'detalles', 'usuario'])
 
     if id is None:
         return await insert('compras', payload)

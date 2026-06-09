@@ -1,11 +1,19 @@
-from src.infraestructura.services.compra_service import crear_compra, actualizar_compra
 from src.infraestructura.services.cliente_service import crear_cliente
+from src.infraestructura.services.compra_service import (actualizar_compra,
+                                                         crear_compra)
 from src.infraestructura.services.local_service import crear_local
 from src.infraestructura.services.proveedor_service import crear_proveedor
-from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import crear_o_actualizar_detalle_compra
+from src.infraestructura.services.usuario_service import crear_usuario
+from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import \
+    crear_o_actualizar_detalle_compra
 
 
 async def crear_o_actualizar_compra(payload: dict):
+    usuario_payload = payload.pop('usuario', None)
+    if usuario_payload is not None:
+        usuario = await crear_usuario(usuario_payload)
+        payload['id_usuariofk'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
+
     cliente_payload = payload.pop('cliente', None)
     if cliente_payload is not None:
         cliente = await crear_cliente(cliente_payload)
@@ -34,6 +42,11 @@ async def crear_o_actualizar_compra(payload: dict):
 
 
 async def actualizar_compra_por_id(id_compra: int, payload: dict):
+    usuario_payload = payload.pop('usuario', None)
+    if usuario_payload is not None:
+        usuario = await crear_usuario(usuario_payload)
+        payload['id_usuariofk'] = usuario.get('id') if isinstance(usuario, dict) else getattr(usuario, 'id', None)
+
     cliente_payload = payload.pop('cliente', None)
     if cliente_payload is not None:
         cliente = await crear_cliente(cliente_payload)
