@@ -58,7 +58,38 @@ async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
 
 
 async def crear_usuario(payload: dict):
+    # Extraer y procesar la persona relacionada
+    id_persona = None
+    
+    # Prioridad 1: Si ya viene id_personafk directamente, usarlo
+    if 'id_personafk' in payload and payload['id_personafk']:
+        id_persona = payload.get('id_personafk')
+    elif 'persona' in payload and payload['persona']:
+        # Prioridad 2: Si viene objeto persona, procesarlo
+        persona_data = payload.pop('persona')  # Extraer y remover del payload principal
+        cedula = persona_data.get('cedula')
+        
+        if cedula:
+            # Verificar si la persona ya existe
+            personas_existentes = await obtener_personas({'cedula': cedula})
+            
+            if personas_existentes:
+                # La persona existe, actualizamos sus datos
+                await actualizar_persona(cedula, persona_data)
+                id_persona = cedula  # La cedula es la clave primaria en Persona
+            else:
+                # Crear nueva persona
+                nueva_persona = await crear_persona(persona_data)
+                id_persona = persona_data.get('cedula')
+    
+    # Agregar el id_personafk al payload si existe
+    if id_persona is not None:
+        payload['id_personafk'] = id_persona
+    
+    # Hashear la contraseña si es necesario
     payload = _hash_if_needed(payload)
+    
+    # Construir la entidad usuario
     usuario = build_usuario_entity(payload)
     return await actualizarUsuario(usuario)
 

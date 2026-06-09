@@ -11,7 +11,8 @@ class UsuarioRequest(BaseModel):
     contra: str
     estado: Optional[int] = 1
     id_rolfk: Optional[int] = None
-    persona: Optional[PersonaRequest] = None
+    id_personafk: Optional[int] = None  # FK directa a persona existente
+    persona: Optional[PersonaRequest] = None  # Objeto persona (se crea o actualiza si no existe)
 
     class Config:
         validate_by_name = True
@@ -21,6 +22,7 @@ class UsuarioUpdateRequest(BaseModel):
     contra: Optional[str] = None
     estado: Optional[int] = None
     id_rolfk: Optional[int] = None
+    id_personafk: Optional[int] = None  # FK directa a persona existente
     persona: Optional[PersonaUpdateRequest] = None
 
     class Config:
