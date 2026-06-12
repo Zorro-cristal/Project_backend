@@ -1,4 +1,5 @@
 from dataclasses import asdict, is_dataclass
+from datetime import datetime
 from typing import Any, Dict, Optional, Union
 
 
@@ -25,7 +26,6 @@ def prepararPayloadDb(
     valor None si existen en el payload.
     """
 
-
     if is_dataclass(data):
         payload = asdict(data)
     else:
@@ -36,7 +36,6 @@ def prepararPayloadDb(
         if payload[key] is None:
             payload.pop(key, None)
 
-
     # El 'id' se maneja por separado (en la URL, etc.)
     payload.pop("id", None)
 
@@ -46,8 +45,12 @@ def prepararPayloadDb(
 
     # Ajuste para fechas: si vienen como datetime, conviértelos a ISO string
     # antes de aplicar el filtro de primitividad.
-    for key in ("valido_desde", "valido_hasta"):
-        if key in payload and hasattr(payload[key], "isoformat"):
+    for key in ("valido_desde", "valido_hasta", "fecha"):
+        if key in payload and isinstance(payload[key], datetime):
+            payload[key] = payload[key].isoformat()
+        # También convertir cualquier campo datetime que venga como objeto datetime
+        # (para campos como fecha de compra, venta, etc.)
+        elif key in payload and hasattr(payload[key], "isoformat"):
             payload[key] = payload[key].isoformat()
 
     # Filtro global: remueve campos cuyo valor sea un objeto/dict/list anidado.
@@ -56,9 +59,7 @@ def prepararPayloadDb(
         if not _is_json_primitive(payload[key]):
             payload.pop(key, None)
 
-
     return payload
-
 
 
 def normalizar_booleanos(

@@ -13,14 +13,12 @@ from src.shell.adapters.requests.usuario_request import UsuarioRequest
 
 class CompraRequest(BaseModel):
     nro: Optional[str] = None
-    id_localfk: Optional[int] = None
-    id_clientefk: Optional[int] = None
+    id_localfk: int = None
     id_usuariofk: Optional[int] = None
     fecha: datetime
     estado: Optional[int] = 1
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
-    cliente: Optional[ClienteRequest] = None
     proveedor: Optional[ProveedorRequest] = None
     usuario: Optional[UsuarioRequest] = None
     detalles: Optional[List[DetalleCompraRequest]] = None
@@ -32,13 +30,11 @@ class CompraRequest(BaseModel):
 class CompraUpdateRequest(BaseModel):
     nro: Optional[str] = None
     id_localfk: Optional[int] = None
-    id_clientefk: Optional[int] = None
     id_usuariofk: Optional[int] = None
     fecha: Optional[datetime] = None
     estado: Optional[int] = None
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
-    cliente: Optional[ClienteRequest] = None
     proveedor: Optional[ProveedorRequest] = None
     usuario: Optional[UsuarioRequest] = None
     detalles: Optional[List[DetalleCompraRequest]] = None

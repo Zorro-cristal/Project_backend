@@ -12,14 +12,12 @@ from .proveedor import Proveedor
 @dataclass(frozen=True)
 class Compra:
     nro: Optional[str] = None
-    id_localfk: Optional[int] = None
-    id_clientefk: Optional[int] = None
+    id_localfk: int = None
     id_usuariofk: Optional[int] = None
     fecha: datetime = None
     estado: int = 1
     id_proveedorfk: Optional[int] = None
     local: Optional[Local] = None
-    cliente: Optional[Cliente] = None
     proveedor: Optional[Proveedor] = None
     usuario: Optional[Usuario]= None
     id: Optional[int] = None
