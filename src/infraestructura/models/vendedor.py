@@ -13,5 +13,4 @@ class Vendedor:
     estado: bool
     id_personafk: Optional[int]= None
     persona: Optional[Persona]= None
-
     id: Optional[int] = None

@@ -45,9 +45,9 @@ async def obtenerVentasApi(
     nro: Optional[str] = Query(None, description="Filtrar ventas por número"),
     fecha: Optional[str] = Query(None, description="Filtrar ventas por fecha"),
     estado: Optional[int] = Query(None, description="Filtrar ventas por estado"),
-    id_usuariofk: Optional[int] = Query(None, description="Filtrar ventas por ID de usuario"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
-    id_localfk: Optional[int] = Query(None, description="Filtrar ventas por ID de local")
+    id_localfk: Optional[int] = Query(None, description="Filtrar ventas por ID de local"),
+    id_cajafk: Optional[int] = Query(None, description="Filtrar ventas por ID de caja")
 ):
     filtros = {}
     if id is not None:
@@ -58,12 +58,12 @@ async def obtenerVentasApi(
         filtros["fecha"] = fecha
     if estado is not None:
         filtros["estado"] = estado
-    if id_usuariofk is not None:
-        filtros["id_usuariofk"] = id_usuariofk
     if id_clientefk is not None:
         filtros["id_clientefk"] = id_clientefk
     if id_localfk is not None:
         filtros["id_localfk"] = id_localfk
+    if id_cajafk is not None:
+        filtros["id_cajafk"] = id_cajafk
 
     result = await obtener_ventas(filtros)
 

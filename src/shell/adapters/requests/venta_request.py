@@ -7,7 +7,6 @@ from src.shell.adapters.requests.cliente_request import ClienteRequest
 from src.shell.adapters.requests.detalle_venta_request import \
     DetalleVentaRequest
 from src.shell.adapters.requests.local_request import LocalRequest
-from src.shell.adapters.requests.usuario_request import UsuarioRequest
 
 
 class VentaRequest(BaseModel):
@@ -20,10 +19,9 @@ class VentaRequest(BaseModel):
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
     evento: Optional[bool] = None
-    id_usuariofk: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
-    usuario: Optional[UsuarioRequest] = None
+    id_cajafk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
     local: Optional[LocalRequest] = None
     detalles: Optional[List[DetalleVentaRequest]] = None
@@ -42,10 +40,9 @@ class VentaUpdateRequest(BaseModel):
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
     evento: Optional[bool] = None
-    id_usuariofk: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
-    usuario: Optional[UsuarioRequest] = None
+    id_cajafk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
     local: Optional[LocalRequest] = None
     detalles: Optional[List[DetalleVentaRequest]] = None
