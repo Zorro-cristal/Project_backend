@@ -2,8 +2,7 @@ from dataclasses import dataclass
 from datetime import datetime
 from typing import Optional
 
-from infraestructura.models.caja import Caja
-
+from .caja import Caja
 from .cliente import Cliente
 from .local import Local
 from .usuario import Usuario
