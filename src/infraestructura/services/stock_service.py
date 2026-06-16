@@ -21,11 +21,11 @@ async def attach_related_data(stocks: list[dict]) -> list[dict]:
     if detalle_ids:
         # Primero intentar buscar por cod_barra
         filtros_detalle = {'cod_barra': list(detalle_ids)}
-        detalles = await obtener_detalles_productos(filtros_detalle)
+        detalles = await obtener_detalles_productos(filtros_detalle, include_producto=True)
         if not detalles:
             # Fallback a buscar por id
             filtros_detalle = {'id': list(detalle_ids)}
-            detalles = await obtener_detalles_productos(filtros_detalle)
+            detalles = await obtener_detalles_productos(filtros_detalle, include_producto=True)
 
         detalle_map = {detalle.get('cod_barra') or detalle.get('id'): detalle for detalle in (detalles or [])}
 
