@@ -20,7 +20,7 @@ class Settings(BaseSettings):
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 horas
 
     # CORS - Lista explícita sin wildcards para permitir credentials
-    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173,https://projectfrontend-psi.vercel.app"
+    ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173,https://projectfrontend-psi.vercel.app,https://project-backend-gamma-seven.vercel.app"
     
     # Server
     HOST: str = "0.0.0.0"

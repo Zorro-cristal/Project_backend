@@ -1,4 +1,3 @@
-
 import logging
 
 from fastapi import FastAPI
@@ -14,15 +13,11 @@ logger = logging.getLogger(__name__)
 settings = get_settings()
 app = FastAPI()
 
-# Orígenes permitidos - lista explícita paracredentials=True
+# Orígenes permitidos desde configuración - permite credentials=True
 # IMPORTANTE: No usar "*" cuando allow_credentials=True
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "http://localhost:5173", 
-        "https://projectfrontend-psi.vercel.app",
-    ],
+    allow_origins=settings.ALLOWED_ORIGINS_LIST,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
