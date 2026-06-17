@@ -1,38 +1,36 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
-from ..services.permiso_rol_service import (
-    actualizar_permiso_rol,
-    crear_permiso_rol,
-    obtener_permisos_roles,
-    obtener_permisos_de_rol,
-    obtener_roles_con_permiso,
-)
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.permiso_rol_request import (
-    PermisoRolRequest,
-    PermisoRolUpdateRequest,
-)
+    PermisoRolRequest, PermisoRolUpdateRequest)
+
+from ..services.permiso_rol_service import (actualizar_permiso_rol,
+                                            crear_permiso_rol,
+                                            obtener_permisos_de_rol,
+                                            obtener_permisos_roles,
+                                            obtener_roles_con_permiso)
 
 router = APIRouter()
 
-@router.put("/{id}", summary="Actualizar asignación de permiso a rol", description="Actualiza los niveles de acceso de un permiso en un rol.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('permiso_rol', 'editar'))], summary="Actualizar asignación de permiso a rol", description="Actualiza los niveles de acceso de un permiso en un rol.")
 async def actualizarPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_permiso_rol(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", summary="Actualizar asignación parcialmente", description="Actualiza parcialmente los niveles de acceso.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('permiso_rol', 'editar'))], summary="Actualizar asignación parcialmente", description="Actualiza parcialmente los niveles de acceso.")
 async def patchPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest):
     return await actualizarPermisoRolApi(id, requestBody)
 
-@router.post("/", summary="Asignar permiso a rol", description="Asigna un permiso a un rol con niveles específicos de acceso.")
+@router.post("/", dependencies=[Depends(permiso_requerido('permiso_rol', 'crear'))], summary="Asignar permiso a rol", description="Asigna un permiso a un rol con niveles específicos de acceso.")
 async def agregarPermisoRolApi(requestBody: PermisoRolRequest):
     payload = requestBody.model_dump()
     result = await crear_permiso_rol(payload)
     return {"message": result}
 
-@router.get("/", summary="Obtener asignaciones de permisos a roles", description="Obtiene una lista de asignaciones con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('permiso_rol', 'leer'))], summary="Obtener asignaciones de permisos a roles", description="Obtiene una lista de asignaciones con filtros opcionales.")
 async def obtenerPermisosRolesApi(
     id: Optional[int] = Query(None, description="Filtrar por ID de asignación"),
     id_permisofk: Optional[int] = Query(None, description="Filtrar por permiso"),
@@ -61,12 +59,12 @@ async def obtenerPermisosRolesApi(
     result = await obtener_permisos_roles(filtros=filtros)
     return {"message": result}
 
-@router.get("/rol/{id_rol}", summary="Obtener permisos de un rol", description="Obtiene todos los permisos asignados a un rol específico.")
+@router.get("/rol/{id_rol}", dependencies=[Depends(permiso_requerido('permiso_rol', 'leer'))], summary="Obtener permisos de un rol", description="Obtiene todos los permisos asignados a un rol específico.")
 async def obtenerPermisosDeRolApi(id_rol: int):
     result = await obtener_permisos_de_rol(id_rol)
     return {"message": result}
 
-@router.get("/permiso/{id_permiso}", summary="Obtener roles con un permiso", description="Obtiene todos los roles que tienen asignado un permiso específico.")
+@router.get("/permiso/{id_permiso}", dependencies=[Depends(permiso_requerido('permiso_rol', 'leer'))], summary="Obtener roles con un permiso", description="Obtiene todos los roles que tienen asignado un permiso específico.")
 async def obtenerRolesConPermisoApi(id_permiso: int):
     result = await obtener_roles_con_permiso(id_permiso)
     return {"message": result}

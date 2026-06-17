@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.egreso_request import (EgresoRequest,
                                                         EgresoUpdateRequest)
 
@@ -13,7 +14,7 @@ from ..services.egreso_service import (actualizar_egreso, crear_egreso,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar egreso", description="Actualiza un egreso existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso", description="Actualiza un egreso existente por su ID.")
 async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     try:
@@ -23,12 +24,12 @@ async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest):
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
 async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest):
     return await actualizarEgresoApi(id, requestBody)
 
 
-@router.post("/", summary="Crear egreso", description="Crea un nuevo egreso.")
+@router.post("/", dependencies=[Depends(permiso_requerido('egreso', 'crear'))], summary="Crear egreso", description="Crea un nuevo egreso.")
 async def agregarEgresoApi(requestBody: EgresoRequest):
     payload = requestBody.model_dump()
     try:
@@ -38,7 +39,7 @@ async def agregarEgresoApi(requestBody: EgresoRequest):
     return {"message": result}
 
 
-@router.get("/", summary="Obtener egresos", description="Obtiene una lista de egresos con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('egreso', 'leer'))], summary="Obtener egresos", description="Obtiene una lista de egresos con filtros opcionales.")
 async def obtenerEgresosApi(
     id: Optional[int] = Query(None, description="Filtrar egresos por ID"),
     monto: Optional[float] = Query(None, description="Filtrar egresos por monto"),
@@ -66,7 +67,7 @@ async def obtenerEgresosApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener egreso por ID", description="Obtiene un egreso específico por su ID. Usa include=caja para incluir caja.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'leer'))], summary="Obtener egreso por ID", description="Obtiene un egreso específico por su ID. Usa include=caja para incluir caja.")
 async def obtenerEgresoPorIdApi(
     id: int,
     include: Optional[str] = Query(None, description="include=caja para incluir caja")

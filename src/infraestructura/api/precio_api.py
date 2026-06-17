@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.precio_request import (PrecioRequest,
                                                         PrecioUpdateRequest)
 
@@ -10,23 +11,23 @@ from ..services.precio_service import (actualizar_precio, crear_precio,
 
 router = APIRouter()
 
-@router.put("/{id}", summary="Actualizar precio", description="Actualiza un precio existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('precio', 'editar'))], summary="Actualizar precio", description="Actualiza un precio existente por su ID.")
 async def actualizarPrecioApi(id: int, requestBody: PrecioUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_precio(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", summary="Actualizar precio parcialmente", description="Actualiza parcialmente un precio existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('precio', 'editar'))], summary="Actualizar precio parcialmente", description="Actualiza parcialmente un precio existente por su ID.")
 async def patchPrecioApi(id: int, requestBody: PrecioUpdateRequest):
     return await actualizarPrecioApi(id, requestBody)
 
-@router.post("/", summary="Crear precio", description="Crea un nuevo precio.")
+@router.post("/", dependencies=[Depends(permiso_requerido('precio', 'crear'))], summary="Crear precio", description="Crea un nuevo precio.")
 async def agregarPrecioApi(requestBody: PrecioRequest):
     payload = requestBody.model_dump()
     result = await crear_precio(payload)
     return {"message": result}
 
-@router.get("/", summary="Obtener precios", description="Obtiene una lista de precios con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('precio', 'leer'))], summary="Obtener precios", description="Obtiene una lista de precios con filtros opcionales.")
 async def obtenerPreciosApi(
     id: Optional[str] = Query(None, description="Filtrar precios por ID"),
     producto_id: Optional[int] = Query(None, description="Filtrar precios por ID de producto"),

@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.proveedor_request import (
     ProveedorRequest, ProveedorUpdateRequest)
 
@@ -11,26 +12,26 @@ from ..services.proveedor_service import (actualizar_proveedor,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
 async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_proveedor(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar proveedor parcialmente", description="Actualiza parcialmente un proveedor existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor parcialmente", description="Actualiza parcialmente un proveedor existente por su ID.")
 async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
     return await actualizarProveedorApi(id, requestBody)
 
 
-@router.post("/", summary="Crear proveedor", description="Crea un nuevo proveedor.")
+@router.post("/", dependencies=[Depends(permiso_requerido('proveedor', 'crear'))], summary="Crear proveedor", description="Crea un nuevo proveedor.")
 async def agregarProveedorApi(requestBody: ProveedorRequest):
     payload = requestBody.model_dump()
     result = await crear_proveedor(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
 async def obtenerProveedoresApi(
     id: Optional[str] = Query(None, description="Filtrar proveedores por ID"),
     razon_social: Optional[str] = Query(None, description="Filtrar proveedores por razón social parcial"),
@@ -57,7 +58,7 @@ async def obtenerProveedoresApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener proveedor por ID", description="Obtiene un proveedor específico por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedor por ID", description="Obtiene un proveedor específico por su ID.")
 async def obtenerProveedorPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_proveedores(filtros)

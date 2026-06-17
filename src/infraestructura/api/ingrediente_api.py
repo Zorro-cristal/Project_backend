@@ -1,35 +1,37 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
-from ..services.ingrediente_service import (
-    actualizar_ingrediente, crear_ingrediente, obtener_ingredientes)
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.ingrediente_request import (
     IngredienteRequest, IngredienteUpdateRequest)
+
+from ..services.ingrediente_service import (actualizar_ingrediente,
+                                            crear_ingrediente,
+                                            obtener_ingredientes)
 
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar ingrediente", description="Actualiza un ingrediente existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente", description="Actualiza un ingrediente existente por su ID.")
 async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_ingrediente(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
 async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest):
     return await actualizarIngredienteApi(id, requestBody)
 
 
-@router.post("/", summary="Crear ingrediente", description="Crea un nuevo ingrediente.")
+@router.post("/", dependencies=[Depends(permiso_requerido('ingrediente', 'crear'))], summary="Crear ingrediente", description="Crea un nuevo ingrediente.")
 async def agregarIngredienteApi(requestBody: IngredienteRequest):
     payload = requestBody.model_dump()
     result = await crear_ingrediente(payload)
     return {"message": result}
 
-
-@router.get("/", summary="Obtener ingredientes", description="Obtiene una lista de ingredientes con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('ingrediente', 'leer'))], summary="Obtener ingredientes", description="Obtiene una lista de ingredientes con filtros opcionales.")
 async def obtenerIngredientesApi(
     id: Optional[str] = Query(None, description="Filtrar ingredientes por ID"),
     cantidad: Optional[int] = Query(None, description="Filtrar ingredientes por cantidad"),

@@ -1,35 +1,37 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
-from ..services.orden_service import (
-    actualizar_orden_por_id, crear_orden, obtener_ordenes)
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.orden_request import (OrdenRequest,
                                                        OrdenUpdateRequest)
+
+from ..services.orden_service import (actualizar_orden_por_id, crear_orden,
+                                      obtener_ordenes)
 
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar orden", description="Actualiza una orden existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden", description="Actualiza una orden existente por su ID.")
 async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_orden_por_id(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar orden parcialmente", description="Actualiza parcialmente una orden existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden parcialmente", description="Actualiza parcialmente una orden existente por su ID.")
 async def patchOrdenApi(id: int, requestBody: OrdenUpdateRequest):
     return await actualizarOrdenApi(id, requestBody)
 
 
-@router.post("/", summary="Crear orden", description="Crea una nueva orden.")
+@router.post("/", dependencies=[Depends(permiso_requerido('orden', 'crear'))], summary="Crear orden", description="Crea una nueva orden.")
 async def agregarOrdenApi(requestBody: OrdenRequest):
     payload = requestBody.model_dump()
     result = await crear_orden(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener órdenes", description="Obtiene una lista de órdenes con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('orden', 'leer'))], summary="Obtener órdenes", description="Obtiene una lista de órdenes con filtros opcionales.")
 async def obtenerOrdenesApi(
     id: Optional[str] = Query(None, description="Filtrar orden por ID"),
     estado: Optional[str] = Query(None, description="Filtrar por estado"),
@@ -50,7 +52,7 @@ async def obtenerOrdenesApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener orden por ID", description="Obtiene una orden específica por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('orden', 'leer'))], summary="Obtener orden por ID", description="Obtiene una orden específica por su ID.")
 async def obtenerOrdenPorIdApi(id: int):
     filtros = {'id': id}
     result = await obtener_ordenes(filtros)

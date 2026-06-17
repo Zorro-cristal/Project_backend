@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.vendedor_request import (
     VendedorRequest, VendedorUpdateRequest)
 
@@ -11,26 +12,25 @@ from ..services.vendedor_service import (actualizar_vendedor, crear_vendedor,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar vendedor", description="Actualiza un vendedor existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'editar'))], summary="Actualizar vendedor", description="Actualiza un vendedor existente por su ID.")
 async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_vendedor(id, payload)
     return {"message": result}
 
-
-@router.patch("/{id}", summary="Actualizar vendedor parcialmente", description="Actualiza parcialmente un vendedor existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'editar'))], summary="Actualizar vendedor parcialmente", description="Actualiza parcialmente un vendedor existente por su ID.")
 async def patchVendedorApi(id: int, requestBody: VendedorUpdateRequest):
     return await actualizarVendedorApi(id, requestBody)
 
 
-@router.post("/", summary="Crear vendedor", description="Crea un nuevo vendedor.")
+@router.post("/", dependencies=[Depends(permiso_requerido('vendedor', 'crear'))], summary="Crear vendedor", description="Crea un nuevo vendedor.")
 async def agregarVendedorApi(requestBody: VendedorRequest):
     payload = requestBody.model_dump()
     result = await crear_vendedor(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
 async def obtenerVendedoresApi(
     id: Optional[str] = Query(None, description="Filtrar vendedores por ID"),
     salario: Optional[float] = Query(None, description="Filtrar vendedores por salario mínimo"),
@@ -54,7 +54,7 @@ async def obtenerVendedoresApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener vendedor por ID", description="Obtiene un vendedor específico por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedor por ID", description="Obtiene un vendedor específico por su ID.")
 async def obtenerVendedorPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_vendedores(filtros)

@@ -1,31 +1,33 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+
+from src.infraestructura.api.dependencies import permiso_requerido
+from src.shell.adapters.requests.marca_request import (MarcaRequest,
+                                                       MarcaUpdateRequest)
 
 from ..services.marca_service import (actualizar_marca, crear_marca,
-                                              obtener_marcas)
-from src.shell.adapters.requests.marca_request import (MarcaRequest,
-                                                         MarcaUpdateRequest)
+                                      obtener_marcas)
 
 router = APIRouter()
 
-@router.put("/{id}", summary="Actualizar marca", description="Actualiza una marca existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('marca', 'editar'))], summary="Actualizar marca", description="Actualiza una marca existente por su ID.")
 async def actualizarMarcaApi(id: int, requestBody: MarcaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_marca(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", summary="Actualizar marca parcialmente", description="Actualiza parcialmente una marca existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('marca', 'editar'))], summary="Actualizar marca parcialmente", description="Actualiza parcialmente una marca existente por su ID.")
 async def patchMarcaApi(id: int, requestBody: MarcaUpdateRequest):
     return await actualizarMarcaApi(id, requestBody)
 
-@router.post("/", summary="Crear marca", description="Crea una nueva marca.")
+@router.post("/", dependencies=[Depends(permiso_requerido('marca', 'crear'))], summary="Crear marca", description="Crea una nueva marca.")
 async def agregarMarcaApi(requestBody: MarcaRequest):
     payload = requestBody.model_dump()
     result = await crear_marca(payload)
     return {"message": result}
 
-@router.get("/", summary="Obtener marcas", description="Obtiene una lista de marcas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('marca', 'leer'))], summary="Obtener marcas", description="Obtiene una lista de marcas con filtros opcionales.")
 async def obtenerMarcasApi(
     id: Optional[str] = Query(None, description="Filtrar marcas por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar marcas por nombre parcial"),

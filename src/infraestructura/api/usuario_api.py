@@ -1,8 +1,10 @@
 from typing import Optional
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Depends
 from pydantic import BaseModel
 
+from src.infraestructura.api.dependencies import permiso_requerido
+from src.shared.security.auth_handler import crear_token_acceso
 from src.shell.adapters.requests.usuario_request import (UsuarioRequest,
                                                          UsuarioUpdateRequest)
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
@@ -20,33 +22,44 @@ class UsuarioLoginRequest(BaseModel):
 
 @router.post("/login", summary="Iniciar sesión", description="Procesa el inicio de sesión de un usuario con alias y contraseña.")
 async def login(request_body: UsuarioLoginRequest):
-    # Creamos una instancia de Usuario (entidad) para pasar a procesarLogin.
-    # Asignamos un ID ficticio (0) ya que el ID real no es parte de la solicitud de login y no se usa en procesarLogin.
     user_for_processing = Usuario(alias=request_body.alias, contra=request_body.contra)
     result = await procesarLogin(user_for_processing)
-    return {"message": result} 
+    
+    if not result:
+        from fastapi import HTTPException
+        raise HTTPException(status_code=401, detail="Credenciales inválidas")
+
+    user_data = result[0]
+    # Generar token con el ID y alias
+    token = crear_token_acceso(data={"sub": str(user_data['id']), "alias": user_data['alias']})
+    
+    return {
+        "access_token": token,
+        "token_type": "bearer",
+        "user": user_data
+    }
 
 
-@router.put("/{id}", summary="Actualizar usuario", description="Actualiza un usuario existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Usuarios', 'editar'))], summary="Actualizar usuario", description="Actualiza un usuario existente por su ID.")
 async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_usuario(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar usuario parcialmente", description="Actualiza parcialmente un usuario existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Usuarios', 'editar'))], summary="Actualizar usuario parcialmente", description="Actualiza parcialmente un usuario existente por su ID.")
 async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
     return await actualizarUsuarioApi(id, requestBody)
 
 
-@router.post("/", summary="Crear usuario", description="Crea un nuevo usuario.")
+@router.post("/", dependencies=[Depends(permiso_requerido('Usuarios', 'crear'))], summary="Crear usuario", description="Crea un nuevo usuario.")
 async def agregarUsuarioApi(requestBody: UsuarioRequest):
     payload = requestBody.model_dump()
     result = await crear_usuario(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener usuarios", description="Obtiene una lista de usuarios con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Usuarios', 'leer'))], summary="Obtener usuarios", description="Obtiene una lista de usuarios con filtros opcionales.")
 async def obtenerUsuariosApi(
     id: Optional[str] = None,
     alias: Optional[str] = None,

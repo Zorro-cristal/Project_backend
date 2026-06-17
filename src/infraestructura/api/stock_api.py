@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.stock_request import (StockRequest,
                                                        StockUpdateRequest)
 
@@ -11,26 +12,26 @@ from ..services.stock_service import (actualizar_stock, crear_stock,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
 async def actualizarStockApi(id: int, requestBody: StockUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_stock(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
 async def patchStockApi(id: int, requestBody: StockUpdateRequest):
     return await actualizarStockApi(id, requestBody)
 
 
-@router.post("/", summary="Crear stock", description="Crea un nuevo stock.")
+@router.post("/", dependencies=[Depends(permiso_requerido('stock', 'crear'))], summary="Crear stock", description="Crea un nuevo stock.")
 async def agregarStockApi(requestBody: StockRequest):
     payload = requestBody.model_dump()
     result = await crear_stock(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener stocks", description="Obtiene una lista de stocks con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('stock', 'leer'))], summary="Obtener stocks", description="Obtiene una lista de stocks con filtros opcionales.")
 async def obtenerStocksApi(
     id: Optional[str] = Query(None, description="Filtrar stocks por ID"),
     id_localfk: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
@@ -54,7 +55,7 @@ async def obtenerStocksApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener stock por ID", description="Obtiene un stock específico por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('stock', 'leer'))], summary="Obtener stock por ID", description="Obtiene un stock específico por su ID.")
 async def obtenerStockPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_stocks(filtros)

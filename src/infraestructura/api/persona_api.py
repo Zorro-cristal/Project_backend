@@ -1,18 +1,20 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
+
+from src.infraestructura.api.dependencies import permiso_requerido
 
 from ..services.persona_service import obtener_personas
 
 router = APIRouter()
 
-@router.get("/{cedula}", summary="Obtener persona por cédula", description="Obtiene los datos de una persona por su cédula.")
+@router.get("/{cedula}", dependencies=[Depends(permiso_requerido('persona', 'leer'))], summary="Obtener persona por cédula", description="Obtiene los datos de una persona por su cédula.")
 async def obtenerPersonaPorCedulaApi(cedula: int):
     result = await obtener_personas({"cedula": cedula})
     return {"message": result}
 
 
-@router.get("/", summary="Obtener personas", description="Obtiene una lista de personas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('persona', 'leer'))], summary="Obtener personas", description="Obtiene una lista de personas con filtros opcionales.")
 async def obtenerPersonasApi(
     cedula: Optional[int] = Query(None, description="Filtrar personas por cédula"),
     nombres: Optional[str] = Query(None, description="Filtrar personas por nombre parcial"),

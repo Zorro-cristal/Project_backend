@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.venta_request import (VentaRequest,
                                                        VentaUpdateRequest)
 
@@ -14,7 +15,7 @@ from ..services.venta_service import (actualizar_venta, crear_venta,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
 async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     try:
@@ -24,12 +25,12 @@ async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest):
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar venta parcialmente", description="Actualiza parcialmente una venta existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar venta parcialmente", description="Actualiza parcialmente una venta existente por su ID.")
 async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
     return await actualizarVentaApi(id, requestBody)
 
 
-@router.post("/", summary="Crear venta", description="Crea una nueva venta.")
+@router.post("/", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta", description="Crea una nueva venta.")
 async def agregarVentaApi(requestBody: VentaRequest):
     payload = requestBody.model_dump()
     try:
@@ -39,7 +40,7 @@ async def agregarVentaApi(requestBody: VentaRequest):
     return {"message": result}
 
 
-@router.get("/", summary="Obtener ventas", description="Obtiene una lista de ventas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener ventas", description="Obtiene una lista de ventas con filtros opcionales.")
 async def obtenerVentasApi(
     id: Optional[str] = Query(None, description="Filtrar ventas por ID"),
     nro: Optional[str] = Query(None, description="Filtrar ventas por número"),
@@ -70,7 +71,7 @@ async def obtenerVentasApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener venta por ID", description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener venta por ID", description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.")
 async def obtenerVentaPorIdApi(
     id: int,
     include: Optional[str] = Query(None, description="include=detalleVenta para incluir detalle_venta")
@@ -89,7 +90,7 @@ async def obtenerVentaPorIdApi(
 
 
 
-@router.get("/{id}/detalleVenta", summary="Obtener detalles de venta", description="Obtiene solo el detalle_venta asociado a una venta.")
+@router.get("/{id}/detalleVenta", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener detalles de venta", description="Obtiene solo el detalle_venta asociado a una venta.")
 async def obtenerDetalleVentaPorVentaIdApi(id: int):
     filtros = {"id_ventafk": id}
     result = await obtener_detalle_venta_por_venta_id(filtros)

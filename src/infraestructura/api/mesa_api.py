@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.mesa_request import (MesaRequest,
                                                       MesaUpdateRequest)
 
@@ -10,7 +11,7 @@ from ..services.mesa_service import actualizar_mesa, crear_mesa, obtener_mesas
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar mesa", description="Actualiza una mesa existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('mesa', 'editar'))], summary="Actualizar mesa", description="Actualiza una mesa existente por su ID.")
 async def actualizarMesaApi(id: int, requestBody: MesaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     try:
@@ -20,12 +21,12 @@ async def actualizarMesaApi(id: int, requestBody: MesaUpdateRequest):
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar mesa parcialmente", description="Actualiza parcialmente una mesa existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('mesa', 'editar'))], summary="Actualizar mesa parcialmente", description="Actualiza parcialmente una mesa existente por su ID.")
 async def patchMesaApi(id: int, requestBody: MesaUpdateRequest):
     return await actualizarMesaApi(id, requestBody)
 
 
-@router.post("/", summary="Crear mesa", description="Crea una nueva mesa.")
+@router.post("/", dependencies=[Depends(permiso_requerido('mesa', 'crear'))], summary="Crear mesa", description="Crea una nueva mesa.")
 async def agregarMesaApi(requestBody: MesaRequest):
     payload = requestBody.model_dump()
     try:
@@ -35,7 +36,7 @@ async def agregarMesaApi(requestBody: MesaRequest):
     return {"message": result}
 
 
-@router.get("/", summary="Obtener mesas", description="Obtiene una lista de mesas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('mesa', 'leer'))], summary="Obtener mesas", description="Obtiene una lista de mesas con filtros opcionales.")
 async def obtenerMesasApi(
     id: Optional[str] = Query(None, description="Filtrar mesas por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar mesas por nombre parcial"),
@@ -56,7 +57,7 @@ async def obtenerMesasApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener mesa por ID", description="Obtiene una mesa específica por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('mesa', 'leer'))], summary="Obtener mesa por ID", description="Obtiene una mesa específica por su ID.")
 async def obtenerMesaPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_mesas(filtros)

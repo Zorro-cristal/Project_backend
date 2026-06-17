@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
 from src.shell.flujo.producto.consultarProducto import (
@@ -14,23 +15,23 @@ from ..services.producto_service import (actualizar_producto, crear_producto,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar producto", description="Actualiza un producto existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar producto", description="Actualiza un producto existente por su ID.")
 async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_producto(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", summary="Actualizar producto parcialmente", description="Actualiza parcialmente un producto existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar producto parcialmente", description="Actualiza parcialmente un producto existente por su ID.")
 async def patchProductoApi(id: int, requestBody: ProductoUpdateRequest):
     return await actualizarProductoApi(id, requestBody)
 
-@router.post("/", summary="Crear producto", description="Crea un nuevo producto.")
+@router.post("/", dependencies=[Depends(permiso_requerido('producto', 'crear'))], summary="Crear producto", description="Crea un nuevo producto.")
 async def agregarProductoApi(requestBody: ProductoRequest):
     payload = requestBody.model_dump()
     result = await crear_producto(payload)
     return {"message": result}
 
-@router.get("/", summary="Obtener productos", description="Obtiene una lista de productos con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('producto', 'leer'))], summary="Obtener productos", description="Obtiene una lista de productos con filtros opcionales.")
 async def obtenerProductosApi(
     id: Optional[str] = Query(None, description="Filtrar productos por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar productos por nombre parcial"),
@@ -66,7 +67,7 @@ async def obtenerProductosApi(
 
 
 
-@router.get("/{id}", summary="Obtener producto", description="Obtiene un producto por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('producto', 'leer'))], summary="Obtener producto", description="Obtiene un producto por su ID.")
 async def obtenerProductoApi(
     id: int,
     include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesProducto"),
@@ -78,7 +79,7 @@ async def obtenerProductoApi(
     return {"message": result}
 
 
-@router.get("/{id}/detallesProducto", summary="Obtener detallesProducto", description="Obtiene solo los detallesProducto (detalles_producto) de un producto.")
+@router.get("/{id}/detallesProducto", dependencies=[Depends(permiso_requerido('producto', 'leer'))], summary="Obtener detallesProducto", description="Obtiene solo los detallesProducto (detalles_producto) de un producto.")
 async def obtenerDetallesProductoApi(id: int):
     result = await obtener_detallesProducto(id)
     return {"message": result}

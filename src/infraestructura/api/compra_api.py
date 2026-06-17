@@ -1,7 +1,8 @@
 from typing import Optional
 
-from fastapi import APIRouter, Query
+from fastapi import APIRouter, Depends, Query
 
+from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
@@ -12,26 +13,26 @@ from ..services.compra_service import (actualizar_compra, crear_compra,
 router = APIRouter()
 
 
-@router.put("/{id}", summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
 async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_compra(id, payload)
     return {"message": result}
 
 
-@router.patch("/{id}", summary="Actualizar compra parcialmente", description="Actualiza parcialmente una compra existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra parcialmente", description="Actualiza parcialmente una compra existente por su ID.")
 async def patchCompraApi(id: int, requestBody: CompraUpdateRequest):
     return await actualizarCompraApi(id, requestBody)
 
 
-@router.post("/", summary="Crear compra", description="Crea una nueva compra.")
+@router.post("/", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Crear compra", description="Crea una nueva compra.")
 async def agregarCompraApi(requestBody: CompraRequest):
     payload = requestBody.model_dump()
     result = await crear_compra(payload)
     return {"message": result}
 
 
-@router.get("/", summary="Obtener compras", description="Obtiene una lista de compras con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener compras", description="Obtiene una lista de compras con filtros opcionales.")
 async def obtenerComprasApi(
     id: Optional[int] = Query(None, description="Filtrar compras por ID"),
     nro: Optional[str] = Query(None, description="Filtrar compras por número"),
@@ -58,7 +59,7 @@ async def obtenerComprasApi(
     return {"message": result}
 
 
-@router.get("/{id}", summary="Obtener compra por ID", description="Obtiene una compra específica por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener compra por ID", description="Obtiene una compra específica por su ID.")
 async def obtenerCompraPorIdApi(
     id: int,
     include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detalleCompra"),
@@ -73,7 +74,7 @@ async def obtenerCompraPorIdApi(
     return {"message": result}
 
 
-@router.get("/{id}/detalleCompra", summary="Obtener detalles de compra", description="Obtiene solo los detalle_compra asociados a una compra.")
+@router.get("/{id}/detalleCompra", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener detalles de compra", description="Obtiene solo los detalle_compra asociados a una compra.")
 async def obtenerDetalleCompraPorIdApi(id: int):
     result = await obtener_compra_con_detalles(id, solo_detalles=True)
     return {"message": result}
