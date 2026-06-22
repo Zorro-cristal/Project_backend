@@ -11,8 +11,8 @@ class Stock:
     cant_deposito: int
     cant_mostrador: int
     precio: float
-    cant_reservado: int
-    lote: Optional[str]
+    cant_reservado: int = 0
+    lote: Optional[str] = None
     id_localfk: Optional[int]= None
     id_detalleproductofk: Optional[str]= None
     local: Optional[Local]= None

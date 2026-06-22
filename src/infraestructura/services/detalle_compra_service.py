@@ -3,7 +3,7 @@ from src.shell.utils import attach_related
 from ..models.detalle_compra import Detalle_compra
 from ..repositories.detalle_compra_repository import (actualizarDetalleCompra,
                                                       obtenerDetalleCompra)
-from .producto_service import obtener_productos
+from .stock_service import obtener_stocks
 
 
 def build_detalle_compra_entity(payload: dict) -> Detalle_compra:
@@ -12,7 +12,7 @@ def build_detalle_compra_entity(payload: dict) -> Detalle_compra:
 
 
 async def attach_related_data(detalles: list[dict]) -> list[dict]:
-    return await attach_related(detalles, 'id_productofk', obtener_productos, 'id', 'id', 'producto')
+    return await attach_related(detalles, 'id_stockfk', obtener_stocks, 'id', 'id', 'stock')
 
 
 async def obtener_detalle_compras(filtros: dict = None, columnas: str = '*'):

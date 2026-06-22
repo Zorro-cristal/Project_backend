@@ -36,15 +36,15 @@ async def agregarDetalleCompraApi(requestBody: DetalleCompraRequest):
 async def obtenerDetalleComprasApi(
     id: Optional[int] = Query(None, description="Filtrar detalles de compra por ID"),
     id_comprafk: Optional[int] = Query(None, description="Filtrar detalles por ID de compra"),
-    id_productofk: Optional[int] = Query(None, description="Filtrar detalles por ID de producto")
+    id_stockfk: Optional[int] = Query(None, description="Filtrar detalles por ID de stock")
 ):
     filtros = {}
     if id is not None:
         filtros["id"] = id
     if id_comprafk is not None:
         filtros["id_comprafk"] = id_comprafk
-    if id_productofk is not None:
-        filtros["id_productofk"] = id_productofk
+    if id_stockfk is not None:
+        filtros["id_stockfk"] = id_stockfk
 
     result = await obtener_detalle_compras(filtros)
     return {"message": result}

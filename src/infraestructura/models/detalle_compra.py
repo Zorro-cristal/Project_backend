@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 from typing import Optional
 
-from .producto import Producto
+from .stock import Stock
 from .compra import Compra
 
 
@@ -10,7 +10,7 @@ class Detalle_compra:
     cantidad: int
     precio: float
     id_comprafk: Optional[int] = None
-    id_productofk: Optional[int] = None
-    producto: Optional[Producto] = None
+    id_stockfk: Optional[int] = None
+    stock: Optional[Stock] = None
     compra: Optional[Compra] = None
     id: Optional[int] = None

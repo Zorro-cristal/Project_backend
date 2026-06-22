@@ -44,8 +44,22 @@ async def obtener_stocks(filtros: dict = None, columnas: str = '*'):
 
 
 async def crear_stock(payload: dict):
-    stock = build_stock_entity(payload)
-    return await actualizarStock(stock)
+    import logging
+    logger = logging.getLogger(__name__)
+    
+    logger.info(f"Recibido payload para crear stock: {payload}")
+    
+    try:
+        stock = build_stock_entity(payload)
+        logger.info(f"Entidad Stock construida: {stock}")
+        
+        result = await actualizarStock(stock)
+        logger.info(f"Resultado de actualizarStock: {result}")
+        
+        return result
+    except Exception as e:
+        logger.error(f"Error al crear stock: {str(e)}")
+        raise
 
 
 async def actualizar_stock(id: int, payload: dict):

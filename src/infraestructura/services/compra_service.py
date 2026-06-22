@@ -1,6 +1,8 @@
 from datetime import datetime
 from typing import Optional
 
+from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import \
+    crear_o_actualizar_detalle_compra
 from src.shell.utils import validar_fk_existente
 
 from ..models.compra import Compra
@@ -83,23 +85,14 @@ async def crear_compra(payload: dict):
     # Obtener el ID de la compra creada
     id_compra = resultado.get('id_compra') if resultado else None
     
-    # Si hay detalles y se creó la compra, guardar cada detalle
+# Si hay detalles y se creó la compra, guardar cada detalle
     if detalles and id_compra:
         for detalle in detalles:
-            # Validar que el producto exista
-            if detalle.get('id_productofk'):
-                await validar_fk_existente(
-                    detalle.get('id_productofk'),
-                    obtener_productos,
-                    'id',
-                    f"Producto con ID {detalle.get('id_productofk')} no existe",
-                )
             # Asignar el ID de la compra al detalle
             detalle['id_comprafk'] = id_compra
-            # Remover campos que no son parte del modelo Detalle_compra
-            detalle_limpio = {k: v for k, v in detalle.items() 
-                            if k in ('cantidad', 'precio', 'id_comprafk', 'id_productofk')}
-            await crear_detalle_compra(detalle_limpio)
+            
+            # Usar crear_o_actualizar_detalle_compra que crea el stock automáticamente
+            await crear_o_actualizar_detalle_compra(detalle)
     
     return resultado
 
@@ -136,28 +129,13 @@ async def actualizar_compra(id: int, payload: dict):
     # Actualizar la compra
     resultado = await actualizarCompra(payload, id)
     
-    # Si hay detalles, actualizar/crear cada detalle
+# Si hay detalles, actualizar/crear cada detalle
     if detalles:
         for detalle in detalles:
-            # Validar que el producto exista
-            if detalle.get('id_productofk'):
-                await validar_fk_existente(
-                    detalle.get('id_productofk'),
-                    obtener_productos,
-                    'id',
-                    f"Producto con ID {detalle.get('id_productofk')} no existe",
-                )
             # Asignar el ID de la compra al detalle
             detalle['id_comprafk'] = id
-            # Remover campos que no son parte del modelo Detalle_compra
-            detalle_limpio = {k: v for k, v in detalle.items() 
-                            if k in ('cantidad', 'precio', 'id_comprafk', 'id_productofk')}
             
-            # Si el detalle tiene ID, actualizarlo; si no, crearlo
-            if detalle.get('id'):
-                from .detalle_compra_service import actualizar_detalle_compra
-                await actualizar_detalle_compra(detalle['id'], detalle_limpio)
-            else:
-                await crear_detalle_compra(detalle_limpio)
+            # Usar crear_o_actualizar_detalle_compra que crea el stock automáticamente
+            await crear_o_actualizar_detalle_compra(detalle)
     
     return resultado
