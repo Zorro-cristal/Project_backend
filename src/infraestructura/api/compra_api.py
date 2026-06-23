@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.compra_request import (CompraRequest,
@@ -16,7 +16,10 @@ router = APIRouter()
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
 async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
-    result = await actualizar_compra(id, payload)
+    try:
+        result = await actualizar_compra(id, payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 
@@ -28,7 +31,10 @@ async def patchCompraApi(id: int, requestBody: CompraUpdateRequest):
 @router.post("/", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Crear compra", description="Crea una nueva compra.")
 async def agregarCompraApi(requestBody: CompraRequest):
     payload = requestBody.model_dump()
-    result = await crear_compra(payload)
+    try:
+        result = await crear_compra(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 

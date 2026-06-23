@@ -9,7 +9,7 @@ from .local import Local
 from .proveedor import Proveedor
 
 
-@dataclass(frozen=True)
+@dataclass
 class Compra:
     nro: Optional[str] = None
     id_localfk: int = None
