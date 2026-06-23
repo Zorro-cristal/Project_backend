@@ -1,7 +1,11 @@
-from src.shell.utils import attach_related, validar_fk_existente
+from src.shell.utils import (attach_grouped, attach_related,
+                             validar_fk_existente)
 
 from ..models.caja import Caja
 from ..repositories.caja_repository import actualizarCaja, obtenerCaja
+from ..repositories.compra_repository import obtenerCompra
+from ..repositories.egreso_repository import obtenerEgreso
+from ..repositories.venta_repository import obtenerVenta
 from .usuario_service import obtener_usuarios
 
 
@@ -42,3 +46,41 @@ async def actualizar_caja(id: int, payload: dict):
         f"Usuario con ID {payload.get('id_usuariofk')} no existe",
     )
     return await actualizarCaja(payload, id)
+
+
+async def obtener_caja_por_id_con_movimientos(filtros: dict = None, columnas: str = '*'):
+    """Retorna la caja por id con movimientos (egresos, ventas, compras)."""
+    caja = await obtenerCaja(filtros=filtros, columnas=columnas)
+    if not caja:
+        return None
+    
+    # El repository devuelve una lista, obtengo el primer elemento
+    if isinstance(caja, list):
+        caja = caja[0] if caja else None
+    
+    if not caja:
+        return None
+    
+    caja_id = caja.get('id')
+    if caja_id is None:
+        return caja
+    
+    # Convertir a lista para usar attach_grouped
+    cajas_list = [caja]
+    
+    # Adjuntar egresos (filtrar por id_cajafk)
+    cajas_list = await attach_grouped(
+        cajas_list, 'id', obtenerEgreso, 'id_cajafk', 'id_cajafk', 'egresos'
+    )
+    
+    # Adjuntar ventas (filtrar por id_cajafk)
+    cajas_list = await attach_grouped(
+        cajas_list, 'id', obtenerVenta, 'id_cajafk', 'id_cajafk', 'ventas'
+    )
+    
+    # Adjuntar compras (filtrar por id_cajafk)
+    cajas_list = await attach_grouped(
+        cajas_list, 'id', obtenerCompra, 'id_cajafk', 'id_cajafk', 'compras'
+    )
+    
+    return cajas_list[0]

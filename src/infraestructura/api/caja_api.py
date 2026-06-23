@@ -6,7 +6,9 @@ from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.caja_request import (CajaRequest,
                                                       CajaUpdateRequest)
 
-from ..services.caja_service import actualizar_caja, crear_caja, obtener_cajas
+from ..services.caja_service import (actualizar_caja, crear_caja,
+                                     obtener_caja_por_id_con_movimientos,
+                                     obtener_cajas)
 
 router = APIRouter()
 
@@ -57,10 +59,20 @@ async def obtenerCajasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID.")
-async def obtenerCajaPorIdApi(id: int):
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID. Usa include=movimientos para incluir egresos, compras y ventas.")
+async def obtenerCajaPorIdApi(
+    id: int,
+    include: Optional[str] = Query(None, description="include=movimientos para incluir egresos, compras y ventas")
+):
     filtros = {"id": id}
-    result = await obtener_cajas(filtros)
+
+    if include == "movimientos":
+        result = await obtener_caja_por_id_con_movimientos(filtros)
+    else:
+        result = await obtener_cajas(filtros)
+        if result:
+            result = result[0] if isinstance(result, list) else result
+
     if not result:
         return {"message": f"Caja con ID {id} no encontrada"}
-    return {"message": result[0] if isinstance(result, list) else result}
+    return {"message": result}
