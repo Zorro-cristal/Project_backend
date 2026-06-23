@@ -13,6 +13,7 @@ class ProductoRequest(BaseModel):
     costeo: int
     unidad_medida: str
     es_ingrediente: Optional[bool] = None
+    es_comida: Optional[bool] = None
 
     # Keep original aliases (capitalization varies in client payload)
     id_categoriafk: int = Field(..., alias="id_categoriafk")
@@ -32,9 +33,9 @@ class ProductoUpdateRequest(BaseModel):
     costeo: Optional[int] = None
     unidad_medida: Optional[str] = None
     es_ingrediente: Optional[bool] = None
+    es_comida: Optional[bool] = None
     id_categoriafk: Optional[int] = Field(None, alias="id_categoriafk")
     id_marcafk: Optional[int] = Field(None, alias="id_marcafk")
 
     class Config:
         validate_by_name = True
-
