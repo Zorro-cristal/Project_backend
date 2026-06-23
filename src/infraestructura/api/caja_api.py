@@ -42,7 +42,7 @@ async def agregarCajaApi(requestBody: CajaRequest):
 async def obtenerCajasApi(
     id: Optional[str] = Query(None, description="Filtrar cajas por ID"),
     id_usuariofk: Optional[int] = Query(None, description="Filtrar cajas por ID de usuario asociado"),
-    fecha_creacion: Optional[str] = Query(None, description="Filtrar cajas por fecha de creación"),
+    fecha_creado: Optional[str] = Query(None, description="Filtrar cajas por fecha de creación"),
     fecha_cierre: Optional[str] = Query(None, description="Filtrar cajas por fecha de cierre")
 ):
     filtros = {}
@@ -50,8 +50,8 @@ async def obtenerCajasApi(
         filtros["id"] = id
     if id_usuariofk is not None:
         filtros["id_usuariofk"] = id_usuariofk
-    if fecha_creacion is not None:
-        filtros["fecha_creacion"] = fecha_creacion
+    if fecha_creado is not None:
+        filtros["fecha_creado"] = fecha_creado
     if fecha_cierre is not None:
         filtros["fecha_cierre"] = fecha_cierre
 

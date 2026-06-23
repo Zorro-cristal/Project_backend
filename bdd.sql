@@ -298,11 +298,11 @@ CREATE TABLE ventas (
     temperatura      INTEGER,
     humedad          INTEGER,
     evento           BOOLEAN,
-    id_usuariofk     INTEGER NOT NULL,
+    id_cajafk     INTEGER NOT NULL,
     id_clientefk     INTEGER NOT NULL,
     id_localfk       INTEGER NOT NULL,
     fecha_creado     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    CONSTRAINT fk_ventas_usuario FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id),
+    CONSTRAINT fk_ventas_caja FOREIGN KEY (id_cajafk) REFERENCES cajas (id),
     CONSTRAINT fk_ventas_cliente FOREIGN KEY (id_clientefk) REFERENCES clientes (id),
     CONSTRAINT fk_ventas_local   FOREIGN KEY (id_localfk)   REFERENCES locales (id)
 );
@@ -337,6 +337,8 @@ CREATE TABLE compras (
     fecha_creado   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     fecha_edit     TIMESTAMP WITH TIME ZONE,
     id_proveedorfk INTEGER NOT NULL,
+    id_cajafk       INTEGER NOT NULL,
+    CONSTRAINT fk_compras_caja     FOREIGN KEY (id_cajafk)     REFERENCES cajas (id),
     CONSTRAINT fk_compras_local     FOREIGN KEY (id_localfk)     REFERENCES locales (id),
     CONSTRAINT fk_compras_proveedor FOREIGN KEY (id_proveedorfk) REFERENCES proveedores (id)
 );
