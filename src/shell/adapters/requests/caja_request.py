@@ -9,7 +9,7 @@ from datetime import datetime
 
 class CajaRequest(BaseModel):
     monto_apertura: float
-    fecha_creacion: datetime
+    fecha_creado: datetime
     monto_cierre: Optional[float] = None
     fecha_cierre: Optional[datetime] = None
     id_usuariofk: Optional[int] = None
@@ -21,7 +21,7 @@ class CajaRequest(BaseModel):
 
 class CajaUpdateRequest(BaseModel):
     monto_apertura: Optional[float] = None
-    fecha_creacion: Optional[datetime] = None
+    fecha_creado: Optional[datetime] = None
     monto_cierre: Optional[float] = None
     fecha_cierre: Optional[datetime] = None
     id_usuariofk: Optional[int] = None

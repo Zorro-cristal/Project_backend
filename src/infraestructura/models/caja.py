@@ -14,7 +14,7 @@ if TYPE_CHECKING:
 @dataclass(frozen=True)
 class Caja:
     monto_apertura: float
-    fecha_creacion: datetime
+    fecha_creado: datetime
     monto_cierre: Optional[float]= None
     fecha_cierre: Optional[datetime] = None
     id_usuariofk: Optional[int]= None
