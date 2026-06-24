@@ -1,15 +1,16 @@
 from typing import Optional
+
 from pydantic import BaseModel
-from src.shell.adapters.requests.local_request import (
-    LocalRequest,
-    LocalUpdateRequest,
-)
+
+from src.shell.adapters.requests.local_request import (LocalRequest,
+                                                       LocalUpdateRequest)
 
 
 class MesaRequest(BaseModel):
     nombre: str
+    capacidad: int
     estado: Optional[bool] = True
-    id_localfk: Optional[int] = None
+    id_localfk: int  # Required: NOT NULL in database schema
     local: Optional[LocalRequest] = None
 
     class Config:
@@ -18,6 +19,7 @@ class MesaRequest(BaseModel):
 
 class MesaUpdateRequest(BaseModel):
     nombre: Optional[str] = None
+    capacidad: Optional[int] = None
     estado: Optional[bool] = None
     id_localfk: Optional[int] = None
     local: Optional[LocalUpdateRequest] = None

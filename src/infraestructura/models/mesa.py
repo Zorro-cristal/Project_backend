@@ -9,6 +9,7 @@ from .local import Local
 class Mesa:
     nombre: str
     estado: bool
+    capacidad: int
     id_localfk: Optional[int]= None
     local: Optional[Local]= None
     id: Optional[int] = None
