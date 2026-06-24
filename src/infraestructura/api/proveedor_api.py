@@ -38,7 +38,8 @@ async def obtenerProveedoresApi(
     ruc: Optional[int] = Query(None, description="Filtrar proveedores por RUC"),
     estado: Optional[bool] = Query(None, description="Filtrar proveedores por estado (true activo, false inactivo)"),
     correo: Optional[str] = Query(None, description="Filtrar proveedores por correo"),
-    id_personafk: Optional[int] = Query(None, description="Filtrar proveedores por ID de persona asociada")
+    id_personafk: Optional[int] = Query(None, description="Filtrar proveedores por ID de persona asociada"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=false). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -53,6 +54,9 @@ async def obtenerProveedoresApi(
         filtros["correo"] = correo
     if id_personafk is not None:
         filtros["id_personafk"] = id_personafk
+    # Por defecto ocultar inactivos (estado=false), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = True
 
     result = await obtener_proveedores(filtros)
     return {"message": result}

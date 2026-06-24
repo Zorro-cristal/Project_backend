@@ -46,7 +46,8 @@ async def obtenerEgresosApi(
     descripcion: Optional[str] = Query(None, description="Filtrar egresos por descripción"),
     estado: Optional[int] = Query(None, description="Filtrar egresos por estado"),
     fecha: Optional[str] = Query(None, description="Filtrar egresos por fecha"),
-    id_cajafk: Optional[int] = Query(None, description="Filtrar egresos por ID de caja")
+    id_cajafk: Optional[int] = Query(None, description="Filtrar egresos por ID de caja"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")
 ):
     filtros = {}
     if id is not None:
@@ -61,6 +62,9 @@ async def obtenerEgresosApi(
         filtros["fecha"] = fecha
     if id_cajafk is not None:
         filtros["id_cajafk"] = id_cajafk
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
 
     result = await obtener_egresos(filtros)
 

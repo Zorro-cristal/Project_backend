@@ -41,7 +41,8 @@ async def obtenerMesasApi(
     id: Optional[str] = Query(None, description="Filtrar mesas por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar mesas por nombre parcial"),
     estado: Optional[bool] = Query(None, description="Filtrar mesas por estado (true activo, false inactivo)"),
-    id_localfk: Optional[int] = Query(None, description="Filtrar mesas por ID de local asociada")
+    id_localfk: Optional[int] = Query(None, description="Filtrar mesas por ID de local asociada"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=false). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -52,6 +53,9 @@ async def obtenerMesasApi(
         filtros["estado"] = estado
     if id_localfk is not None:
         filtros["id_localfk"] = id_localfk
+    # Por defecto ocultar inactivos (estado=false), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = True
 
     result = await obtener_mesas(filtros)
     return {"message": result}

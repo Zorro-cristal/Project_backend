@@ -37,7 +37,8 @@ async def obtenerLocalesApi(
     nombre: Optional[str] = Query(None, description="Filtrar locales por nombre parcial"),
     estado: Optional[bool] = Query(None, description="Filtrar locales por estado (true activo, false inactivo)"),
     direccion: Optional[str] = Query(None, description="Filtrar locales por dirección"),
-    telefono: Optional[str] = Query(None, description="Filtrar locales por teléfono")
+    telefono: Optional[str] = Query(None, description="Filtrar locales por teléfono"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=false). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -50,6 +51,9 @@ async def obtenerLocalesApi(
         filtros["direccion"] = direccion
     if telefono is not None:
         filtros["telefono"] = telefono
+    # Por defecto ocultar inactivos (estado=false), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = True
 
     result = await obtener_locales(filtros)
     return {"message": result}

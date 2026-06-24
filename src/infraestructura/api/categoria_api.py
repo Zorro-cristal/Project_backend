@@ -32,6 +32,7 @@ async def obtenerCategoriasApi(
     id: Optional[str] = Query(None, description="Filtrar categorias por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar categorías por nombre parcial"),
     estado: Optional[int] = Query(None, description="Filtrar productos por estado (1 para activo, 0 para inactivo)"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros= {}
     if id is not None:
@@ -40,5 +41,8 @@ async def obtenerCategoriasApi(
         filtros["nombre"] = nombre
     if estado is not None:
         filtros["estado"] = estado
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
     result = await obtener_categorias(filtros)
     return {"message": result}

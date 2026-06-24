@@ -48,7 +48,8 @@ async def obtenerVentasApi(
     estado: Optional[int] = Query(None, description="Filtrar ventas por estado"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
     id_localfk: Optional[int] = Query(None, description="Filtrar ventas por ID de local"),
-    id_cajafk: Optional[int] = Query(None, description="Filtrar ventas por ID de caja")
+    id_cajafk: Optional[int] = Query(None, description="Filtrar ventas por ID de caja"),
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")
 ):
     filtros = {}
     if id is not None:
@@ -65,6 +66,9 @@ async def obtenerVentasApi(
         filtros["id_localfk"] = id_localfk
     if id_cajafk is not None:
         filtros["id_cajafk"] = id_cajafk
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
 
     result = await obtener_ventas(filtros)
 

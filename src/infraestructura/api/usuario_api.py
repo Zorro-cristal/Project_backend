@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from pydantic import BaseModel
 
 from src.infraestructura.api.dependencies import permiso_requerido
@@ -65,6 +65,7 @@ async def obtenerUsuariosApi(
     alias: Optional[str] = None,
     estado: Optional[int] = None,
     id_personafk: Optional[int] = None,
+mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -75,6 +76,9 @@ async def obtenerUsuariosApi(
         filtros["estado"] = estado
     if id_personafk is not None:
         filtros["id_personafk"] = id_personafk
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
 
     result = await obtener_usuarios(filtros)
     return {"message": result}
