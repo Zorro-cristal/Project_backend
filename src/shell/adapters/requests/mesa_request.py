@@ -9,7 +9,7 @@ from src.shell.adapters.requests.local_request import (LocalRequest,
 class MesaRequest(BaseModel):
     nombre: str
     capacidad: int
-    estado: Optional[bool] = True
+    estado: Optional[int] = 1
     id_localfk: int  # Required: NOT NULL in database schema
     local: Optional[LocalRequest] = None
 
@@ -20,7 +20,7 @@ class MesaRequest(BaseModel):
 class MesaUpdateRequest(BaseModel):
     nombre: Optional[str] = None
     capacidad: Optional[int] = None
-    estado: Optional[bool] = None
+    estado: Optional[int] = None
     id_localfk: Optional[int] = None
     local: Optional[LocalUpdateRequest] = None
 

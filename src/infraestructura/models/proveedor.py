@@ -10,7 +10,7 @@ from .persona import Persona
 class Proveedor:
     razon_social: str
     ruc: int
-    estado: bool
+    estado: int = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
     persona: Optional[Persona] = None

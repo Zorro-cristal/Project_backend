@@ -35,10 +35,10 @@ async def agregarLocalApi(requestBody: LocalRequest):
 async def obtenerLocalesApi(
     id: Optional[str] = Query(None, description="Filtrar locales por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar locales por nombre parcial"),
-    estado: Optional[bool] = Query(None, description="Filtrar locales por estado (true activo, false inactivo)"),
+    estado: Optional[int] = Query(None, description="Filtrar locales por estado (1 activo, 0 inactivo)"),
     direccion: Optional[str] = Query(None, description="Filtrar locales por dirección"),
     telefono: Optional[str] = Query(None, description="Filtrar locales por teléfono"),
-mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=false). Por defecto solo muestra activos"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -51,9 +51,9 @@ mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra regi
         filtros["direccion"] = direccion
     if telefono is not None:
         filtros["telefono"] = telefono
-    # Por defecto ocultar inactivos (estado=false), mostrar solo activos
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
     if mostrar_inactivo != 1:
-        filtros["estado"] = True
+        filtros["estado"] = 1
 
     result = await obtener_locales(filtros)
     return {"message": result}

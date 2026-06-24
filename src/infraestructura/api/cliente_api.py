@@ -33,7 +33,9 @@ async def obtenerClientesApi(
     ruc: Optional[int] = Query(None, description="Filtrar clientes por RUC"),
     razon_social: Optional[str] = Query(None, description="Filtrar clientes por razón social parcial"),
     persona_fisica: Optional[int] = Query(None, description="Filtrar clientes por tipo de persona física"),
-    id_personafk: Optional[int] = Query(None, description="Filtrar clientes por ID de persona asociada")
+    id_personafk: Optional[int] = Query(None, description="Filtrar clientes por ID de persona asociada"),
+    estado: Optional[int] = Query(None, description="Filtrar clientes por estado (1 para activo, 0 para inactivo)"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -46,6 +48,11 @@ async def obtenerClientesApi(
         filtros["persona_fisica"] = persona_fisica
     if id_personafk is not None:
         filtros["id_personafk"] = id_personafk
+    if estado is not None:
+        filtros["estado"] = estado
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
 
     result = await obtener_clientes(filtros)
     return {"message": result}

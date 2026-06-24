@@ -10,7 +10,7 @@ from .persona import Persona
 class Vendedor:
     salario: float
     comision: float
-    estado: bool
+    estado: int = 1
     id_personafk: Optional[int]= None
     persona: Optional[Persona]= None
     id: Optional[int] = None

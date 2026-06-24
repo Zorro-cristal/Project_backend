@@ -1,15 +1,15 @@
 from typing import Optional
+
 from pydantic import BaseModel
-from src.shell.adapters.requests.persona_request import (
-    PersonaRequest,
-    PersonaUpdateRequest,
-)
+
+from src.shell.adapters.requests.persona_request import (PersonaRequest,
+                                                         PersonaUpdateRequest)
 
 
 class ProveedorRequest(BaseModel):
     razon_social: str
     ruc: int
-    estado: Optional[bool] = True
+    estado: Optional[int] = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
     persona: Optional[PersonaRequest] = None
@@ -21,7 +21,7 @@ class ProveedorRequest(BaseModel):
 class ProveedorUpdateRequest(BaseModel):
     razon_social: Optional[str] = None
     ruc: Optional[int] = None
-    estado: Optional[bool] = None
+    estado: Optional[int] = None
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
     persona: Optional[PersonaUpdateRequest] = None

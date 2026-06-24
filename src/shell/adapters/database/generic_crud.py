@@ -84,6 +84,10 @@ async def get(
                 query = query.gte(field, value)
             elif ("fin" in field):
                 query = query.lte(field, value)
+            elif ("mostrar_inactivo" in field):
+                if value == 0:
+                    query = query.neq("estado", 0)  # estado != 0 (show all active records)
+                # If mostrar_inactivo = 1, don't filter by estado (show all including inactive)
             else:
                 query = query.eq(field, value)
     
@@ -99,8 +103,6 @@ async def get(
 
 async def update(table: str, id: str, updates: dict, key: str = 'id') -> dict:
     client = get_supabase_client()
-    
-
     
     response = client.table(table).update(updates).eq(key, id).execute()
     

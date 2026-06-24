@@ -7,7 +7,7 @@ from typing import Optional
 @dataclass(frozen=True)
 class Local:
     nombre: str
-    estado: bool
+    estado: int = 1
     direccion: Optional[str] = None
     telefono: Optional[str] = None
 

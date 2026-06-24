@@ -35,8 +35,9 @@ async def obtenerVendedoresApi(
     id: Optional[str] = Query(None, description="Filtrar vendedores por ID"),
     salario: Optional[float] = Query(None, description="Filtrar vendedores por salario mínimo"),
     comision: Optional[float] = Query(None, description="Filtrar vendedores por comisión"),
-    estado: Optional[bool] = Query(None, description="Filtrar vendedores por estado (true activo, false inactivo)"),
-    id_personafk: Optional[int] = Query(None, description="Filtrar vendedores por ID de persona asociada")
+    estado: Optional[int] = Query(None, description="Filtrar vendedores por estado (1 activo, 0 inactivo)"),
+    id_personafk: Optional[int] = Query(None, description="Filtrar vendedores por ID de persona asociada"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -49,6 +50,9 @@ async def obtenerVendedoresApi(
         filtros["estado"] = estado
     if id_personafk is not None:
         filtros["id_personafk"] = id_personafk
+    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
+    if mostrar_inactivo != 1:
+        filtros["estado"] = 1
 
     result = await obtener_vendedores(filtros)
     return {"message": result}
