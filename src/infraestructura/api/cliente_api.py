@@ -11,21 +11,25 @@ from ..services.cliente_service import (actualizar_cliente, crear_cliente,
 
 router = APIRouter()
 
+
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente", description="Actualiza un cliente existente por su ID.")
 async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_cliente(id, payload)
     return {"message": result}
 
+
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente parcialmente", description="Actualiza parcialmente un cliente existente por su ID.")
 async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest):
     return await actualizarClienteApi(id, requestBody)
+
 
 @router.post("/", dependencies=[Depends(permiso_requerido('cliente', 'crear'))], summary="Crear cliente", description="Crea un nuevo cliente.")
 async def agregarClienteApi(requestBody: ClienteRequest):
     payload = requestBody.model_dump()
     result = await crear_cliente(payload)
     return {"message": result}
+
 
 @router.get("/", dependencies=[Depends(permiso_requerido('cliente', 'leer'))], summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")
 async def obtenerClientesApi(
@@ -50,9 +54,6 @@ async def obtenerClientesApi(
         filtros["id_personafk"] = id_personafk
     if estado is not None:
         filtros["estado"] = estado
-    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
-    if mostrar_inactivo != 1:
-        filtros["estado"] = 1
 
     result = await obtener_clientes(filtros)
     return {"message": result}
