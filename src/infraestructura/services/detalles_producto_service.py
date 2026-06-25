@@ -1,3 +1,5 @@
+from typing import Optional
+
 from ..models.detalles_producto import detalles_producto
 from ..repositories.detalles_producto_repository import (
     actualizarDetalleProducto, obtenerDetalleProducto)
@@ -9,8 +11,20 @@ def build_detalles_producto_entity(payload: dict) -> detalles_producto:
     return detalles_producto(**valid_fields)
 
 
-async def obtener_detalles_productos(filtros: dict= None, columnas: str = '*', include_producto: bool = False):
-    return await obtenerDetalleProducto(columnas=columnas, filtros=filtros, include_producto=include_producto)
+async def obtener_detalles_productos(
+    filtros: dict = None, 
+    columnas: str = '*', 
+    include_producto: bool = False,
+    include_precios: bool = False,
+    filtros_producto: Optional[dict] = None
+):
+    return await obtenerDetalleProducto(
+        columnas=columnas, 
+        filtros=filtros, 
+        include_producto=include_producto,
+        include_precios=include_precios,
+        filtros_producto=filtros_producto
+    )
 
 
 async def crear_detalles_producto(payload: dict):

@@ -30,12 +30,14 @@ async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('detallesproducto', 'leer'))], summary="Obtener detalles de productos", description="Obtiene una lista de detalles de productos con filtros opcionales.")
 async def obtenerDetallesProductosApi(
+    q: Optional[str] = Query(None, description="Buscar en nombre de producto (contiene)"),
+    es_comida: Optional[bool] = Query(None, description="Filtrar productos por es_comida=true/false"),
     id: Optional[str] = Query(None, description="Filtrar detalles de productos por ID"),
     color: Optional[str] = Query(None, description="Filtrar detalles de productos por color"),
     tamanho: Optional[int] = Query(None, description="Filtrar detalles de productos por tamaño"),
     cod_barra: Optional[int] = Query(None, description="Filtrar detalles de productos por código de barra"),
     unidad_por_lote: Optional[int] = Query(None, description="Filtrar detalles de productos por unidades por lote"),
-    include: Optional[str] = Query(None, description="include=producto para incluir datos del producto (sin detalles_producto)")
+    include: Optional[str] = Query(None, description="include=producto para incluir datos del producto, include=precios para incluir precios asociados")
 ):
     filtros = {}
     if id is not None:
@@ -49,6 +51,21 @@ async def obtenerDetallesProductosApi(
     if unidad_por_lote is not None:
         filtros["unidad_por_lote"] = unidad_por_lote
     
-    include_producto = include == "producto"
-    result = await obtener_detalles_productos(filtros, include_producto=include_producto)
+    # Nuevo: filtros por producto
+    filtros_producto = {}
+    if q is not None:
+        filtros_producto["q"] = q
+    if es_comida is not None:
+        filtros_producto["es_comida"] = es_comida
+    
+    # Determinar qué inclusiones solicitar
+    include_producto = include == "producto" or (include and "producto" in include)
+    include_precios = include == "precios" or (include and "precios" in include)
+    
+    result = await obtener_detalles_productos(
+        filtros, 
+        include_producto=include_producto,
+        include_precios=include_precios,
+        filtros_producto=filtros_producto
+    )
     return {"message": result}
