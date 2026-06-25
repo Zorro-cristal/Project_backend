@@ -51,9 +51,8 @@ async def obtenerLocalesApi(
         filtros["direccion"] = direccion
     if telefono is not None:
         filtros["telefono"] = telefono
-    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
-    if mostrar_inactivo != 1:
-        filtros["estado"] = 1
+    if mostrar_inactivo != 1 and "estado" not in filtros:
+        filtros["mostrar_inactivo"] = 0  # estado != 0
 
     result = await obtener_locales(filtros)
     return {"message": result}

@@ -50,9 +50,8 @@ async def obtenerVendedoresApi(
         filtros["estado"] = estado
     if id_personafk is not None:
         filtros["id_personafk"] = id_personafk
-    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
-    if mostrar_inactivo != 1:
-        filtros["estado"] = 1
+    if mostrar_inactivo != 1 and "estado" not in filtros:
+        filtros["mostrar_inactivo"] = 0  # estado != 0
 
     result = await obtener_vendedores(filtros)
     return {"message": result}

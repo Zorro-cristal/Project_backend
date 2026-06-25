@@ -41,7 +41,7 @@ async def obtenerProductosApi(
     pesable: Optional[bool] = Query(None, description="Filtrar productos que son pesables"),
     perecedero: Optional[bool] = Query(None, description="Filtrar productos que son perecederos"),
     include: Optional[str] = Query(None, description="include=detallesProducto para incluir detalles_producto"),
-mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
     if id is not None:
@@ -58,9 +58,10 @@ mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra regi
         filtros["pesable"] = pesable
     if perecedero is not None:
         filtros["perecedero"] = perecedero
-    # Por defecto ocultar inactivos (estado=0), mostrar solo activos
-    if mostrar_inactivo != 1:
-        filtros["estado"] = 1
+    # Por defecto: traer todos los registros con estado != 0
+    # Si mostrar_inactivo=1: mostrar todos incluyendo inactivos (estado=0)
+    if mostrar_inactivo != 1 and "estado" not in filtros:
+        filtros["mostrar_inactivo"] = 0  # estado != 0
 
     if include == "detallesProducto":
         result = await obtener_productos_con_detalles(filtros)
@@ -87,4 +88,3 @@ async def obtenerProductoApi(
 async def obtenerDetallesProductoApi(id: int):
     result = await obtener_detallesProducto(id)
     return {"message": result}
-
