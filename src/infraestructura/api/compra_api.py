@@ -45,7 +45,8 @@ async def obtenerComprasApi(
     id_localfk: Optional[int] = Query(None, description="Filtrar compras por ID de local"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar compras por ID de cliente"),
     id_proveedorfk: Optional[int] = Query(None, description="Filtrar compras por ID de proveedor"),
-    estado: Optional[int] = Query(None, description="Filtrar compras por estado")
+    estado: Optional[int] = Query(None, description="Filtrar compras por estado"),
+    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesCompra")
 ):
     filtros = {}
     if id is not None:
@@ -62,6 +63,12 @@ async def obtenerComprasApi(
         filtros["estado"] = estado
 
     result = await obtener_compras(filtros)
+    
+    # Adjuntar detalles si se solicita
+    if include == "detallesCompra":
+        from src.shell.flujo.compra.consultarCompra import attach_related_data
+        result = await attach_related_data(result) if result else result
+    
     return {"message": result}
 
 
