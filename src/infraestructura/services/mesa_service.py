@@ -2,6 +2,7 @@ from src.shell.utils import attach_related, validar_fk_existente
 
 from ..models.mesa import Mesa
 from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
+from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
 
 
@@ -41,4 +42,12 @@ async def actualizar_mesa(id: int, payload: dict):
         'id',
         f"Local con ID {payload.get('id_localfk')} no existe",
     )
+    # Validar id_clientefk si está presente
+    if payload.get('id_clientefk') is not None:
+        await validar_fk_existente(
+            payload.get('id_clientefk'),
+            obtener_clientes,
+            'id',
+            f"Cliente con ID {payload.get('id_clientefk')} no existe",
+        )
     return await actualizarMesa(payload, id)

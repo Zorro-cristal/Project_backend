@@ -246,9 +246,11 @@ CREATE TABLE mesas (
     estado       BOOLEAN NOT NULL,
     capacidad    INTEGER NOT NULL,
     id_localfk   INTEGER NOT NULL,
+    id_clientefk INTEGER,
     fecha_creado TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     ocupado_desde TIME,
-    CONSTRAINT fk_mesas_local FOREIGN KEY (id_localfk) REFERENCES locales (id)
+    CONSTRAINT fk_mesas_local FOREIGN KEY (id_localfk) REFERENCES locales (id),
+    CONSTRAINT fk_mesas_cliente FOREIGN KEY (id_clientefk) REFERENCES clientes (id)
 );
 
 -- ----------------------------

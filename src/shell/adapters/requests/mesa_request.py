@@ -22,6 +22,8 @@ class MesaUpdateRequest(BaseModel):
     capacidad: Optional[int] = None
     estado: Optional[int] = None
     id_localfk: Optional[int] = None
+    id_clientefk: Optional[int] = None
+    ocupado_desde: Optional[str] = None
     local: Optional[LocalUpdateRequest] = None
 
     class Config:
