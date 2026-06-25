@@ -64,10 +64,9 @@ async def obtenerDetalleProducto(
         relaciones.append(f"id_productofk:productos({producto_select})")
     
     if include_precios:
-        # Incluir precios a través de la tabla intermedia detalles_precio
-        # La sintaxis de Supabase: table!foreign_key(columnas)
-        # Primero obtenemos detalles_precio, luego los precios relacionados
-        relaciones.append("detalles_precio!id_detalleproductofk(id_preciofk(id,monto,valido_desde,valido_hasta))")
+        # Incluir precios directamente a través de detalles_precio
+        # Usando la sintaxis de Supabase para traer el array de precios directamente
+        relaciones.append("detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))")
     
     # Construir columnas con relaciones
     if relaciones:
