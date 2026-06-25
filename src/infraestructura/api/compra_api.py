@@ -8,7 +8,7 @@ from src.shell.adapters.requests.compra_request import (CompraRequest,
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
 
 from ..services.compra_service import (actualizar_compra, crear_compra,
-                                       obtener_compra_solo, obtener_compras)
+                                       obtener_compras)
 
 router = APIRouter()
 
@@ -65,15 +65,10 @@ async def obtenerComprasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener compra por ID", description="Obtiene una compra específica por su ID.")
-async def obtenerCompraPorIdApi(
-    id: int,
-    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detalleCompra"),
-):
-    if include == "detalleCompra":
-        result = await obtener_compra_con_detalles(id)
-    else:
-        result = await obtener_compra_solo(id)
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener compra por ID", description="Obtiene una compra específica por su ID, incluyendo sus detalles.")
+async def obtenerCompraPorIdApi(id: int):
+    # Ya incluye detalles por defecto
+    result = await obtener_compra_con_detalles(id)
 
     if not result:
         return {"message": f"Compra con ID {id} no encontrada"}
