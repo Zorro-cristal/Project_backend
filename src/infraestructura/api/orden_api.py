@@ -33,8 +33,8 @@ async def agregarOrdenApi(requestBody: OrdenRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('orden', 'leer'))], summary="Obtener órdenes", description="Obtiene una lista de órdenes con filtros opcionales.")
 async def obtenerOrdenesApi(
-    id: Optional[str] = Query(None, description="Filtrar orden por ID"),
-    estado: Optional[str] = Query(None, description="Filtrar por estado"),
+id: Optional[str] = Query(None, description="Filtrar orden por ID"),
+    estado: Optional[int] = Query(None, description="Filtrar por estado (0:inactivo, 1:pendiente, 2:en_proceso, 3:listo, 4:entregado)"),
     id_mesafk: Optional[int] = Query(None, description="Filtrar por ID de mesa"),
     id_detalleproductofk: Optional[str] = Query(None, description="Filtrar por ID detalle_producto (cod_barra)"),
 ):

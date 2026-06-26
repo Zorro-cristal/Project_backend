@@ -8,7 +8,7 @@ from .usuario import Usuario
 
 @dataclass(frozen=True)
 class Orden:
-    estado: str = "Pendiente"
+    estado: int = 1
     cantidad: int = 1
     observacion: Optional[str] = None
     id_mesafk: Optional[int]= None
