@@ -363,7 +363,7 @@ CREATE TABLE detalle_compra (
 );
 
 -- ----------------------------
--- Tabla: ordenes
+-- Tabla: egresos
 -- ----------------------------
 DROP TABLE IF EXISTS egresos CASCADE;
 CREATE TABLE egresos (
@@ -389,8 +389,10 @@ CREATE TABLE ordenes (
     id_mesafk             INTEGER,
     id_usuariofk          INTEGER,
     id_detalleproductofk  VARCHAR(15),
+    id_preciofk           INTEGER,
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ordenes_mesa FOREIGN KEY (id_mesafk) REFERENCES mesas (id),
+    CONSTRAINT fk_ordenes_precio FOREIGN KEY (id_preciofk) REFERENCES precios (id),
     CONSTRAINT fk_ordenes_detalles_producto FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra)
 );
 

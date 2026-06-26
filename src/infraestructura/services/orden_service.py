@@ -1,8 +1,8 @@
 from typing import Optional
 
 from ..models.orden import Orden
-from ..repositories.orden_repository import (actualizarOrden,
-                                                               obtenerOrdenes)
+from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
+from ..repositories.precio_repository import obtenerPrecio
 from .mesa_service import obtener_mesas
 
 
@@ -32,16 +32,28 @@ async def obtener_orden_por_id(filtros: dict = None, columnas: str = '*'):
 
 
 async def attach_related_data(ordenes: list[dict]) -> list[dict]:
+    # Attach mesa data
     mesa_ids = {o.get('id_mesafk') for o in ordenes if o.get('id_mesafk')}
-    if not mesa_ids:
+    if mesa_ids:
+        mesas = await obtener_mesas({'id': list(mesa_ids)})
+        mesa_map = {m['id']: m for m in (mesas or [])}
+        for o in ordenes:
+            o['mesa'] = mesa_map.get(o.get('id_mesafk'))
+    else:
         for o in ordenes:
             o['mesa'] = None
-        return ordenes
 
-    mesas = await obtener_mesas({'id': list(mesa_ids)})
-    mesa_map = {m['id']: m for m in (mesas or [])}
-    for o in ordenes:
-        o['mesa'] = mesa_map.get(o.get('id_mesafk'))
+    # Attach precio data
+    precio_ids = {o.get('id_preciofk') for o in ordenes if o.get('id_preciofk')}
+    if precio_ids:
+        precios = await obtenerPrecio({'id': list(precio_ids)})
+        precio_map = {p['id']: p for p in (precios or [])}
+        for o in ordenes:
+            o['precio'] = precio_map.get(o.get('id_preciofk'))
+    else:
+        for o in ordenes:
+            o['precio'] = None
+
     return ordenes
 
 

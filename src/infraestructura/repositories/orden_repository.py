@@ -1,8 +1,9 @@
 from typing import Optional, Union
 
-from ..models.orden import Orden
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
+
+from ..models.orden import Orden
 
 
 async def obtenerOrdenes(filtros: Optional[dict] = None, limite: int = 100, offset: int = 0, columnas: str = "*"):
@@ -11,8 +12,8 @@ async def obtenerOrdenes(filtros: Optional[dict] = None, limite: int = 100, offs
 
 async def actualizarOrden(datos: Union[Orden, dict], id: Optional[int] = None):
     # Nota: la tabla `ordenes` no tiene campos compuestos; si llegan relaciones
-    # (ej: mesa) se excluyen para no romper el insert/update.
-    payload = prepararPayloadDb(datos, exclude_fields=['mesa'])
+    # (ej: mesa, precio) se excluyen para no romper el insert/update.
+    payload = prepararPayloadDb(datos, exclude_fields=['mesa', 'precio'])
 
     if id is not None:
         # En update, no sobrescribir con None
