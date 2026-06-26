@@ -3,6 +3,7 @@ from typing import Optional
 from ..models.orden import Orden
 from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
 from ..repositories.precio_repository import obtenerPrecio
+from .detalles_producto_service import obtener_detalles_productos
 from .mesa_service import obtener_mesas
 
 
@@ -54,6 +55,29 @@ async def attach_related_data(ordenes: list[dict]) -> list[dict]:
         for o in ordenes:
             o['precio'] = None
 
+    # Attach detalle_producto data with parent producto
+    detalle_producto_ids = {o.get('id_detalleproductofk') for o in ordenes if o.get('id_detalleproductofk')}
+    if detalle_producto_ids:
+        # Include producto to get the parent producto info
+        detalles_producto = await obtener_detalles_productos(
+            {'cod_barra': list(detalle_producto_ids)},
+            include_producto=True
+        )
+        detalle_producto_map = {d['cod_barra']: d for d in (detalles_producto or [])}
+        for o in ordenes:
+            detalle = detalle_producto_map.get(o.get('id_detalleproductofk'))
+            # Save the id_productofk before it gets replaced by the producto object
+            if detalle and 'id_productofk' in detalle and isinstance(detalle['id_productofk'], dict):
+                original_id_productofk = detalle['id_productofk'].get('id')
+                # Add producto nested inside detalle_producto
+                detalle['producto'] = detalle['id_productofk']
+                # Restore the original id_productofk with just the integer
+                detalle['id_productofk'] = original_id_productofk
+            o['detalle_producto'] = detalle
+    else:
+        for o in ordenes:
+            o['detalle_producto'] = None
+
     return ordenes
 
 
@@ -66,4 +90,3 @@ async def actualizar_orden_por_id(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
     return await actualizarOrden(payload, id)
-
