@@ -72,7 +72,15 @@ async def obtenerDetalleProducto(
     if relaciones:
         columnas = f"*, {', '.join(relaciones)}"
     
-    return await get('detalles_producto', filtros, limite, offset, columns=columnas)
+    result = await get('detalles_producto', filtros, limite, offset, columns=columnas)
+    
+    # Renombrar el campo detalles_precio a precios para mejor experiencia de API
+    if include_precios and result:
+        for item in result:
+            if 'detalles_precio' in item:
+                item['precios'] = item.pop('detalles_precio')
+    
+    return result
 
 
 async def actualizarDetalleProducto(datos: Union[detalles_producto, dict], cod_barra: Optional[int] = None):
