@@ -10,6 +10,7 @@ class OrdenRequest(BaseModel):
 
     id_mesafk: Optional[int] = None
     id_detalleproductofk: Optional[str] = None
+    id_usuariofk: Optional[int] = None
 
     class Config:
         validate_by_name = True
@@ -22,6 +23,7 @@ class OrdenUpdateRequest(BaseModel):
 
     id_mesafk: Optional[int] = None
     id_detalleproductofk: Optional[str] = None
+    id_usuariofk: Optional[int] = None
 
     class Config:
         validate_by_name = True
