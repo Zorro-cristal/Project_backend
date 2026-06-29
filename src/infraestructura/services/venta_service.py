@@ -23,12 +23,12 @@ async def attach_related_data(ventas: list[dict]) -> list[dict]:
     ventas = await attach_related(ventas, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
     ventas = await attach_related(ventas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
     ventas = await attach_related(ventas, 'id_cajafk', obtener_cajas, 'id', 'id', 'caja')
-    # One-to-many detalles
-    ventas = await attach_grouped(ventas, 'id', obtenerDetalleVenta, 'id_ventafk', 'id_ventafk', 'detalles')
+# One-to-many detalles
+    ventas = await attach_grouped(ventas, 'id', obtenerDetalleVenta, 'id_ventafk', 'id_ventafk', 'detalles_venta')
     
     # Calcular subtotal para cada detalle y para cada venta
     for venta in ventas:
-        detalles = venta.get('detalles', [])
+        detalles = venta.get('detalles_venta', [])
         subtotal = 0.0
         for detalle in detalles:
             # Calcular subtotal individual del detalle: (precio - descuento) * cantidad
