@@ -43,9 +43,16 @@ async def attach_related_data(ventas: list[dict]) -> list[dict]:
     return ventas
 
 
-async def obtener_ventas(filtros: dict = None, columnas: str = '*'):
-    """Retorna ventas con relaciones adjuntas (cliente/local/caja/detalles)."""
-    ventas = await obtenerVenta(filtros=filtros, columnas=columnas)
+async def obtener_ventas(filtros: dict = None, columnas: str = '*', joins: list = None):
+    """Retorna ventas con relaciones adjuntas (cliente/local/caja/detalles).
+    
+    Args:
+        filtros: Diccionario de filtros para la consulta.
+        columnas: columnas a seleccionar.
+        joins: Lista de configuraciones de JOIN para filtrar por campos relacionados.
+               Ejemplo: [{'table': 'usuarios', 'foreign_key': 'id_usuariofk', 'primary_key': 'id', 'name_field': 'alias', 'nombre_usuario': 'juan'}]
+    """
+    ventas = await obtenerVenta(filtros=filtros, columnas=columnas, joins=joins)
     if not ventas:
         return ventas
     return await attach_related_data(ventas)

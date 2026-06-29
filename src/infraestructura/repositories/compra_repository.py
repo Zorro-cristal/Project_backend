@@ -6,8 +6,8 @@ from src.shell.utils import prepararPayloadDb
 from ..models.compra import Compra
 
 
-async def obtenerCompra(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('compras', filtros, limite, offset)
+async def obtenerCompra(filtros=None, limite=100, offset=0, columnas="*", joins=None):
+    return await get('compras', filtros, limite, offset, columns=columnas, joins=joins)
 
 
 async def actualizarCompra(datos: Union[Compra, dict], id: Optional[int] = None):

@@ -46,8 +46,11 @@ async def obtenerComprasApi(
     id_clientefk: Optional[int] = Query(None, description="Filtrar compras por ID de cliente"),
     id_proveedorfk: Optional[int] = Query(None, description="Filtrar compras por ID de proveedor"),
     estado: Optional[int] = Query(None, description="Filtrar compras por estado"),
+    nombre_usuario: Optional[str] = Query(None, description="Filtrar compras por nombre de usuario (alias del usuario que creó la caja)"),
     include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesCompra")
 ):
+    from src.infraestructura.config.supabase import get_supabase_client
+    
     filtros = {}
     if id is not None:
         filtros["id"] = id
@@ -61,6 +64,29 @@ async def obtenerComprasApi(
         filtros["id_proveedorfk"] = id_proveedorfk
     if estado is not None:
         filtros["estado"] = estado
+
+    # Si se provee nombre_usuario, filtrar en dos pasos:
+    # 1. Buscar usuarios con ese alias
+    # 2. Buscar cajas creadas por esos usuarios
+    # 3. Filtrar compras por esas cajas
+    if nombre_usuario:
+        client = get_supabase_client()
+        
+        # Paso 1: Buscar usuario(s) por alias
+        usuarios = client.table('usuarios').select('id').eq('alias', nombre_usuario).execute()
+        
+        if usuarios.data:
+            usuario_ids = [u['id'] for u in usuarios.data]
+            
+            # Paso 2: Buscar cajas creadas por esos usuarios
+            cajas = client.table('cajas').select('id').in_('id_usuariofk', usuario_ids).execute()
+            
+            if cajas.data:
+                caja_ids = [c['id'] for c in cajas.data]
+                filtros['id_cajafk'] = caja_ids
+            else:
+                # No hay cajas para esos usuarios, retornar vacío
+                return {"message": []}
 
     result = await obtener_compras(filtros)
     

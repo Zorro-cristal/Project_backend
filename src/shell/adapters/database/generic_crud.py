@@ -69,13 +69,27 @@ async def get(
     offset: int = 0,
     order_by: str = None,
     order_desc: bool = True,
-    columns: str = "*" # Nuevo parámetro para especificar los campos a seleccionar, incluyendo relaciones
+    columns: str = "*",  # Nuevo parámetro para especificar los campos a seleccionar, incluyendo relaciones
+    joins: Optional[list[dict]] = None  # Parámetro para especificar JOINs
 ) -> list[dict]:
+    """Obtiene registros de una tabla con soporte para filtros y JOINs.
+    
+    El parámetro `joins` permite filtrar por campos de tablas relacionadas.
+    Ejemplo de uso:
+        joins=[{
+            'table': 'usuarios',
+            'foreign_key': 'id_usuariofk',  # FK en la tabla principal (cajas)
+            'primary_key': 'id',
+            'name_field': 'alias',  # Campo por el cual filtrar en la tabla relacionada
+            'nombre_usuario': 'juan'  # Valor a buscar
+        }]
+    """
     client = get_supabase_client()
     
+    # Construir la consulta con columnas
     query = client.table(table).select(columns)
     
-    # Aplicar filtros
+    # Aplicar filtros básicos (mismo comportamiento que antes)
     if filters:
         for field, value in filters.items():
             if isinstance(value, (list, tuple)):
@@ -90,6 +104,36 @@ async def get(
                 # If mostrar_inactivo = 1, don't filter by estado (show all including inactive)
             else:
                 query = query.eq(field, value)
+    
+    # Aplicar filtros de tablas relacionadas (JOINs)
+    if joins:
+        for join_config in joins:
+            join_table = join_config.get('table')
+            foreign_key = join_config.get('foreign_key')
+            primary_key = join_config.get('primary_key', 'id')
+            name_field = join_config.get('name_field')
+            name_filter = join_config.get('nombre_usuario')
+            
+            if join_table and foreign_key and name_field and name_filter:
+                # Primero, buscar en la tabla relacionada los IDs que coinciden con el filtro
+                related_query = client.table(join_table).select(primary_key)
+                
+                # Aplicar filtro según el tipo de campo
+                if name_field in ('alias', 'nombre', 'nombres', 'ruc', 'razon_social'):
+                    # Búsqueda exacta (sensible a mayúsculas)
+                    related_query = related_query.eq(name_field, name_filter)
+                else:
+                    # Búsqueda parcial (case-insensitive) para otros campos
+                    related_query = related_query.ilike(name_field, f"%{name_filter}%")
+                
+                related_response = related_query.execute()
+                
+                if related_response.data:
+                    # Obtener los IDs de la tabla relacionada
+                    related_ids = [row[primary_key] for row in related_response.data]
+                    
+                    # Filtrar la tabla principal por esos IDs
+                    query = query.in_(foreign_key, related_ids)
     
     # Ordenamiento
     if (order_by):     

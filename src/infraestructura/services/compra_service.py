@@ -40,8 +40,16 @@ def build_compra_entity(payload: dict) -> Compra:
     return Compra(**valid_fields)
 
 
-async def obtener_compras(filtros: dict = None, columnas: str = '*'):
-    return await obtenerCompra(filtros=filtros, columnas=columnas)
+async def obtener_compras(filtros: dict = None, columnas: str = '*', joins: list = None):
+    """Retorna compras con filtros opcionales.
+    
+    Args:
+        filtros: Diccionario de filtros para la consulta.
+        columnas: Columnas a seleccionar.
+        joins: Lista de configuraciones de JOIN para filtrar por campos relacionados.
+               Ejemplo: [{'table': 'usuarios', 'foreign_key': 'id_usuariofk', 'primary_key': 'id', 'name_field': 'alias', 'nombre_usuario': 'juan'}]
+    """
+    return await obtenerCompra(filtros=filtros, columnas=columnas, joins=joins)
 
 
 async def obtener_compra_solo(id: int, columnas: str = '*'):

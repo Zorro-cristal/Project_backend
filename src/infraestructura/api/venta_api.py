@@ -49,8 +49,11 @@ async def obtenerVentasApi(
     id_clientefk: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
     id_localfk: Optional[int] = Query(None, description="Filtrar ventas por ID de local"),
     id_cajafk: Optional[int] = Query(None, description="Filtrar ventas por ID de caja"),
-mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")
+    nombre_usuario: Optional[str] = Query(None, description="Filtrar ventas por nombre de usuario (alias del usuario que creó la caja)"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")
 ):
+    from src.infraestructura.config.supabase import get_supabase_client
+    
     filtros = {}
     if id is not None:
         filtros["id"] = id
@@ -70,6 +73,29 @@ mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra regi
     if mostrar_inactivo != 1:
         filtros["estado"] = 1
 
+    # Si se provee nombre_usuario, filtrar en dos pasos:
+    # 1. Buscar usuarios con ese alias
+    # 2. Buscar cajas creadas por esos usuarios
+    # 3. Filtrar ventas por esas cajas
+    if nombre_usuario:
+        client = get_supabase_client()
+        
+        # Paso 1: Buscar usuario(s) por alias
+        usuarios = client.table('usuarios').select('id').eq('alias', nombre_usuario).execute()
+        
+        if usuarios.data:
+            usuario_ids = [u['id'] for u in usuarios.data]
+            
+            # Paso 2: Buscar cajas creadas por esos usuarios
+            cajas = client.table('cajas').select('id').in_('id_usuariofk', usuario_ids).execute()
+            
+            if cajas.data:
+                caja_ids = [c['id'] for c in cajas.data]
+                filtros['id_cajafk'] = caja_ids
+            else:
+                # No hay cajas para esos usuarios, retornar vacío
+                return {"message": []}
+    
     result = await obtener_ventas(filtros)
 
     return {"message": result}
