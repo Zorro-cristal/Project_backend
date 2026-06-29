@@ -19,10 +19,12 @@ class Venta:
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
     evento: Optional[bool] = None
+    tipo_credito: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
     cliente: Optional[Cliente] = None
     local: Optional[Local] = None
     caja: Optional[Caja] = None
+    subtotal: Optional[float] = None
     id: Optional[int] = None

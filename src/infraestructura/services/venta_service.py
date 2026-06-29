@@ -8,6 +8,8 @@ from ..repositories.detalle_venta_repository import obtenerDetalleVenta
 from ..repositories.venta_repository import actualizarVenta, obtenerVenta
 from .caja_service import obtener_cajas
 from .cliente_service import obtener_clientes
+from .detalle_venta_service import (actualizar_detalle_venta,
+                                    crear_detalle_venta)
 from .local_service import obtener_locales
 
 
@@ -23,6 +25,21 @@ async def attach_related_data(ventas: list[dict]) -> list[dict]:
     ventas = await attach_related(ventas, 'id_cajafk', obtener_cajas, 'id', 'id', 'caja')
     # One-to-many detalles
     ventas = await attach_grouped(ventas, 'id', obtenerDetalleVenta, 'id_ventafk', 'id_ventafk', 'detalles')
+    
+    # Calcular subtotal para cada detalle y para cada venta
+    for venta in ventas:
+        detalles = venta.get('detalles', [])
+        subtotal = 0.0
+        for detalle in detalles:
+            # Calcular subtotal individual del detalle: (precio - descuento) * cantidad
+            precio = detalle.get('precio', 0)
+            descuento = detalle.get('descuento') or 0
+            cantidad = detalle.get('cantidad', 0)
+            detalle_subtotal = (precio - descuento) * cantidad
+            detalle['subtotal'] = detalle_subtotal
+            subtotal += detalle_subtotal
+        venta['subtotal'] = subtotal
+    
     return ventas
 
 
@@ -79,8 +96,39 @@ async def crear_venta(payload: dict):
         'id',
         f"Caja con ID {payload.get('id_cajafk')} no existe",
     )
+    
+# Extraer detalles_venta antes de construir la entidad venta
+    detalles_venta = payload.pop('detalles_venta', None)
+    
+# Crear la venta
     venta = build_venta_entity(payload)
-    return await actualizarVenta(venta)
+    resultado = await actualizarVenta(venta)
+    
+    # Obtener el ID de la venta creada
+    # El resultado puede tener 'id_venta' o 'id' dependiendo de la tabla
+    id_venta = None
+    if resultado:
+        id_venta = resultado.get('id_venta') or resultado.get('id')
+    
+    # Depuración: mostrar el resultado y el ID obtenido
+    print(f"[crear_venta] resultado: {resultado}")
+    print(f"[crear_venta] id_venta extraído: {id_venta}")
+    print(f"[crear_venta] detalles_venta: {detalles_venta}")
+    
+    # Si hay detalles_venta y se creó la venta, guardar cada detalle
+    if detalles_venta and id_venta:
+        print(f"[crear_venta] Guardando {len(detalles_venta)} detalles para venta {id_venta}")
+        for detalle in detalles_venta:
+            # Asignar el ID de la venta al detalle
+            detalle['id_ventafk'] = id_venta
+            # Si el id es 0 o no existe, crear nuevo; si tiene id, actualizar
+            detalle_id = detalle.get('id')
+            if detalle_id and detalle_id != 0:
+                await actualizar_detalle_venta(detalle_id, detalle)
+            else:
+                await crear_detalle_venta(detalle)
+    
+    return resultado
 
 
 async def actualizar_venta(id: int, payload: dict):
@@ -105,5 +153,23 @@ async def actualizar_venta(id: int, payload: dict):
         'id',
         f"Caja con ID {payload.get('id_cajafk')} no existe",
     )
-    return await actualizarVenta(payload, id)
+    
+# Extraer detalles_venta para procesarlos
+    detalles_venta = payload.pop('detalles_venta', None)
+    
+    # Actualizar la venta
+    resultado = await actualizarVenta(payload, id)
+    
+    # Si hay detalles_venta, procesar cada detalle con el ID de la venta
+    if detalles_venta:
+        for detalle in detalles_venta:
+            detalle['id_ventafk'] = id
+            # Si el id es 0 o no existe, crear nuevo; si tiene id, actualizar
+            detalle_id = detalle.get('id')
+            if detalle_id and detalle_id != 0:
+                await actualizar_detalle_venta(detalle_id, detalle)
+            else:
+                await crear_detalle_venta(detalle)
+    
+    return resultado
 

@@ -19,12 +19,14 @@ class VentaRequest(BaseModel):
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
     evento: Optional[bool] = None
+    tipo_credito: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
     local: Optional[LocalRequest] = None
-    detalles: Optional[List[DetalleVentaRequest]] = None
+    detalles_venta: Optional[List[DetalleVentaRequest]] = None
+    subtotal: Optional[float] = None
 
     class Config:
         validate_by_name = True
@@ -40,12 +42,14 @@ class VentaUpdateRequest(BaseModel):
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
     evento: Optional[bool] = None
+    tipo_credito: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
     local: Optional[LocalRequest] = None
-    detalles: Optional[List[DetalleVentaRequest]] = None
+    detalles_venta: Optional[List[DetalleVentaRequest]] = None
+    subtotal: Optional[float] = None
 
     class Config:
         validate_by_name = True
