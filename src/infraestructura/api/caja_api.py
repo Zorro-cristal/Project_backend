@@ -59,19 +59,10 @@ async def obtenerCajasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID. Usa include=movimientos para incluir egresos, compras y ventas.")
-async def obtenerCajaPorIdApi(
-    id: int,
-    include: Optional[str] = Query(None, description="include=movimientos para incluir egresos, compras y ventas")
-):
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID, incluyendo ventas, compras y egresos asociados.")
+async def obtenerCajaPorIdApi(id: int):
     filtros = {"id": id}
-
-    if include == "movimientos":
-        result = await obtener_caja_por_id_con_movimientos(filtros)
-    else:
-        result = await obtener_cajas(filtros)
-        if result:
-            result = result[0] if isinstance(result, list) else result
+    result = await obtener_caja_por_id_con_movimientos(filtros)
 
     if not result:
         return {"message": f"Caja con ID {id} no encontrada"}
