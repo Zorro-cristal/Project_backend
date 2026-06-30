@@ -8,6 +8,7 @@ from typing import Optional
 class Local:
     nombre: str
     estado: int = 1
+    cod_num: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
 

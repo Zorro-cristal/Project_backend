@@ -7,12 +7,79 @@ from src.shell.utils import (attach_grouped, attach_related,
 
 from ..models.venta import Venta
 from ..repositories.detalle_venta_repository import obtenerDetalleVenta
+from ..repositories.local_repository import obtenerLocal
+from ..repositories.vendedor_repository import obtenerVendedor
 from ..repositories.venta_repository import actualizarVenta, obtenerVenta
 from .caja_service import obtener_cajas
 from .cliente_service import obtener_clientes
 from .detalle_venta_service import (actualizar_detalle_venta,
                                     crear_detalle_venta)
 from .local_service import obtener_locales
+
+
+async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
+    """Genera automáticamente el número de factura con el patrón:
+    {locales.cod_num}-{vendedores.cod_num}-{venta.cod_num}
+    
+    Donde venta.cod_num es el max + 1 para esa combinación de local+vendedor.
+    
+    Args:
+        id_localfk: ID del local donde se realiza la venta
+        id_vendedorfk: ID del vendedor que realiza la venta
+        
+    Returns:
+        String con el código generado, ej: "001-002-000001"
+    """
+    # Obtener datos del local
+    locales = await obtenerLocal(filtros={'id': id_localfk})
+    if not locales:
+        raise ValueError(f"Local con ID {id_localfk} no encontrado")
+    local = locales[0] if isinstance(locales, list) else locales
+    local_cod = local.get('cod_num') or '000'
+    
+    # Obtener datos del vendedor
+    vendedores = await obtenerVendedor(filtros={'id': id_vendedorfk})
+    if not vendedores:
+        raise ValueError(f"Vendedor con ID {id_vendedorfk} no encontrado")
+    vendedor = vendedores[0] if isinstance(vendedores, list) else vendedores
+    vendedor_cod = vendedor.get('cod_num') or '000'
+    
+    # Buscar el máximo código de factura para esta combinación local+vendedor
+    # Filtrar ventas por id_localfk E id_vendedorfk
+    ventas_existentes = await obtenerVenta(
+        filtros={
+            'id_localfk': id_localfk,
+            'id_vendedorfk': id_vendedorfk
+        },
+        columnas='cod_num'
+    )
+    
+    max_secuencia = 0
+    if ventas_existentes:
+        for v in ventas_existentes:
+            cod_num = v.get('cod_num')
+            if cod_num:
+                # El código tiene formato: {local_cod}-{vendedor_cod}-{secuencia}
+                # Extraer la parte de la secuencia (últimos 6 dígitos)
+                partes = cod_num.split('-')
+                if len(partes) == 3:
+                    try:
+                        secuencia = int(partes[2])
+                        if secuencia > max_secuencia:
+                            max_secuencia = secuencia
+                    except (ValueError, IndexError):
+                        pass
+    
+    # Generar nuevo número de secuencia (6 dígitos con ceros a la izquierda)
+    nueva_secuencia = max_secuencia + 1
+    secuencia_formateada = f"{nueva_secuencia:06d}"
+    
+    # Construir el código completo
+    codigo_completo = f"{local_cod}-{vendedor_cod}-{secuencia_formateada}"
+    
+    print(f"[generar_cod_num_venta] Generado: {codigo_completo} (secuencia: {nueva_secuencia})")
+    
+    return codigo_completo
 
 
 async def obtener_clima_para_venta():
@@ -102,6 +169,19 @@ async def obtener_detalle_venta_por_venta_id(filtros: dict = None):
 
 
 async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_venta_extraidos: list = None):
+    # Auto-generar cod_num de venta si no está proporcionado y se tienen los datos necesarios
+    if payload.get('cod_num') is None:
+        id_localfk = payload.get('id_localfk')
+        id_vendedorfk = payload.get('id_vendedorfk')
+        if id_localfk and id_vendedorfk:
+            try:
+                cod_num_generado = await generar_cod_num_venta(id_localfk, id_vendedorfk)
+                payload['cod_num'] = cod_num_generado
+                print(f"[crear_venta] cod_num generado automáticamente: {cod_num_generado}")
+            except Exception as e:
+                print(f"[crear_venta] Error al generar cod_num: {e}")
+                # Continuar sin cod_num si hay error
+    
     # Obtener información climática automáticamente si no está proporcionada
     print(f"procesado? [_ya_procesado]")
     if not _ya_procesado:

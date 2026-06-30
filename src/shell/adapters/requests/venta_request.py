@@ -19,13 +19,12 @@ class VentaBase(BaseModel):
     estado: Optional[int] = 1
     cod_usuariofk_edit: Optional[bool] = None
     empresa_id: Optional[int] = None
-    clima: Optional[int] = None
-    temperatura: Optional[int] = None
-    humedad: Optional[int] = None
     evento: Optional[bool] = None
     tipo_credito: Optional[int] = None
     total_cuotas: Optional[int] = None
     monto_entrega: Optional[float] = 0
+    cod_num: Optional[str] = None
+    id_vendedorfk: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
@@ -35,6 +34,7 @@ class VentaBase(BaseModel):
     # Campos para venta a crédito
     fecha_inicio: Optional[datetime] = None
     # subtotal se calcula en el servicio, no se recibe en entrada
+    # Los datos de clima (clima, temperatura, humedad) se obtienen automáticamente en el backend
 
     class Config:
         validate_by_name = True
@@ -45,7 +45,9 @@ class VentaBase(BaseModel):
 # =============================================================================
 class VentaUpdateRequest(VentaBase):
     """Request para actualizar venta - todos los campos opcionales."""
+    nro: Optional[str] = None
     fecha: Optional[datetime] = None
+    cod_num: Optional[str] = None
 
 
 class VentaCreditoRequest(VentaBase):

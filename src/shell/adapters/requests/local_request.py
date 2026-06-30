@@ -6,6 +6,7 @@ from pydantic import BaseModel
 class LocalRequest(BaseModel):
     nombre: str
     estado: Optional[int] = 1
+    cod_num: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
 
@@ -16,6 +17,7 @@ class LocalRequest(BaseModel):
 class LocalUpdateRequest(BaseModel):
     nombre: Optional[str] = None
     estado: Optional[int] = None
+    cod_num: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
 
