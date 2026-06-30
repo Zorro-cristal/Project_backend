@@ -164,6 +164,10 @@ async def actualizar_venta(id: int, payload: dict):
 # Extraer detalles_venta para procesarlos
     detalles_venta = payload.pop('detalles_venta', None)
     
+    # Extraer cuotas y pagos si existen
+    cuotas = payload.pop('cuotas', None)
+    pagos = payload.pop('pagos', None)
+    
     # Actualizar la venta
     resultado = await actualizarVenta(payload, id)
     
@@ -179,4 +183,118 @@ async def actualizar_venta(id: int, payload: dict):
                 await crear_detalle_venta(detalle)
     
     return resultado
+
+
+# Funciones para ventas con pagos y cuotas (FIFO)
+
+async def crear_venta_contado(payload: dict) -> dict:
+    """Crea una venta al contado y registra el pago automáticamente.
+    
+    Proceso:
+    1. Crear la venta
+    2. Registrar el pago en pagos_venta con tipo=1 (Entrega) por el valor total
+    """
+    from .pago_venta_service import registrar_pago_contado
+
+    # Extraer información de la venta
+    detalles_venta = payload.pop('detalles_venta', None)
+    monto_total = payload.pop('monto_total', None)
+    id_cajafk = payload.get('id_cajafk')
+    
+    # Validar monto_total
+    if monto_total is None:
+        raise ValueError('Para ventas al contado se requiere monto_total')
+    
+    # Validar caja
+    await validar_fk_existente(
+        id_cajafk,
+        obtener_cajas,
+        'id',
+        f"Caja con ID {id_cajafk} no existe",
+    )
+    
+    # Establecer tipo_credito = 0 (contado)
+    payload['tipo_credito'] = 0
+    
+    # Crear la venta
+    resultado = await crear_venta(payload)
+    
+    # Obtener ID de la venta creada
+    id_venta = resultado.get('id_venta') or resultado.get('id')
+    
+    # Registrar el pago (tipo=1 Entrega)
+    await registrar_pago_contado(
+        id_venta=id_venta,
+        monto_total=monto_total,
+        id_cajafk=id_cajafk,
+    )
+    
+    # Si hay detalles_venta, guardarlos
+    if detalles_venta:
+        for detalle in detalles_venta:
+            detalle['id_ventafk'] = id_venta
+            await crear_detalle_venta(detalle)
+    
+    return {
+        'venta': resultado,
+        'pago_registrado': True,
+        'tipo': 'contado',
+    }
+
+
+async def crear_venta_credito(payload: dict) -> dict:
+    """Crea una venta a crédito y genera las cuotas automáticamente.
+    
+    Proceso:
+    1. Crear la venta con tipo_credito=1
+    2. Generar las cuotas en cuotas_venta
+    """
+    from .cuota_venta_service import crear_cuotas_para_venta
+
+    # Extraer información de cuotas
+    detalles_venta = payload.pop('detalles_venta', None)
+    total_cuotas = payload.pop('total_cuotas', None)
+    monto_cuota = payload.pop('monto_cuota', None)
+    fecha_inicio = payload.pop('fecha_inicio', None)
+    descuento = payload.pop('descuento', 0)
+    interes = payload.pop('interes', 0)
+    
+    # Validar datos necesarios para crédito
+    if total_cuotas is None:
+        raise ValueError('Para ventas a crédito se requiere total_cuotas')
+    if monto_cuota is None:
+        raise ValueError('Para ventas a crédito se requiere monto_cuota')
+    if fecha_inicio is None:
+        raise ValueError('Para ventas a crédito se requiere fecha_inicio')
+    
+    # Establecer tipo_credito = 1 (crédito)
+    payload['tipo_credito'] = 1
+    
+    # Crear la venta
+    resultado = await crear_venta(payload)
+    
+    # Obtener ID de la venta creada
+    id_venta = resultado.get('id_venta') or resultado.get('id')
+    
+    # Generar las cuotas
+    cuotas = await crear_cuotas_para_venta(
+        id_venta=id_venta,
+        total_cuotas=total_cuotas,
+        monto_cuota=monto_cuota,
+        fecha_inicio=fecha_inicio,
+        descuento=descuento,
+        interes=interes,
+    )
+    
+    # Si hay detalles_venta, guardarlos
+    if detalles_venta:
+        for detalle in detalles_venta:
+            detalle['id_ventafk'] = id_venta
+            await crear_detalle_venta(detalle)
+    
+    return {
+        'venta': resultado,
+        'cuotas_generadas': len(cuotas),
+        'tipo': 'credito',
+    }
 

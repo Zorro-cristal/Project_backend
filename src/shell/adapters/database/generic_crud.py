@@ -30,6 +30,10 @@ TABLE_PRIMARY_KEYS = {
     'compras': 'id_compra',
     'detalle_compra': 'id_detalle_compra',
     'ordenes': 'id',
+    'cuotas_venta': 'id',
+    'pagos_venta': 'id',
+    'cuotas_compra': 'id',
+    'pagos_compra': 'id',
 }
 
 

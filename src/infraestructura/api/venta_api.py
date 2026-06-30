@@ -7,6 +7,7 @@ from src.shell.adapters.requests.venta_request import (VentaRequest,
                                                        VentaUpdateRequest)
 
 from ..services.venta_service import (actualizar_venta, crear_venta,
+                                      crear_venta_contado, crear_venta_credito,
                                       obtener_detalle_venta_por_venta_id,
                                       obtener_venta_por_id_con_detalles,
                                       obtener_venta_por_id_sin_detalles,
@@ -125,6 +126,51 @@ async def obtenerDetalleVentaPorVentaIdApi(id: int):
     filtros = {"id_ventafk": id}
     result = await obtener_detalle_venta_por_venta_id(filtros)
     return {"message": result if result else []}
+
+
+# Nuevos endpoints para ventas con crédito
+
+@router.post("/contado", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta al contado", description="Crea una venta al contado y registra el pago automáticamente.")
+async def crearVentaContadoApi(requestBody: VentaRequest):
+    """Crea una venta al contado (tipo_credito=0) y registra el pago en pagos_venta."""
+    from src.shell.adapters.requests.venta_request import VentaContadoRequest
+
+    # Soporta el formato de VentaRequest estándar o VentaContadoRequest
+    try:
+        payload = requestBody.model_dump()
+    except Exception:
+        payload = requestBody
+    try:
+        result = await crear_venta_contado(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": result}
+
+
+@router.post("/credito", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta a crédito", description="Crea una venta a crédito y genera las cuotas automáticamente.")
+async def crearVentaCreditoApi(requestBody: VentaRequest):
+    """Crea una venta a crédito (tipo_credito=1) y genera las cuotas."""
+    from src.shell.adapters.requests.venta_request import VentaCreditoRequest
+    try:
+        payload = requestBody.model_dump()
+    except Exception:
+        payload = requestBody
+    try:
+        result = await crear_venta_credito(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": result}
+
+
+@router.get("/{id}/calcular-saldo", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Calcular saldo de venta crédito", description="Calcula el saldo pendiente de una venta a crédito usando lógica FIFO.")
+async def calcularSaldoVentaApi(id: int):
+    """Calcula el saldo restante de una venta a crédito aplicando lógica FIFO."""
+    from ..services.cuota_venta_service import calcular_saldo_fifo
+    try:
+        result = await calcular_saldo_fifo(id)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc))
+    return {"message": result}
 
 
 

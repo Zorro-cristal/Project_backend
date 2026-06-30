@@ -4,11 +4,12 @@ from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
 from . import (caja_api, categoria_api, cliente_api, compra_api,
-               detalle_compra_api, detalle_venta_api, detalles_producto_api,
-               egreso_api, ingrediente_api, local_api, marca_api, mesa_api,
-               orden_api, permiso_api, permiso_rol_api, persona_api,
-               precio_api, producto_api, proveedor_api, reserva_api, rol_api,
-               stock_api, usuario_api, vendedor_api, venta_api)
+               cuota_venta_api, detalle_compra_api, detalle_venta_api,
+               detalles_producto_api, egreso_api, ingrediente_api, local_api,
+               marca_api, mesa_api, orden_api, pago_venta_api, permiso_api,
+               permiso_rol_api, persona_api, precio_api, producto_api,
+               proveedor_api, reserva_api, rol_api, stock_api, usuario_api,
+               vendedor_api, venta_api)
 
 router = APIRouter()
 
@@ -51,3 +52,7 @@ router.include_router(compra_api.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra_api.router, prefix="/detalle_compra", tags=["Detalle Compra"])
 router.include_router(orden_api.router, prefix="/orden", tags=["Orden"])
 router.include_router(reserva_api.router, prefix="/reserva", tags=["Reserva"])
+
+# Nuevos routers para ventas con crédito
+router.include_router(cuota_venta_api.router, prefix="/cuota_venta", tags=["Cuota Venta"])
+router.include_router(pago_venta_api.router, prefix="/pago_venta", tags=["Pago Venta"])
