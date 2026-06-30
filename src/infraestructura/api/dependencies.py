@@ -21,7 +21,17 @@ async def get_current_user(auth: HTTPAuthorizationCredentials = Depends(security
     if not usuarios:
         raise HTTPException(status_code=404, detail="Usuario no encontrado")
     
-    return usuarios[0]
+    usuario = usuarios[0]
+    
+    # Verificar si el usuario está activo
+    # estado = 1 -> activo, estado = 0 -> inactivo
+    if usuario.get('estado') == 0:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Usuario inactivo. Contacte al administrador.",
+        )
+    
+    return usuario
 
 def permiso_requerido(modulo: str, accion: str): # modulo: 'Usuarios', accion: 'leer'
     async def controlador_permisos(current_user: dict = Depends(get_current_user)):
