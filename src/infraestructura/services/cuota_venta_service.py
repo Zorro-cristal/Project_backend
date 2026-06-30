@@ -207,3 +207,63 @@ async def calcular_saldo_fifo(id_venta: int) -> dict:
         'saldo_pendiente': resultado['saldo_pendiente'],
         'cuotas_pagadas': resultado.get('cuotas_pagadas', 0),
     }
+
+
+async def obtener_info_cuota_venta(id_ventafk: int) -> dict:
+    """Obtiene información completa de cuotas de una venta.
+    
+    Incluye:
+    - Información de cuotas (total, pendientes, monto por cuota, pagos realizados, monto pendiente)
+    - Datos de la venta con cliente incluido
+    
+    Args:
+        id_ventafk: ID de la venta
+        
+    Returns:
+        Dict con toda la información de cuotas y venta
+    """
+    from .venta_service import obtener_venta_por_id_con_detalles
+
+    # Obtener la venta con cliente relacionado
+    venta = await obtener_venta_por_id_con_detalles(
+        filtros={'id': id_ventafk}
+    )
+    
+    if not venta:
+        return {
+            'error': f'Veenta con ID {id_ventafk} no encontrada',
+            'cuota_info': None,
+            'venta': None
+        }
+    
+    # Obtener info de cuotas con lógica FIFO
+    cuota_info = await calcular_saldo_fifo(id_ventafk)
+    
+    # Extraer datos de cuotas
+    cuotas = cuota_info.get('cuotas', [])
+    
+    # Calcular totales
+    total_cuotas = len(cuotas)
+    cuotas_pendientes = total_cuotas - cuota_info.get('cuotas_pagadas', 0)
+    monto_pendiente = cuota_info.get('saldo_pendiente', 0)
+    pagos_totales = cuota_info.get('total_pagado', 0)
+    
+    # Calcular monto de cada cuota (promedio o el valor de la primera)
+    monto_cuota = 0
+    if cuotas:
+        monto_cuota = float(cuotas[0].get('monto_original', 0) or 0) if cuotas else 0
+    
+    # Construir respuesta estructurada
+    result = {
+        'cuota_info': {
+            'total_cuotas': total_cuotas,
+            'cuotas_pendientes': cuotas_pendientes,
+            'monto_cuota': monto_cuota,
+            'pagos_totales': pagos_totales,
+            'monto_pendiente': monto_pendiente,
+            'cuotas': cuotas
+        },
+        'venta': venta[0] if isinstance(venta, list) else venta
+    }
+    
+    return result

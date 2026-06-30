@@ -14,8 +14,38 @@ cache_session = requests_cache.CachedSession(cache_path, expire_after=3600)
 retry_session = retry(cache_session, retries = 5, backoff_factor = 0.2)
 openmeteo = openmeteo_requests.Client(session = retry_session)
 
-def obtenerInformacionClimatica(latitud, longitud, parametros):
-    """Obtiene información climática actual de Open-Meteo API"""
+# Parámetros por defecto para Open-Meteo
+PARAMETROS_CLIMA = [
+    "temperature_2m",        # 0
+    "relative_humidity_2m",  # 1
+    "apparent_temperature", # 2
+    "precipitation",         # 3
+    "rain",                  # 4
+    "showers",                # 5
+    "snowfall",               # 6
+    "weather_code",          # 7
+    "cloud_cover",            # 8
+    "pressure_msl",         # 9
+    "surface_pressure",     # 10
+    "wind_speed_10m",        # 11
+    "wind_direction_10m",    # 12
+    "wind_gusts_10m"        # 13
+]
+
+def obtenerInformacionClimatica(latitud, longitud, parametros=None):
+    """Obtiene información climática actual de Open-Meteo API
+    
+    Args:
+        latitud: Latitud de la ubicación
+        longitud: Longitud de la ubicación
+        parametros: Lista de parámetros a solicitar (opcional)
+    
+    Returns:
+        dict: Diccionario con clima, temperatura y humedad listos para Venta
+    """
+    if parametros is None:
+        parametros = PARAMETROS_CLIMA
+    
     try:
         responses = openmeteo.weather_api("https://api.open-meteo.com/v1/forecast", {
             "latitude": latitud,
@@ -25,10 +55,11 @@ def obtenerInformacionClimatica(latitud, longitud, parametros):
             "forecast_days": 1
         })
         
-        # Convertir la primera respuesta a diccionario JSON-serializable
         if responses:
             response = responses[0].Current()
-            response= Clima(
+            
+            # Crear objeto Clima original
+            clima_obj = Clima(
                 temperatura= float(response.Variables(0).Value()),
                 sensacion_termica= float(response.Variables(2).Value()),
                 humedad= float(response.Variables(1).Value()),
@@ -38,6 +69,16 @@ def obtenerInformacionClimatica(latitud, longitud, parametros):
                 precipitaciones= float(response.Variables(5).Value()),
                 lluvia= float(response.Variables(4).Value()),
             )
-            return response
+            
+            # Retornar diccionario compatible con modelo Venta
+            # clima: weather_code (código del clima)
+            # temperatura: temperatura actual en grados Celsius
+            # humedad: humedad relativa en porcentaje
+            return {
+                "clima": clima_obj.weather_code,
+                "temperatura": int(clima_obj.temperatura),
+                "humedad": int(clima_obj.humedad),
+            }
     except Exception as e:
-        return {"error": str(e)}
+        print(f"[obtenerInformacionClimatica] Error: {str(e)}")
+        return None

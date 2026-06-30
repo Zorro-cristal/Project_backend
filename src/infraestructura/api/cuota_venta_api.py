@@ -7,6 +7,7 @@ from src.shell.adapters.requests.cuota_venta_request import (
 from ..services.cuota_venta_service import (actualizar_estado_cuota,
                                             crear_cuotas_para_venta,
                                             obtener_cuotas_por_venta,
+                                            obtener_info_cuota_venta,
                                             recalcular_estado_cuotas)
 
 router = APIRouter()
@@ -53,3 +54,19 @@ async def recalcularCuotasApi(id: int, total_pagado: float = Query(..., descript
     """Recalcula los estados de cuotas con FIFO."""
     resultado = await recalcular_estado_cuotas(id, total_pagado)
     return {"message": resultado}
+
+
+@router.get("/{id_ventafk}/informacion", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener información de cuota de venta", description="Retorna información completa de cuotas, datos de la venta y del cliente asociado.")
+async def obtenerInformacionCuotaVentaApi(id_ventafk: int):
+    """Obtiene información completa de cuotas de una venta.
+    
+    Retorna:
+    - total_cuotas: Cantidad total de cuotas
+    - cuotas_pendientes: Cantidad de cuotas pendientes
+    - monto_cuota: Monto de cada cuota
+    - pagos_totales: Total de pagos realizados
+    - monto_pendiente: Monto total pendiente
+    - venta: Datos de la venta con cliente incluido
+    """
+    resultado = await obtener_info_cuota_venta(id_ventafk)
+    return resultado

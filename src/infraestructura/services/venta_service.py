@@ -1,5 +1,7 @@
 from typing import Optional
 
+from src.configs.settings import get_settings
+from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.utils import (attach_grouped, attach_related,
                              validar_fk_existente)
 
@@ -11,6 +13,21 @@ from .cliente_service import obtener_clientes
 from .detalle_venta_service import (actualizar_detalle_venta,
                                     crear_detalle_venta)
 from .local_service import obtener_locales
+
+
+async def obtener_clima_para_venta():
+    """Obtiene información climática actual para registrar en la venta.
+    
+    Utiliza las coordenadas de la empresa definidas en settings.
+    """
+    settings = get_settings()
+    latitud = settings.EMPRESA_LATITUD
+    longitud = settings.EMPRESA_LONGITUD
+    
+    clima_info = obtenerInformacionClimatica(latitud, longitud)
+    if clima_info:
+        print(f"[obtener_clima_para_venta] Clima obtenido: {clima_info}")
+    return clima_info
 
 
 def build_venta_entity(payload: dict) -> Venta:
@@ -85,6 +102,20 @@ async def obtener_detalle_venta_por_venta_id(filtros: dict = None):
 
 
 async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_venta_extraidos: list = None):
+    # Obtener información climática automáticamente si no está proporcionada
+    print(f"procesado? [_ya_procesado]")
+    if not _ya_procesado:
+        clima_info = await obtener_clima_para_venta()
+        if clima_info:
+            # Agregar datos del clima a la venta si no están presentes en el payload
+            if payload.get('clima') is None:
+                payload['clima'] = clima_info.get('clima')
+            if payload.get('temperatura') is None:
+                payload['temperatura'] = clima_info.get('temperatura')
+            if payload.get('humedad') is None:
+                payload['humedad'] = clima_info.get('humedad')
+            print(f"[crear_venta] Clima agregado automáticamente: {clima_info}")
+    
     # Verificar si tipo_credito está presente en el payload para rutear automáticamente
     # Solo rutear si no ha sido procesado previamente (para evitar recursión infinita)
     tipo_credito = payload.get('tipo_credito')

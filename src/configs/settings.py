@@ -22,9 +22,13 @@ class Settings(BaseSettings):
     # CORS - Lista explícita sin wildcards para permitir credentials
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173,https://projectfrontend-psi.vercel.app,https://project-backend-gamma-seven.vercel.app"
     
-    # Server
+# Server
     HOST: str = "0.0.0.0"
     PORT: int = 8000
+    
+    # Empresa Ubicación (coordenadas para clima)
+    EMPRESA_LATITUD: float = -25.2637  # Asunción, Paraguay
+    EMPRESA_LONGITUD: float = -57.5759
     
     class Config:
         env_file = ".env"
