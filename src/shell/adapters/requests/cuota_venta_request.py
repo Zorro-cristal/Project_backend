@@ -7,7 +7,6 @@ from pydantic import BaseModel
 class CuotaVentaRequest(BaseModel):
     """Request para crear una cuota de venta."""
     estado: Optional[int] = 1
-    total_cuotas: Optional[int] = None
     monto: Optional[float] = None
     fecha: Optional[datetime] = None
     descuento: Optional[float] = None
@@ -22,7 +21,6 @@ class CuotaVentaRequest(BaseModel):
 class CuotaVentaUpdateRequest(BaseModel):
     """Request para actualizar una cuota de venta."""
     estado: Optional[int] = None
-    total_cuotas: Optional[int] = None
     monto: Optional[float] = None
     fecha: Optional[datetime] = None
     descuento: Optional[float] = None

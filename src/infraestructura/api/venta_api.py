@@ -3,11 +3,10 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
-from src.shell.adapters.requests.venta_request import (VentaRequest,
+from src.shell.adapters.requests.venta_request import (VentaBase,
                                                        VentaUpdateRequest)
 
 from ..services.venta_service import (actualizar_venta, crear_venta,
-                                      crear_venta_contado, crear_venta_credito,
                                       obtener_detalle_venta_por_venta_id,
                                       obtener_venta_por_id_con_detalles,
                                       obtener_venta_por_id_sin_detalles,
@@ -32,7 +31,7 @@ async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta", description="Crea una nueva venta.")
-async def agregarVentaApi(requestBody: VentaRequest):
+async def agregarVentaApi(requestBody: VentaBase):
     payload = requestBody.model_dump()
     try:
         result = await crear_venta(payload)
@@ -128,35 +127,27 @@ async def obtenerDetalleVentaPorVentaIdApi(id: int):
     return {"message": result if result else []}
 
 
-# Nuevos endpoints para ventas con crédito
+# Endpoints específicos para ventas con crédito (ahora redundantes - usar POST / con tipo_credito)
 
 @router.post("/contado", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta al contado", description="Crea una venta al contado y registra el pago automáticamente.")
-async def crearVentaContadoApi(requestBody: VentaRequest):
+async def crearVentaContadoApi(requestBody: VentaBase):
     """Crea una venta al contado (tipo_credito=0) y registra el pago en pagos_venta."""
-    from src.shell.adapters.requests.venta_request import VentaContadoRequest
-
-    # Soporta el formato de VentaRequest estándar o VentaContadoRequest
+    payload = requestBody.model_dump()
+    payload['tipo_credito'] = 0
     try:
-        payload = requestBody.model_dump()
-    except Exception:
-        payload = requestBody
-    try:
-        result = await crear_venta_contado(payload)
+        result = await crear_venta(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
 
 @router.post("/credito", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta a crédito", description="Crea una venta a crédito y genera las cuotas automáticamente.")
-async def crearVentaCreditoApi(requestBody: VentaRequest):
+async def crearVentaCreditoApi(requestBody: VentaBase):
     """Crea una venta a crédito (tipo_credito=1) y genera las cuotas."""
-    from src.shell.adapters.requests.venta_request import VentaCreditoRequest
+    payload = requestBody.model_dump()
+    payload['tipo_credito'] = 1
     try:
-        payload = requestBody.model_dump()
-    except Exception:
-        payload = requestBody
-    try:
-        result = await crear_venta_credito(payload)
+        result = await crear_venta(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}

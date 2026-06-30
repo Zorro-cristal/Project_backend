@@ -12,6 +12,7 @@ class Detalle_venta:
     descuento: Optional[float] = None
     id_detalleproductofk: Optional[str] = None
     id_ventafk: Optional[int] = None
+    id_ordenfk: Optional[int] = None
     producto: Optional[Producto] = None
     venta: Optional[Venta] = None
     subtotal: Optional[float] = None

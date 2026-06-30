@@ -17,6 +17,7 @@ class CompraRequest(BaseModel):
     fecha: datetime
     estado: Optional[int] = 1
     tipo_credito: Optional[int] = 1
+    total_cuotas: Optional[int] = None
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
     proveedor: Optional[ProveedorRequest] = None
@@ -34,6 +35,7 @@ class CompraUpdateRequest(BaseModel):
     fecha: Optional[datetime] = None
     estado: Optional[int] = None
     tipo_credito: Optional[int] = None
+    total_cuotas: Optional[int] = None
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
     proveedor: Optional[ProveedorRequest] = None
@@ -42,4 +44,3 @@ class CompraUpdateRequest(BaseModel):
 
     class Config:
         validate_by_name = True
-

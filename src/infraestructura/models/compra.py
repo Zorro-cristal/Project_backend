@@ -17,6 +17,7 @@ class Compra:
     fecha: datetime = None
     estado: int = 1
     tipo_credito: int = 1
+    total_cuotas: Optional[int] = None
     id_proveedorfk: Optional[int] = None
     local: Optional[Local] = None
     proveedor: Optional[Proveedor] = None

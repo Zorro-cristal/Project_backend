@@ -13,7 +13,6 @@ class CuotaVenta:
     - 3: Parcial (pagada parcialmente)
     """
     estado: int = 1
-    total_cuotas: Optional[int] = None
     monto: Optional[float] = None
     fecha: Optional[datetime] = None
     descuento: Optional[float] = None

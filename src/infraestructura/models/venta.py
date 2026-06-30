@@ -20,6 +20,8 @@ class Venta:
     humedad: Optional[int] = None
     evento: Optional[bool] = None
     tipo_credito: Optional[int] = None
+    total_cuotas: Optional[int] = None
+    monto_entrega: Optional[float] = 0
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None

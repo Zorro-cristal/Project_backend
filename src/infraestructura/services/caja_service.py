@@ -3,9 +3,9 @@ from src.shell.utils import (attach_grouped, attach_related,
 
 from ..models.caja import Caja
 from ..repositories.caja_repository import actualizarCaja, obtenerCaja
-from ..repositories.compra_repository import obtenerCompra
 from ..repositories.egreso_repository import obtenerEgreso
-from ..repositories.venta_repository import obtenerVenta
+from ..repositories.pago_compra_repository import obtenerPagoCompra
+from ..repositories.pago_venta_repository import obtenerPagoVenta
 from .usuario_service import obtener_usuarios
 
 
@@ -49,7 +49,7 @@ async def actualizar_caja(id: int, payload: dict):
 
 
 async def obtener_caja_por_id_con_movimientos(filtros: dict = None, columnas: str = '*'):
-    """Retorna la caja por id con movimientos (egresos, ventas, compras)."""
+    """Retorna la caja por id con movimientos (egresos, pagos_venta, pagos_cuota)."""
     caja = await obtenerCaja(filtros=filtros, columnas=columnas)
     if not caja:
         return None
@@ -73,14 +73,14 @@ async def obtener_caja_por_id_con_movimientos(filtros: dict = None, columnas: st
         cajas_list, 'id', obtenerEgreso, 'id_cajafk', 'id_cajafk', 'egresos'
     )
     
-    # Adjuntar ventas (filtrar por id_cajafk)
+    # Adjuntar pagos de venta (filtrar por id_cajafk)
     cajas_list = await attach_grouped(
-        cajas_list, 'id', obtenerVenta, 'id_cajafk', 'id_cajafk', 'ventas'
+        cajas_list, 'id', obtenerPagoVenta, 'id_cajafk', 'id_cajafk', 'pagos_venta'
     )
     
-    # Adjuntar compras (filtrar por id_cajafk)
+    # Adjuntar pagos de compra (filtrar por id_cajafk)
     cajas_list = await attach_grouped(
-        cajas_list, 'id', obtenerCompra, 'id_cajafk', 'id_cajafk', 'compras'
+        cajas_list, 'id', obtenerPagoCompra, 'id_cajafk', 'id_cajafk', 'pagos_cuota'
     )
     
     return cajas_list[0]

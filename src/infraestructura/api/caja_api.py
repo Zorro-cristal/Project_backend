@@ -59,7 +59,7 @@ async def obtenerCajasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID, incluyendo ventas, compras y egresos asociados.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID, incluyendo egresos, pagos_venta y pagos_cuota asociados.")
 async def obtenerCajaPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_caja_por_id_con_movimientos(filtros)

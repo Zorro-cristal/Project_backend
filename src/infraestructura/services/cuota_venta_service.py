@@ -18,7 +18,7 @@ async def crear_cuotas_para_venta(
 ) -> list[dict]:
     """Genera las cuotas para una venta a crédito.
     
-    Args:
+Args:
         id_venta: ID de la venta
         total_cuotas: Número total de cuotas (ej. 12 para un año)
         monto_cuota: Monto de cada cuota
@@ -26,15 +26,16 @@ async def crear_cuotas_para_venta(
         id_usuariofk: ID del usuario que crea las cuotas
         descuento: Descuento aplicado por cuota
         interes: Porcentaje de interés
-    
+
     Returns:
-        Lista de cuotas creadas
+        Lista de cuotas criadas
     """
     cuotas_creadas = []
     
     for i in range(total_cuotas):
         # Calcular fecha de cada cuota (añadir meses)
         from calendar import monthrange
+
         año = fecha_inicio.year
         mes = fecha_inicio.month + i
         año += (mes - 1) // 12
@@ -55,7 +56,6 @@ async def crear_cuotas_para_venta(
         # Crear cuota con estado=1 (activo)
         cuota_data = {
             'estado': ESTADO_ACTIVO,
-            'total_cuotas': total_cuotas,
             'monto': monto_final,
             'fecha': fecha_cuota.isoformat(),
             'descuento': descuento,
