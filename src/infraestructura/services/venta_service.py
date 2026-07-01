@@ -82,19 +82,28 @@ async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
     return codigo_completo
 
 
-async def obtener_clima_para_venta():
-    """Obtiene información climática actual para registrar en la venta.
-    
-    Utiliza las coordenadas de la empresa definidas en settings.
+async def obtener_clima_para_venta_por_local(id_localfk: int):
+    """Obtiene información climática actual para registrar en la venta usando coordenadas del local.
+
+    La coordenadas provienen de la tabla `locales` (campos: latitud, longitud).
     """
-    settings = get_settings()
-    latitud = settings.EMPRESA_LATITUD
-    longitud = settings.EMPRESA_LONGITUD
-    
+    locales = await obtenerLocal(filtros={'id': id_localfk})
+    if not locales:
+        return None
+
+    local = locales[0] if isinstance(locales, list) else locales
+    latitud = local.get('latitud')
+    longitud = local.get('longitud')
+
+    # Si el local no tiene coordenadas, no romper el flujo: no se agrega clima.
+    if latitud is None or longitud is None:
+        return None
+
     clima_info = obtenerInformacionClimatica(latitud, longitud)
     if clima_info:
-        print(f"[obtener_clima_para_venta] Clima obtenido: {clima_info}")
+        print(f"[obtener_clima_para_venta_por_local] Clima obtenido: {clima_info}")
     return clima_info
+
 
 
 def build_venta_entity(payload: dict) -> Venta:
@@ -185,7 +194,11 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
     # Obtener información climática automáticamente si no está proporcionada
     print(f"procesado? [_ya_procesado]")
     if not _ya_procesado:
-        clima_info = await obtener_clima_para_venta()
+        id_localfk = payload.get('id_localfk')
+        clima_info = None
+        if id_localfk is not None:
+            clima_info = await obtener_clima_para_venta_por_local(id_localfk)
+
         if clima_info:
             # Agregar datos del clima a la venta si no están presentes en el payload
             if payload.get('clima') is None:
@@ -195,6 +208,7 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
             if payload.get('humedad') is None:
                 payload['humedad'] = clima_info.get('humedad')
             print(f"[crear_venta] Clima agregado automáticamente: {clima_info}")
+
     
     # Verificar si tipo_credito está presente en el payload para rutear automáticamente
     # Solo rutear si no ha sido procesado previamente (para evitar recursión infinita)

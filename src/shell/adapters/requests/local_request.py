@@ -9,9 +9,12 @@ class LocalRequest(BaseModel):
     cod_num: Optional[str] = None
     direccion: Optional[str] = None
     telefono: Optional[str] = None
+    latitud: Optional[float] = None
+    longitud: Optional[float] = None
 
     class Config:
         validate_by_name = True
+
 
 
 class LocalUpdateRequest(BaseModel):
