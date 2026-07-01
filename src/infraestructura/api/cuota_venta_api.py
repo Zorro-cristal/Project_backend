@@ -6,7 +6,6 @@ from src.shell.adapters.requests.cuota_venta_request import (
 
 from ..services.cuota_venta_service import (actualizar_estado_cuota,
                                             crear_cuotas_para_venta,
-                                            obtener_cuotas_por_venta,
                                             obtener_info_cuota_venta,
                                             recalcular_estado_cuotas)
 
@@ -31,11 +30,7 @@ async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest):
     return {"message": cuotas}
 
 
-@router.get("/{id}/cuotas", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener cuotas", description="Obtiene las cuotas de una venta.")
-async def obtenerCuotasPorVentaApi(id: int):
-    """Obtiene las cuotas de una venta."""
-    cuotas = await obtener_cuotas_por_venta(id)
-    return {"message": cuotas if cuotas else []}
+
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar cuota", description="Actualiza una cuota existente.")
@@ -56,17 +51,49 @@ async def recalcularCuotasApi(id: int, total_pagado: float = Query(..., descript
     return {"message": resultado}
 
 
-@router.get("/{id_ventafk}/informacion", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener información de cuota de venta", description="Retorna información completa de cuotas, datos de la venta y del cliente asociado.")
-async def obtenerInformacionCuotaVentaApi(id_ventafk: int):
+@router.get("/{id_venta}/informacion", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener información de cuota de venta", description="Retorna información completa de cuotas, pagos y la venta asociada.")
+async def obtenerInformacionCuotaVentaApi(id_venta: int):
     """Obtiene información completa de cuotas de una venta.
-    
-    Retorna:
-    - total_cuotas: Cantidad total de cuotas
-    - cuotas_pendientes: Cantidad de cuotas pendientes
-    - monto_cuota: Monto de cada cuota
-    - pagos_totales: Total de pagos realizados
-    - monto_pendiente: Monto total pendiente
-    - venta: Datos de la venta con cliente incluido
+
+    Retorna en formato requerido:
+    {
+        "message": {
+            "cuota_venta": {...},
+            "pago_venta": {...},
+            "venta": {...},
+            "monto_pendiente": 10000,
+            "cuotas_pendientes": 2
+        }
+    }
     """
-    resultado = await obtener_info_cuota_venta(id_ventafk)
-    return resultado
+    resultado = await obtener_info_cuota_venta(id_venta)
+
+    # resultado ya viene con:
+    # - cuota_info: { total_cuotas, cuotas_pendientes, monto_cuota, pagos_totales, monto_pendiente, cuotas }
+    # - venta
+    cuota_info = resultado.get('cuota_info') or {}
+
+    monto_pendiente = cuota_info.get('monto_pendiente', 0)
+    cuotas_pendientes = cuota_info.get('cuotas_pendientes', 0)
+
+    # cuota_info incluye:
+    # - cuotas: lista de registros de cuotas (cada uno con id, monto_original, ...)
+    # - total_cuotas, cuotas_pendientes, monto_cuota, pagos_totales, monto_pendiente
+    cuotas_registros = cuota_info.get('cuotas', [])
+
+    return {
+        "message": {
+            "cuota_venta": cuotas_registros,
+            "pago_venta": [
+                {
+                    "pagos_totales": cuota_info.get('pagos_totales', 0)
+                }
+            ],
+            "venta": resultado.get('venta'),
+            "monto_pendiente": monto_pendiente,
+            "cuotas_pendientes": cuotas_pendientes,
+        }
+    }
+
+
+

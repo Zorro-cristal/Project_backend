@@ -13,8 +13,6 @@ class Venta:
     nro: Optional[str] = None
     fecha: datetime = None
     estado: int = 1
-    cod_usuariofk_edit: Optional[bool] = None
-    empresa_id: Optional[int] = None
     clima: Optional[int] = None
     temperatura: Optional[int] = None
     humedad: Optional[int] = None

@@ -23,7 +23,7 @@ async def actualizarPagoVenta(datos: Union[PagoVenta, dict], id: Optional[int] =
 async def obtenerPagosPorVentaId(id_ventafk: int, columnas: str = "*"):
     """Obtiene todos los pagos asociados a una venta."""
     filtros = {'id_ventafk': id_ventafk}
-    return await get('pagos_venta', filtros, limite=100, offset=0, columns=columnas, order_by='fecha', order_desc=False)
+    return await get('pagos_venta', filtros, limit=100, offset=0, columns=columnas, order_by='fecha', order_desc=False)
 
 
 async def obtenerTotalPagadoPorVentaId(id_ventafk: int) -> float:

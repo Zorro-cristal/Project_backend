@@ -17,8 +17,6 @@ class VentaBase(BaseModel):
     nro: Optional[str] = None
     fecha: datetime
     estado: Optional[int] = 1
-    cod_usuariofk_edit: Optional[bool] = None
-    empresa_id: Optional[int] = None
     evento: Optional[bool] = None
     tipo_credito: Optional[int] = None
     total_cuotas: Optional[int] = None

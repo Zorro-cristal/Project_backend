@@ -23,4 +23,4 @@ async def actualizarCuotaVenta(datos: Union[CuotaVenta, dict], id: Optional[int]
 async def obtenerCuotasPorVentaId(id_ventafk: int, columnas: str = "*"):
     """Obtiene todas las cuotas asociadas a una venta."""
     filtros = {'id_ventafk': id_ventafk}
-    return await get('cuotas_venta', filtros, limite=100, offset=0, columns=columnas, order_by='fecha', order_desc=False)
+    return await get('cuotas_venta', filtros, limit=100, offset=0, columns=columnas, order_by='fecha', order_desc=False)

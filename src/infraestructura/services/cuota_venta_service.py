@@ -123,53 +123,50 @@ async def recalcular_estado_cuotas(id_venta: int, total_pagado: float) -> dict:
             'cuotas_pagadas': 0,
         }
     
-    # Contar pagos activos (cada pago = 1 cuota pagada)
+    # Obtener pagos activos (estado=1) y sumar montos en orden por fecha asc
     pagos = await obtenerPagosPorVentaId(id_venta)
-    cantidad_pagos = sum(1 for p in (pagos or []) if p.get('estado', 1) == 1)
-    
-    # Calcular total de las cuotas activas
+    pagos_activos = [p for p in (pagos or []) if p.get('estado', 1) == 1]
+
+    # Calcular total de la deuda (cuotas activas)
     total_deuda = sum(float(c.get('monto', 0) or 0) for c in cuotas)
-    
-    # Procesar cada cuota con lógica FIFO
+
+    # FIFO por montos:
+    # - acumulamos el dinero pagado
+    # - vamos cubriendo cada cuota hasta agotar el saldo pagado
+    saldo_pagado_acumulado = float(total_pagado or 0)
+
     cuotas_procesadas = []
-    for idx, cuota in enumerate(cuotas):
+    cuotas_pagadas = 0
+    for cuota in cuotas:
         id_cuota = cuota.get('id')
         monto_cuota = float(cuota.get('monto', 0) or 0)
-        
-        # FIFO: si el índice es menor que la cantidad de pagos, está pagada
-        if idx < cantidad_pagos:
-            pagada = True
-            monto_cubierto = monto_cuota
-        else:
-            pagada = False
-            monto_cubierto = 0
-        
-        # NO actualizamos el campo estado en la BD
-        # El estado activo/inactivo se mantiene igual
-        
+
+        monto_cubierto = min(monto_cuota, saldo_pagado_acumulado)
+        saldo_pagado_acumulado = max(0, saldo_pagado_acumulado - monto_cuota)
+
+        pagada = monto_cubierto >= monto_cuota and monto_cuota > 0
+        if pagada:
+            cuotas_pagadas += 1
+
         cuotas_procesadas.append({
             'id': id_cuota,
             'monto_original': monto_cuota,
             'monto_cubierto': monto_cubierto,
             'saldo_restante': max(0, monto_cuota - monto_cubierto),
-            'pagada': pagada,  # Calculado dinámicamente, NO de la BD
+            'pagada': pagada,  # Calculado dinámicamente: totalmente cubierta por pagos
             'fecha': cuota.get('fecha'),
-            'estado': cuota.get('estado'),  # Esto es activo/inactivo
+            'estado': cuota.get('estado'),  # activo/inactivo
         })
-    
-    # Calcular saldo pendiente global
-    cantidad_pagadas = min(cantidad_pagos, len(cuotas))
-    saldo_pendiente_global = total_deuda - sum(
-        float(c.get('monto', 0) or 0) 
-        for c in cuotas[:cantidad_pagadas]
-    )
-    
+
+    # Saldo pendiente global: deuda - sum(montos cubiertos)
+    saldo_pendiente_global = max(0, total_deuda - sum(float(c.get('monto_cubierto', 0) or 0) for c in cuotas_procesadas))
+
     return {
         'cuotas': cuotas_procesadas,
         'saldo_pendiente': saldo_pendiente_global,
         'total_pagado': total_pagado,
         'total_deuda': total_deuda,
-        'cuotas_pagadas': cantidad_pagadas,
+        'cuotas_pagadas': cuotas_pagadas,
     }
 
 
