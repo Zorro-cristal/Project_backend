@@ -6,7 +6,7 @@ from pydantic import BaseModel
 
 class PagoVentaRequest(BaseModel):
     """Request para registrar un pago de venta."""
-    tipo: int  # 1: Entrega, 2: Cuota
+    tipo: int  # 1: Cuota, 2: Entrega
     monto: float
     fecha: Optional[datetime] = None
     id_ventafk: int

@@ -34,40 +34,6 @@ async def registrarPagoApi(requestBody: PagoVentaRequest):
     return {"message": resultado}
 
 
-@router.post("/contado", dependencies=[Depends(permiso_requerido('pago', 'crear'))], summary="Registrar pago de contado", description="Registra el pago completo para una venta al contado.")
-async def registrarPagoContadoApi(requestBody: RegistroPagoContadoRequest):
-    """Registra pago de contado."""
-    payload = requestBody.model_dump(exclude_unset=True)
-    
-    resultado = await registrar_pago_contado(
-        id_venta=payload['id_venta'],
-        monto_total=payload['monto_total'],
-        id_cajafk=payload['id_cajafk'],
-        id_usuariofk=payload.get('id_usuariofk'),
-    )
-    
-    # Recalcular saldos automáticamente (marca cuotas como pagadas)
-    await recalcular_saldos(payload['id_venta'])
-    
-    return {"message": resultado}
-
-
-@router.post("/cuota", dependencies=[Depends(permiso_requerido('pago', 'crear'))], summary="Registrar pago de cuota", description="Registra un pago de cuota para una venta a crédito.")
-async def registrarPagoCuotaApi(requestBody: RegistroPagoCuotaRequest):
-    """Registra pago de cuota."""
-    payload = requestBody.model_dump(exclude_unset=True)
-    
-    resultado = await registrar_pago_cuota(
-        id_venta=payload['id_venta'],
-        monto=payload['monto'],
-        id_cajafk=payload['id_cajafk'],
-        id_usuariofk=payload.get('id_usuariofk'),
-    )
-    
-    # Recalcular saldos automáticamente (marca cuotas como pagadas por cantidad)
-    await recalcular_saldos(payload['id_venta'])
-    
-    return {"message": resultado}
 
 
 @router.get("/{id}/pagos", dependencies=[Depends(permiso_requerido('pago', 'leer'))], summary="Obtener pagos", description="Obtiene todos los pagos de una venta.")

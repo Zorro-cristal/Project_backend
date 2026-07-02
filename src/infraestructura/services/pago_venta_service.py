@@ -7,9 +7,10 @@ from ..repositories.pago_venta_repository import (actualizarPagoVenta,
 
 # Tipos de pago
 # NULL para ventas al contado (pago único)
-# 2 para cuotas (crédito)
-TIPO_CUOTA = 2   # Pago de cuota (crédito)
-# NOTA: Para ventas al contado (tipo_credito=0), el tipo es NULL
+# 1 para cuotas (crédito)
+# 2 para entregas
+TIPO_CUOTA = 1   # Pago de cuota (crédito)
+# NOTA: Para ventas al contado, el tipo es NULL
 
 # Estados
 ESTADO_ACTIVO = 1
@@ -29,7 +30,7 @@ async def registrar_pago(
     Args:
         id_venta: ID de la venta
         monto: Monto del pago
-        tipo: Tipo de pago (1=Entrega, 2=Cuota)
+        tipo: Tipo de pago (1=Cuota, 2=Entrega)
         id_cajafk: ID de la caja
         fecha: Fecha del pago (por defecto ahora)
         id_usuariofk: ID del usuario que registra el pago
@@ -90,7 +91,7 @@ async def registrar_pago_cuota(
     id_cajafk: int,
     id_usuariofk: Optional[int] = None,
 ) -> dict:
-    """Registra un pago de cuota (tipo=2).
+    """Registra un pago de cuota (tipo=1).
     
     Para ventas a crédito, los pagos posteriores son de tipo cuota.
     """
