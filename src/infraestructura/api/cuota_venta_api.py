@@ -4,7 +4,8 @@ from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.cuota_venta_request import (
     CuotaVentaUpdateRequest, GenerarCuotasRequest)
 
-from ..services.cuota_venta_service import (actualizar_estado_cuota,
+from ..services.cuota_venta_service import (actualizar_cuota,
+                                            actualizar_estado_cuota,
                                             crear_cuotas_para_venta,
                                             obtener_info_cuota_venta,
                                             recalcular_estado_cuotas)
@@ -40,7 +41,7 @@ async def actualizarCuotaApi(id: int, requestBody: CuotaVentaUpdateRequest):
     if not payload:
         raise ValueError('No hay campos para actualizar')
     
-    resultado = await actualizar_estado_cuota(id, payload.get('estado', 1))
+    resultado = await actualizar_cuota(id, payload)
     return {"message": resultado}
 
 

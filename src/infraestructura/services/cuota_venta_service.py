@@ -84,6 +84,17 @@ async def actualizar_estado_cuota(id_cuota: int, nuevo_estado: int) -> dict:
     return await actualizarCuotaVenta({'estado': nuevo_estado}, id_cuota)
 
 
+async def actualizar_cuota(id_cuota: int, payload: dict) -> dict:
+    """Actualiza una cuota con los campos permitidos en payload.
+    
+    Ej: descuento, monto, fecha, interes y/o estado.
+    """
+    if not payload:
+        raise ValueError("No hay campos para actualizar")
+
+    return await actualizarCuotaVenta(payload, id_cuota)
+
+
 async def recalcular_estado_cuotas(id_venta: int, total_pagado: float) -> dict:
     """Calcula el estado de las cuotas según la lógica FIFO.
     
@@ -148,11 +159,14 @@ async def recalcular_estado_cuotas(id_venta: int, total_pagado: float) -> dict:
         if pagada:
             cuotas_pagadas += 1
 
+        monto_pendiente_cuota = max(0, monto_cuota - monto_cubierto)
+
         cuotas_procesadas.append({
             'id': id_cuota,
             'monto_original': monto_cuota,
             'monto_cubierto': monto_cubierto,
-            'saldo_restante': max(0, monto_cuota - monto_cubierto),
+            'saldo_restante': monto_pendiente_cuota,
+            'monto_pendiente': monto_pendiente_cuota,
             'pagada': pagada,  # Calculado dinámicamente: totalmente cubierta por pagos
             'fecha': cuota.get('fecha'),
             'estado': cuota.get('estado'),  # activo/inactivo
