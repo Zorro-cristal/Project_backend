@@ -55,12 +55,12 @@ async def recalcularCuotasCompraApi(id: int, total_pagado: float = Query(..., de
 )
 async def obtenerInformacionCuotaCompraApi(id_compra: int):
     """
-    Shape equivalente al endpoint de ventas (cuota_venta_api):
+    Shape equivalente al endpoint de ventas (cuota_venta_api), pero para compras:
     {
       "message": {
-        "cuota_venta": [...],
-        "pago_venta": [{ "pagos_totales": ... }],
-        "venta": {...},
+        "cuota_compra": [...],
+        "pago_compra": [{ "pagos_totales": ... }],
+        "compra": {...},
         "monto_pendiente": ...,
         "cuotas_pendientes": ...
       }
@@ -87,13 +87,13 @@ async def obtenerInformacionCuotaCompraApi(id_compra: int):
 
     return {
         "message": {
-            "cuota_venta": cuotas_registros,
-            "pago_venta": [
+            "cuota_compra": cuotas_registros,
+            "pago_compra": [
                 {
                     "pagos_totales": pagos_totales,
                 }
             ],
-            "venta": compra,
+            "compra": compra,
             "monto_pendiente": monto_pendiente,
             "cuotas_pendientes": cuotas_pendientes,
         }
