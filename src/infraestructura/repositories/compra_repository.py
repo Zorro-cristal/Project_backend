@@ -13,6 +13,10 @@ async def obtenerCompra(filtros=None, limite=100, offset=0, columnas="*", joins=
 async def actualizarCompra(datos: Union[Compra, dict], id: Optional[int] = None):
     payload = prepararPayloadDb(datos, exclude_fields=['local', 'cliente', 'proveedor', 'detalles', 'usuario'])
 
+    # DEBUG: verificar que monto_entrega viaje correctamente a Supabase
+    # (dejar este print hasta confirmar el problema, luego se elimina)
+    print("[DEBUG] actualizarCompra payload compras:", payload)
+
     if id is None:
         return await insert('compras', payload)
     return await update('compras', id, payload, key='id_compra')

@@ -253,7 +253,8 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     id_cajafk = payload.pop('id_cajafk', None)
     id_usuariofk = payload.pop('id_usuariofk', None)
     monto_total = payload.pop('monto_total', None)
-    monto_entrega = payload.pop('monto_entrega', 0) or 0
+    monto_entrega_raw = payload.pop('monto_entrega', 0) or 0
+    monto_entrega = float(monto_entrega_raw)
     total_cuotas = payload.pop('total_cuotas', 1)
     fecha_inicio_str = payload.pop('fecha_inicio_cuota', None)
     descuento_cuota = payload.pop('descuento_cuota', 0)
@@ -301,6 +302,9 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     payload['tipo_credito'] = 1
     # Reinyectar id_cajafk al payload porque luego se usa build_compra_entity(payload)
     payload['id_cajafk'] = id_cajafk
+
+    # Asegurar que monto_entrega viaje a Supabase con el valor correcto
+    payload['monto_entrega'] = float(monto_entrega)
     
     # Crear la compra
     compra = build_compra_entity(payload)
@@ -312,8 +316,6 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     if not id_compra:
         raise Exception(f"Error al crear la compra: respuesta inválida -> {resultado}")
     
-    # Mantener monto_entrega en la entidad compra para persistirlo en DB
-    payload['monto_entrega'] = monto_entrega
 
     # Calcular monto por cuota sobre la DEUDA (total - entrega)
     monto_deuda = max(0.0, float(monto_total) - float(monto_entrega))
