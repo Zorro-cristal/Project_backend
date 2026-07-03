@@ -6,6 +6,7 @@ from src.shell.flujo.detalle_compra.crearActualizarDetalleCompra import \
 from src.shell.utils import validar_fk_existente
 
 from ..models.compra import Compra
+from ..models.cuota_compra import CuotaCompra
 from ..repositories.compra_repository import actualizarCompra, obtenerCompra
 from ..repositories.detalle_compra_repository import obtenerDetalleCompra
 from .cuota_compra_service import calcular_saldo_fifo, crear_cuotas_para_compra
@@ -252,6 +253,7 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     id_cajafk = payload.pop('id_cajafk', None)
     id_usuariofk = payload.pop('id_usuariofk', None)
     monto_total = payload.pop('monto_total', None)
+    monto_entrega = payload.pop('monto_entrega', 0) or 0
     total_cuotas = payload.pop('total_cuotas', 1)
     fecha_inicio_str = payload.pop('fecha_inicio_cuota', None)
     descuento_cuota = payload.pop('descuento_cuota', 0)
@@ -310,8 +312,12 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     if not id_compra:
         raise Exception(f"Error al crear la compra: respuesta inválida -> {resultado}")
     
-    # Calcular monto por cuota
-    monto_cuota = float(monto_total) / float(total_cuotas)
+    # Mantener monto_entrega en la entidad compra para persistirlo en DB
+    payload['monto_entrega'] = monto_entrega
+
+    # Calcular monto por cuota sobre la DEUDA (total - entrega)
+    monto_deuda = max(0.0, float(monto_total) - float(monto_entrega))
+    monto_cuota = monto_deuda / float(total_cuotas)
     
     # Determinar fecha de inicio de las cuotas
     if fecha_inicio_str:
@@ -320,15 +326,16 @@ async def crear_compra_a_credito(payload: dict) -> dict:
         fecha_inicio = datetime.now(timezone.utc)
     
     # Generar las cuotas
-    cuotas = await crear_cuotas_para_compra(
-        id_compra=id_compra,
-        total_cuotas=total_cuotas,
+    cuota_base = CuotaCompra(
+        id_comprafk=id_compra,
+        total_cuotas=int(total_cuotas),
         monto_cuota=monto_cuota,
         fecha_inicio=fecha_inicio,
         id_usuariofk=id_usuariofk,
         descuento=descuento_cuota,
         interes=interes_cuota,
     )
+    cuotas = await crear_cuotas_para_compra(cuota_base)
     
     return {
         'compra': resultado,

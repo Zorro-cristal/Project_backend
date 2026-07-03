@@ -18,6 +18,8 @@ class CompraRequest(BaseModel):
     estado: Optional[int] = 1
     tipo_credito: Optional[int] = 1
     total_cuotas: Optional[int] = None
+    # monto_entrega: adelanto pagado al momento de la compra (reduce la deuda que se reparte en cuotas)
+    monto_entrega: Optional[float] = 0
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
     proveedor: Optional[ProveedorRequest] = None
@@ -36,6 +38,7 @@ class CompraUpdateRequest(BaseModel):
     estado: Optional[int] = None
     tipo_credito: Optional[int] = None
     total_cuotas: Optional[int] = None
+    monto_entrega: Optional[float] = None
     id_proveedorfk: Optional[int] = None
     local: Optional[LocalRequest] = None
     proveedor: Optional[ProveedorRequest] = None

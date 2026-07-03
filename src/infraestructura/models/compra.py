@@ -18,6 +18,8 @@ class Compra:
     estado: int = 1
     tipo_credito: int = 1
     total_cuotas: Optional[int] = None
+    # monto_entrega: adelanto pagado al momento de la compra (reduce la deuda que se reparte en cuotas)
+    monto_entrega: Optional[float] = 0
     id_proveedorfk: Optional[int] = None
     local: Optional[Local] = None
     proveedor: Optional[Proveedor] = None

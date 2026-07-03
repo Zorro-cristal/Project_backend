@@ -335,6 +335,7 @@ CREATE TABLE compras (
     id_localfk     INTEGER NOT NULL,
     fecha          TIMESTAMP WITH TIME ZONE NOT NULL,
     estado         INTEGER NOT NULL,
+    monto_entrega  NUMERIC DEFAULT 0,
     total_cuotas          INTEGER,
     tipo_credito    BOOLEAN NOT NULL,
     fecha_creado   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
