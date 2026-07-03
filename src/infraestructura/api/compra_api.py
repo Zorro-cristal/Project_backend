@@ -7,8 +7,12 @@ from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
 
-from ..services.compra_service import (actualizar_compra, crear_compra,
-                                       obtener_compras)
+from ..services.compra_service import (
+    actualizar_compra,
+    crear_compra_con_pago,
+    crear_compra_a_credito,
+    obtener_compras,
+)
 
 router = APIRouter()
 
@@ -32,7 +36,14 @@ async def patchCompraApi(id: int, requestBody: CompraUpdateRequest):
 async def agregarCompraApi(requestBody: CompraRequest):
     payload = requestBody.model_dump()
     try:
-        result = await crear_compra(payload)
+        # tipo_credito obligatorio: 0=contado, 1=crédito
+        tipo_credito = payload.get('tipo_credito')
+        if tipo_credito is None:
+            raise ValueError('Para crear una compra se requiere tipo_credito')
+        if tipo_credito == 1:
+            result = await crear_compra_a_credito(payload)
+        else:
+            result = await crear_compra_con_pago(payload)
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}

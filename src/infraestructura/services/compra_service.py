@@ -92,8 +92,8 @@ async def crear_compra(payload: dict):
     compra = build_compra_entity(payload)
     resultado = await actualizarCompra(compra)
     
-    # Obtener el ID de la compra creada
-    id_compra = resultado.get('id_compra') if resultado else None
+    # Obtener el ID de la compra creada (repo devuelve 'id' o 'id_compra')
+    id_compra = (resultado.get('id_compra') or resultado.get('id')) if resultado else None
     
 # Si hay detalles y se creó la compra, guardar cada detalle
     if detalles and id_compra:
@@ -205,9 +205,10 @@ async def crear_compra_con_pago(payload: dict) -> dict:
     
     # Obtener el ID de la compra creada
     id_compra = resultado.get('id_compra') if resultado else None
-    
+
+    # Si no hay id_compra, mejor lanzar el error real (para debug)
     if not id_compra:
-        raise Exception('Error al crear la compra')
+        raise Exception(f"Error al crear la compra: respuesta inválida -> {resultado}")
     
     # Registrar automáticamente el pago total (tipo=1 = Contado)
     pago = await registrar_pago_contado(
@@ -235,7 +236,7 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     Args:
         payload: Diccionario con los datos de la compra más:
             - id_cajafk: ID de la caja
-            - monto_total: Total de la compra
+            - monto_total: (opcional) Total de la compra. Si no se envía, se calcula desde `detalles`
             - total_cuotas: Número de cuotas (ej. 12)
             - fecha_inicio_cuota: Fecha de la primera cuota (opcional, por defecto hoy)
             - descuento_cuota: Descuento por cuota (opcional)
@@ -255,13 +256,25 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     fecha_inicio_str = payload.pop('fecha_inicio_cuota', None)
     descuento_cuota = payload.pop('descuento_cuota', 0)
     interes_cuota = payload.pop('interes_cuota', 0)
-    
+
     if not id_cajafk:
         raise ValueError('Para compra a crédito se requiere id_cajafk')
-    
-    if not monto_total:
-        raise ValueError('Para compra a crédito se requiere monto_total')
-    
+
+    # Si no se envía monto_total, calcularlo desde detalles (precio, descuento, cantidad)
+    if monto_total is None:
+        detalles = payload.get('detalles') or []
+        if not detalles:
+            raise ValueError('Para compra a crédito se requiere monto_total o detalles para calcularlo')
+
+        monto_total_calc = 0.0
+        for d in detalles:
+            precio = float(d.get('precio') or 0)
+            descuento_detalle = float(d.get('descuento') or 0)
+            cantidad = float(d.get('cantidad') or 0)
+            monto_total_calc += (precio - descuento_detalle) * cantidad
+
+        monto_total = monto_total_calc
+
     if total_cuotas < 1:
         raise ValueError('total_cuotas debe ser mayor a 0')
     
@@ -284,16 +297,18 @@ async def crear_compra_a_credito(payload: dict) -> dict:
     
     # Establecer tipo_credito como verdadero (crédito)
     payload['tipo_credito'] = 1
+    # Reinyectar id_cajafk al payload porque luego se usa build_compra_entity(payload)
+    payload['id_cajafk'] = id_cajafk
     
     # Crear la compra
     compra = build_compra_entity(payload)
     resultado = await actualizarCompra(compra)
     
-    # Obtener el ID de la compra creada
-    id_compra = resultado.get('id_compra') if resultado else None
-    
+    # Obtener el ID de la compra creada (repo devuelve 'id' o 'id_compra')
+    id_compra = (resultado.get('id_compra') or resultado.get('id')) if resultado else None
+
     if not id_compra:
-        raise Exception('Error al crear la compra')
+        raise Exception(f"Error al crear la compra: respuesta inválida -> {resultado}")
     
     # Calcular monto por cuota
     monto_cuota = float(monto_total) / float(total_cuotas)

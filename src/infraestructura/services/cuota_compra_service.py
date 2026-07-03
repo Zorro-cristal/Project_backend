@@ -9,51 +9,51 @@ from ..repositories.cuota_compra_repository import (actualizarCuotaCompra,
 ESTADO_INACTIVO = 0
 ESTADO_ACTIVO = 1
 
-async def crear_cuotas_para_compra(
-    id_compra: int,
-    total_cuotas: int,
-    monto_cuota: float,
-    fecha_inicio: datetime,
-    id_usuariofk: Optional[int] = None,
-    descuento: float = 0,
-    interes: int = 0,
-) -> list[dict]:
-    """Genera las cuotas para una compra a crédito.
-    
-    Args:
-        id_compra: ID de la compra
-        total_cuotas: Número total de cuotas (ej. 12 para un año)
-        monto_cuota: Monto de cada cuota
-        fecha_inicio: Fecha de la primera cuota
-        id_usuariofk: ID del usuario que crea las cuotas
-        descuento: Descuento aplicado por cuota
-        interes: Porcentaje de interés
-    
-    Returns:
-        Lista de cuotas creadas
-    """
+from ..models.cuota_compra import CuotaCompra
+
+
+async def crear_cuotas_para_compra(cuota_base: CuotaCompra) -> list[dict]:
+    if not cuota_base.id_comprafk:
+        raise ValueError("crear_cuotas_para_compra: cuota_base.id_comprafk es requerido")
+
+    if not cuota_base.total_cuotas or cuota_base.total_cuotas < 1:
+        raise ValueError("crear_cuotas_para_compra: total_cuotas debe ser mayor a 0")
+
+    if cuota_base.monto_cuota is None:
+        raise ValueError("crear_cuotas_para_compra: monto_cuota es requerido")
+
+    if cuota_base.fecha_inicio is None:
+        raise ValueError("crear_cuotas_para_compra: fecha_inicio es requerido")
+
     cuotas_creadas = []
-    
+    total_cuotas = int(cuota_base.total_cuotas)
+    monto_cuota = float(cuota_base.monto_cuota)
+    fecha_inicio = cuota_base.fecha_inicio
+    id_usuariofk = cuota_base.id_usuariofk
+    descuento = float(cuota_base.descuento or 0)
+    interes = int(cuota_base.interes or 0)
+
     for i in range(total_cuotas):
         # Calcular fecha de cada cuota (añadir meses)
         from calendar import monthrange
+
         año = fecha_inicio.year
         mes = fecha_inicio.month + i
         año += (mes - 1) // 12
         mes = ((mes - 1) % 12) + 1
         dia = min(fecha_inicio.day, monthrange(año, mes)[1])
-        
+
         fecha_cuota = datetime(año, mes, dia, tzinfo=timezone.utc)
-        
+
         # Calcular monto con interés si aplica
         monto_final = monto_cuota
         if interes > 0:
             monto_final = monto_cuota * (1 + interes / 100)
-        
+
         # Aplicar descuento si existe
         if descuento > 0:
             monto_final = monto_final - descuento
-        
+
         # Crear cuota con estado=1 (activo)
         cuota_data = {
             'estado': ESTADO_ACTIVO,
@@ -62,13 +62,13 @@ async def crear_cuotas_para_compra(
             'fecha': fecha_cuota.isoformat(),
             'descuento': descuento,
             'interes': interes,
-            'id_comprafk': id_compra,
+            'id_comprafk': cuota_base.id_comprafk,
             'id_usuariofk': id_usuariofk,
         }
-        
+
         cuota = await actualizarCuotaCompra(cuota_data)
         cuotas_creadas.append(cuota)
-    
+
     return cuotas_creadas
 
 
@@ -87,35 +87,31 @@ async def actualizar_estado_cuota(id_cuota: int, nuevo_estado: int) -> dict:
 
 
 async def recalcular_estado_cuotas(id_compra: int, total_pagado: float) -> dict:
-    """Calcula el estado de las cuotas según la lógica FIFO.
-    
-    El estado "pagada" se calcula DINÁMICAMENTE según la cantidad de
-    registros en pagos_compra, NO se almacena en la base de datos.
-    
-    Lógica FIFO:
-    - Se ordenan las cuotas por fecha (más antigua primero)
-    - Cada pago registrada cubre la siguiente cuota pendiente
-    - Si hay 3 pagos, las primeras 3 cuotas están pagadas
-    
-    Args:
-        id_compra: ID de la compra
-        total_pagado: Total de dinero pagado (solo para referencia)
-    
+    """Calcula el estado de las cuotas según la lógica FIFO (dinámica).
+
+    Nota de implementación:
+    - En ventas, "pagada" se calcula por COBERTURA acumulada basada en montos:
+        monto_cubierto = min(monto_cuota, saldo_pagado_acumulado)
+    - En compras, se implementa la misma lógica para que pagos parciales cubran
+      parcialmente cuotas y el saldo pendiente sea correcto.
+
+    Filtrado:
+    - cuotas consideradas: estado==1 (activa)
+    - pagos considerados: estado==1 (activos). Los pagos con estado==0 se excluyen.
+
     Returns:
         Dict con:
-        - cuotas: Lista de cuotas con estado calculado
+        - cuotas: Lista de cuotas con estado calculado (pagada dinámicamente)
         - saldo_pendiente: Saldo pendiente global
-        - total_pagado: Total pagado
-        - total_deuda: Total de la deuda
+        - total_pagado: Total pagado (suma entregada desde repository)
+        - total_deuda: Total de la deuda (suma montos de cuotas activas)
+        - cuotas_pagadas: Cantidad de cuotas totalmente cubiertas
     """
     from ..repositories.pago_compra_repository import obtenerPagosPorCompraId
 
-    # Obtener cuotas activas ordenadas por fecha
     cuotas = await obtenerCuotasPorCompraId(id_compra)
-    
-    # Filtrar solo cuotas activas
-    cuotas = [c for c in cuotas if c.get('estado', 1) == 1]
-    
+    cuotas = [c for c in (cuotas or []) if c.get('estado', 1) == 1]
+
     if not cuotas:
         return {
             'cuotas': [],
@@ -124,55 +120,66 @@ async def recalcular_estado_cuotas(id_compra: int, total_pagado: float) -> dict:
             'total_deuda': 0,
             'cuotas_pagadas': 0,
         }
-    
-    # Contar pagos activos (cada pago = 1 cuota pagada)
+
     pagos = await obtenerPagosPorCompraId(id_compra)
-    cantidad_pagos = sum(1 for p in (pagos or []) if p.get('estado', 1) == 1)
-    
-    # Calcular total de las cuotas activas
+    pagos_activos = [p for p in (pagos or []) if p.get('estado', 1) == 1]
+
     total_deuda = sum(float(c.get('monto', 0) or 0) for c in cuotas)
-    
-    # Procesar cada cuota con lógica FIFO
+    saldo_pagado_acumulado = float(total_pagado or 0)
+
     cuotas_procesadas = []
-    for idx, cuota in enumerate(cuotas):
+    cuotas_pagadas = 0
+
+    # FIFO por orden en la lista (repository describe orden por fecha)
+    for cuota in cuotas:
         id_cuota = cuota.get('id')
         monto_cuota = float(cuota.get('monto', 0) or 0)
-        
-        # FIFO: si el índice es menor que la cantidad de pagos, está pagada
-        if idx < cantidad_pagos:
-            pagada = True
-            monto_cubierto = monto_cuota
-        else:
-            pagada = False
-            monto_cubierto = 0
-        
-        # NO actualizamos el campo estado en la BD
-        # El estado activo/inactivo se mantiene igual
-        
+
+        monto_cubierto = min(monto_cuota, saldo_pagado_acumulado)
+        saldo_pagado_acumulado = max(0, saldo_pagado_acumulado - monto_cuota)
+
+        pagada = monto_cubierto >= monto_cuota and monto_cuota > 0
+        if pagada:
+            cuotas_pagadas += 1
+
+        monto_pendiente_cuota = max(0, monto_cuota - monto_cubierto)
+
         cuotas_procesadas.append({
             'id': id_cuota,
             'monto_original': monto_cuota,
             'monto_cubierto': monto_cubierto,
-            'saldo_restante': max(0, monto_cuota - monto_cubierto),
-            'pagada': pagada,  # Calculado dinámicamente, NO de la BD
+            'saldo_restante': monto_pendiente_cuota,
+            'monto_pendiente': monto_pendiente_cuota,
+            'pagada': pagada,
             'fecha': cuota.get('fecha'),
-            'estado': cuota.get('estado'),  # Esto es activo/inactivo
+            'estado': cuota.get('estado'),
         })
-    
-    # Calcular saldo pendiente global
-    cantidad_pagadas = min(cantidad_pagos, len(cuotas))
-    saldo_pendiente_global = total_deuda - sum(
-        float(c.get('monto', 0) or 0) 
-        for c in cuotas[:cantidad_pagadas]
+
+    saldo_pendiente_global = max(
+        0,
+        total_deuda - sum(float(c.get('monto_cubierto', 0) or 0) for c in cuotas_procesadas)
     )
-    
+
     return {
         'cuotas': cuotas_procesadas,
         'saldo_pendiente': saldo_pendiente_global,
         'total_pagado': total_pagado,
         'total_deuda': total_deuda,
-        'cuotas_pagadas': cantidad_pagadas,
+        'cuotas_pagadas': cuotas_pagadas,
     }
+
+
+async def actualizar_cuota_compra(id_cuota: int, payload: dict) -> dict:
+    """Actualiza atributos de una cuota de compra por ID.
+
+    Nota:
+    - Se delega a `actualizarCuotaCompra`, que actualiza campos del payload en DB.
+    - No recalcula FIFO automáticamente; si se requiere, llamar desde la API
+      `POST /{id}/recalcular` (igual que en ventas).
+    """
+    # El repository espera (datos, id)
+    from ..repositories.cuota_compra_repository import actualizarCuotaCompra
+    return await actualizarCuotaCompra(payload, id=id_cuota)
 
 
 async def calcular_saldo_fifo(id_compra: int) -> dict:
