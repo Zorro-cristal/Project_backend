@@ -17,6 +17,7 @@ from .detalle_venta_service import (actualizar_detalle_venta,
 from .local_service import obtener_locales
 from .orden_stock import desreservar_stock_para_venta
 from ..repositories.orden_repository import actualizarOrden as actualizarOrdenRepo
+from .vendedor_service import obtener_vendedores
 
 
 async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
@@ -115,26 +116,43 @@ def build_venta_entity(payload: dict) -> Venta:
 
 async def attach_related_data(ventas: list[dict]) -> list[dict]:
     # One-to-one
-    ventas = await attach_related(ventas, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
-    ventas = await attach_related(ventas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
-    ventas = await attach_related(ventas, 'id_cajafk', obtener_cajas, 'id', 'id', 'caja')
-# One-to-many detalles
-    ventas = await attach_grouped(ventas, 'id', obtenerDetalleVenta, 'id_ventafk', 'id_ventafk', 'detalles_venta')
-    
+    ventas = await attach_related(
+        ventas, "id_clientefk", obtener_clientes, "id", "id", "cliente"
+    )
+    ventas = await attach_related(
+        ventas, "id_localfk", obtener_locales, "id", "id", "local"
+    )
+    ventas = await attach_related(
+        ventas, "id_cajafk", obtener_cajas, "id", "id", "caja"
+    )
+    ventas = await attach_related(
+        ventas, "id_vendedorfk", obtener_vendedores, "id", "id", "vendedor"
+    )
+
+    # One-to-many detalles
+    ventas = await attach_grouped(
+        ventas,
+        "id",
+        obtenerDetalleVenta,
+        "id_ventafk",
+        "id_ventafk",
+        "detalles_venta",
+    )
+
     # Calcular subtotal para cada detalle y para cada venta
     for venta in ventas:
-        detalles = venta.get('detalles_venta', [])
+        detalles = venta.get("detalles_venta", [])
         subtotal = 0.0
         for detalle in detalles:
             # Calcular subtotal individual del detalle: (precio - descuento) * cantidad
-            precio = detalle.get('precio', 0)
-            descuento = detalle.get('descuento') or 0
-            cantidad = detalle.get('cantidad', 0)
+            precio = detalle.get("precio", 0)
+            descuento = detalle.get("descuento") or 0
+            cantidad = detalle.get("cantidad", 0)
             detalle_subtotal = (precio - descuento) * cantidad
-            detalle['subtotal'] = detalle_subtotal
+            detalle["subtotal"] = detalle_subtotal
             subtotal += detalle_subtotal
-        venta['subtotal'] = subtotal
-    
+        venta["subtotal"] = subtotal
+
     return ventas
 
 
@@ -286,6 +304,77 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
     # Si hay detalles_venta y se creó la venta, guardar cada detalle
     if detalles_venta and id_venta:
         print(f"[crear_venta] Guardando {len(detalles_venta)} detalles para venta {id_venta}")
+
+        # Calcular y persistir ocupación de mesa (ventas.ocupacion) una sola vez por venta
+        ocupacion_persistida = False
+        id_orden_para_ocupacion = None
+        for detalle in detalles_venta:
+            if not ocupacion_persistida:
+                id_orden_para_ocupacion = detalle.get('id_ordenfk')
+                if id_orden_para_ocupacion is not None:
+                    break
+
+        if id_orden_para_ocupacion is not None:
+            try:
+                # 1) Obtener id_mesafk desde la orden
+                ordenes = await obtenerOrdenes(
+                    filtros={'id': id_orden_para_ocupacion},
+                    columnas='id_mesafk',
+                )
+                orden = ordenes[0] if isinstance(ordenes, list) else ordenes
+                id_mesafk = None if not orden else orden.get('id_mesafk')
+
+                # 2) Obtener ocupado_desde desde la mesa
+                if id_mesafk is not None:
+                    # Usar repo directamente para obtener columnas específicas
+                    from ..repositories.mesa_repository import obtenerMesa as obtener_mesa_repo
+
+                    mesas = await obtener_mesa_repo(
+                        filtros={'id': id_mesafk},
+                        columnas='ocupado_desde',
+                        limite=1,
+                        offset=0,
+                    )
+                    mesa = mesas[0] if isinstance(mesas, list) else mesas
+                    ocupado_desde = None if not mesa else mesa.get('ocupado_desde')
+
+                    # 3) ocupado_desde es TIME; calcular duración contra "ahora"
+                    if ocupado_desde:
+                        # ocupado_desde puede venir como datetime.time o string 'HH:MM:SS'
+                        from datetime import datetime as _dt, time as _time, timedelta as _td
+
+                        if isinstance(ocupado_desde, _time):
+                            start_time = ocupado_desde
+                        else:
+                            # asumir string HH:MM[:SS]
+                            parts = str(ocupado_desde).split(':')
+                            hh = int(parts[0]) if len(parts) > 0 else 0
+                            mm = int(parts[1]) if len(parts) > 1 else 0
+                            ss = int(parts[2]) if len(parts) > 2 else 0
+                            start_time = _time(hour=hh, minute=mm, second=ss)
+
+                        now = _dt.now()
+                        start_dt = _dt.combine(now.date(), start_time)
+                        dur = now - start_dt
+                        # Si el valor cruza de día (por TIME), normalizar sumando 1 día hasta que sea >=0
+                        if dur.total_seconds() < 0:
+                            dur = dur + _td(days=1)
+
+                        # Persistimos como TIME (HH:MM:SS)
+                        total_seconds = int(dur.total_seconds())
+                        horas = total_seconds // 3600
+                        minutos = (total_seconds % 3600) // 60
+                        segundos = total_seconds % 60
+                        # limitar a 24h para TIME de postgres
+                        horas = horas % 24
+                        ocupacion_time_str = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
+
+                        await actualizarVenta({'ocupacion': ocupacion_time_str}, id_venta)
+                        ocupacion_persistida = True
+            except Exception as exc:
+                import logging
+                logging.getLogger(__name__).exception(f"[crear_venta] No se pudo calcular ocupacion: {exc}")
+
         for detalle in detalles_venta:
             # Asignar el ID de la venta al detalle
             detalle['id_ventafk'] = id_venta

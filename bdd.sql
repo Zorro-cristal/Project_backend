@@ -298,6 +298,7 @@ CREATE TABLE ventas (
     temperatura      INTEGER,
     humedad          INTEGER,
     evento           BOOLEAN,
+    ocupacion        TIME,
     id_clientefk     INTEGER NOT NULL,
     id_localfk       INTEGER NOT NULL,
     id_vendedorfk     INTEGER NOT NULL,
