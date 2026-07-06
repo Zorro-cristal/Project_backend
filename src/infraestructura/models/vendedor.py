@@ -1,9 +1,6 @@
 
 from dataclasses import dataclass
-from datetime import datetime
 from typing import Optional
-
-from .persona import Persona
 
 
 @dataclass(frozen=True)
@@ -12,6 +9,5 @@ class Vendedor:
     comision: float
     estado: int = 1
     cod_num: Optional[str] = None
-    id_personafk: Optional[int]= None
-    persona: Optional[Persona]= None
+    id_usuariofk: Optional[int] = None
     id: Optional[int] = None

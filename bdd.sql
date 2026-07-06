@@ -212,8 +212,8 @@ CREATE TABLE vendedores (
     cod_num       VARCHAR(3),
     estado         BOOLEAN NOT NULL,
     fecha_creado   TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
-    id_personafk   INTEGER NOT NULL,
-    CONSTRAINT fk_vendedores_persona FOREIGN KEY (id_personafk) REFERENCES personas (cedula)
+    id_usuariofk   INTEGER NOT NULL,
+    CONSTRAINT fk_vendedores_usuario FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id)
 );
 
 -- ----------------------------
@@ -301,10 +301,10 @@ CREATE TABLE ventas (
     evento           BOOLEAN,
     id_clientefk     INTEGER NOT NULL,
     id_localfk       INTEGER NOT NULL,
-    id_usuariofk     INTEGER NOT NULL,
+    id_vendedorfk     INTEGER NOT NULL,
     fecha_creado     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ventas_cliente FOREIGN KEY (id_clientefk) REFERENCES clientes (id),
-    CONSTRAINT fk_ventas_usuario FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id),
+    CONSTRAINT fk_ventas_vendedor FOREIGN KEY (id_vendedorfk) REFERENCES vendedores (id),
     CONSTRAINT fk_ventas_local   FOREIGN KEY (id_localfk)   REFERENCES locales (id),
     CONSTRAINT fk_ventas_vendedor FOREIGN KEY (id_vendedorfk) REFERENCES vendedores (id)
 );
