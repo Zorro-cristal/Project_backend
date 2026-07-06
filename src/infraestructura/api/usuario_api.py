@@ -8,7 +8,7 @@ from src.shared.security.auth_handler import crear_token_acceso
 from src.shell.adapters.requests.usuario_request import (UsuarioRequest,
                                                          UsuarioUpdateRequest)
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
-
+from src.shell.adapters.database.generic_crud import count
 from ..models.usuario import Usuario
 from ..services.usuario_service import (actualizar_usuario, crear_usuario,
                                         obtener_usuarios)
@@ -82,3 +82,34 @@ mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra regi
 
     result = await obtener_usuarios(filtros)
     return {"message": result}
+
+
+@router.post("/usuario_test", summary="Crear usuarios de prueba", description="Crea 5 usuarios de prueba (alias y contra iguales, contra hasheada) solo si NO existe ningún usuario en la base de datos.")
+async def usuarioTest():
+    # Si existe al menos un usuario en la BD, no creamos nada
+    total_usuarios = await count("usuarios")
+    if total_usuarios and total_usuarios > 0:
+        return {
+            "message": "No se crearon usuarios: ya existen usuarios en la base de datos",
+            "total_usuarios_existentes": total_usuarios,
+            "creados": [],
+        }
+
+    usuarios_test = [
+        {"id": 1, "contra": "admin", "alias": "admin", "estado": 1, "id_rolfk": 1, "id_personafk": 1000001},
+        {"id": 2, "contra": "ana_caja", "alias": "ana_caja", "estado": 1, "id_rolfk": 2, "id_personafk": 1000002},
+        {"id": 3, "contra": "luis_caja2", "alias": "luis_caja2", "estado": 1, "id_rolfk": 2, "id_personafk": 1000003},
+        {"id": 4, "contra": "marta_mozo", "alias": "marta_mozo", "estado": 1, "id_rolfk": 3, "id_personafk": 1000004},
+        {"id": 5, "contra": "diego_mozo", "alias": "diego_mozo", "estado": 1, "id_rolfk": 3, "id_personafk": 1000005},
+    ]
+
+    creados = []
+    for payload in usuarios_test:
+        result = await crear_usuario(payload)
+        creados.append(result)
+
+    return {
+        "message": "Usuarios de prueba creados",
+        "creados": creados,
+        "total_usuarios_creados": len(creados),
+    }
