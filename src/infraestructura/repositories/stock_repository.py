@@ -6,7 +6,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerStock(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('stocks', filtros, limite, offset)
+    return await get('stocks', filtros, limite, offset, order_by= 'fecha_vencimiento', order_desc= False)
 
 
 async def actualizarStock(datos: Union[Stock, dict], id: Optional[int] = None):

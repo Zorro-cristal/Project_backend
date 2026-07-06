@@ -3,14 +3,20 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
-from src.shell.adapters.requests.venta_request import (VentaBase,
-                                                       VentaUpdateRequest)
+from src.shell.adapters.requests.venta_request import (
+    VentaBase,
+    VentaUpdateRequest,
+)
 
-from ..services.venta_service import (actualizar_venta, crear_venta,
-                                      obtener_detalle_venta_por_venta_id,
-                                      obtener_venta_por_id_con_detalles,
-                                      obtener_venta_por_id_sin_detalles,
-                                      obtener_ventas)
+from ..services.venta_service import (
+    actualizar_venta,
+    crear_venta,
+    obtener_detalle_venta_por_venta_id,
+    obtener_venta_por_id_con_detalles,
+    obtener_venta_por_id_sin_detalles,
+    obtener_ventas,
+)
+from ..services.vendedor_service import obtener_vendedores
 
 router = APIRouter()
 
@@ -30,9 +36,53 @@ async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
     return await actualizarVentaApi(id, requestBody)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta", description="Crea una nueva venta.")
-async def agregarVentaApi(requestBody: VentaBase):
+@router.post(
+    "/",
+    dependencies=[Depends(permiso_requerido("venta", "crear"))],
+    summary="Crear venta",
+    description="Crea una nueva venta.",
+)
+async def agregarVentaApi(
+    requestBody: VentaBase,
+    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+):
     payload = requestBody.model_dump()
+
+    # Compatibilidad:
+    # - el modelo Venta guarda id_vendedorfk
+    # - antes se enviaba id_usuariofk
+    # Si llega id_vendedorfk, úsalo. Si llega id_usuariofk y no id_vendedorfk, resolver vendedor.
+    if payload.get("id_vendedorfk") is None:
+        id_usuariofk = payload.get("id_usuariofk")
+
+        # Si no viene desde payload, tomar del usuario autenticado
+        if id_usuariofk is None:
+            id_usuariofk = (
+                current_user.get("id")
+                or current_user.get("id_usuariofk")
+                or current_user.get("cedula")
+            )
+
+        if id_usuariofk is None:
+            raise HTTPException(
+                status_code=401,
+                detail="No se pudo determinar el usuario autenticado (id_usuariofk).",
+            )
+
+        # Resolver vendedor por id_usuariofk
+        vendedores = await obtener_vendedores({"id_usuariofk": id_usuariofk})
+        if not vendedores:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No existe vendedor para el usuario autenticado (id_usuariofk={id_usuariofk}).",
+            )
+
+        vendedor = vendedores[0] if isinstance(vendedores, list) else vendedores
+        payload["id_vendedorfk"] = vendedor.get("id")
+
+    # Limpiar id_usuariofk si existiera (evita que se intente persistir un campo viejo)
+    payload.pop("id_usuariofk", None)
+
     try:
         result = await crear_venta(payload)
     except ValueError as exc:
@@ -73,10 +123,10 @@ async def obtenerVentasApi(
     if mostrar_inactivo != 1:
         filtros["estado"] = 1
 
-    # Si se provee nombre_usuario, filtrar en dos pasos:
-    # 1. Buscar usuarios con ese alias
-    # 2. Buscar cajas creadas por esos usuarios
-    # 3. Filtrar ventas por esas cajas
+    # Si se provee nombre_usuario, filtrar en dos pasos:datos:
+    # (demo/example JSON mantenido como comentario; evita usar `false` que rompe Python)
+    # {"id":0,"nro":"1","id_localfk":1,"id_clientefk":1,"id_mesafk":1,"fecha":"2026-07-06","estado":1,"tipo_credito":false,"detalles_venta":[{"id":0,"cantidad":1,"precio":55000,"descuento":0,"id_detalleproductofk":"2000000001","id_ordenfk":6}]}
+
     if nombre_usuario:
         client = get_supabase_client()
         

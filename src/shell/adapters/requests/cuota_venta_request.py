@@ -12,6 +12,8 @@ class CuotaVentaRequest(BaseModel):
     descuento: Optional[float] = None
     interes: Optional[int] = None
     id_ventafk: Optional[int] = None
+    id_vendedorfk: Optional[int] = None
+    # Compatibilidad
     id_usuariofk: Optional[int] = None
 
     class Config:
@@ -37,6 +39,8 @@ class GenerarCuotasRequest(BaseModel):
     fecha_inicio: datetime
     descuento: Optional[float] = 0
     interes: Optional[int] = 0
+    id_vendedorfk: Optional[int] = None
+    # Compatibilidad
     id_usuariofk: Optional[int] = None
 
     class Config:

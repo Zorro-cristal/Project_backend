@@ -23,6 +23,8 @@ async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest):
         total_cuotas=payload['total_cuotas'],
         monto_cuota=payload['monto_cuota'],
         fecha_inicio=payload['fecha_inicio'],
+        id_vendedorfk=payload.get('id_vendedorfk'),
+        # compatibilidad
         id_usuariofk=payload.get('id_usuariofk'),
         descuento=payload.get('descuento', 0),
         interes=payload.get('interes', 0),

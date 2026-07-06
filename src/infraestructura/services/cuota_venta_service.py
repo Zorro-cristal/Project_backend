@@ -12,6 +12,8 @@ async def crear_cuotas_para_venta(
     total_cuotas: int,
     monto_cuota: float,
     fecha_inicio: datetime,
+    id_vendedorfk: Optional[int] = None,
+    # compatibilidad (cuotas_venta guarda id_usuariofk en BD)
     id_usuariofk: Optional[int] = None,
     descuento: float = 0,
     interes: int = 0,
@@ -53,7 +55,18 @@ Args:
         if descuento > 0:
             monto_final = monto_final - descuento
         
-        # Crear cuota con estado=1 (activo)
+        # cuotas_venta guarda id_usuariofk, no id_vendedorfk.
+        # Si llega id_vendedorfk, resolverlo a id_usuariofk.
+        if id_usuariofk is None and id_vendedorfk is not None:
+            from .vendedor_service import obtener_vendedores
+            vendedores = await obtener_vendedores({"id": id_vendedorfk})
+            vendedor = vendedores[0] if vendedores else None
+            if vendedor is None:
+                raise ValueError(
+                    f"No existe vendedor con id={id_vendedorfk} para derivar id_usuariofk en cuotas_venta."
+                )
+            id_usuariofk = vendedor.get("id_usuariofk")
+
         cuota_data = {
             'estado': ESTADO_ACTIVO,
             'monto': monto_final,
@@ -61,8 +74,9 @@ Args:
             'descuento': descuento,
             'interes': interes,
             'id_ventafk': id_venta,
-            'id_usuariofk': id_usuariofk,
         }
+        if id_usuariofk is not None:
+            cuota_data['id_usuariofk'] = id_usuariofk
         
         cuota = await actualizarCuotaVenta(cuota_data)
         cuotas_creadas.append(cuota)

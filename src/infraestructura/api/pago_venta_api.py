@@ -4,33 +4,46 @@ from fastapi import APIRouter, Depends, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.pago_venta_request import (
-    PagoVentaRequest, PagoVentaUpdateRequest, RegistroPagoContadoRequest,
-    RegistroPagoCuotaRequest)
+    PagoVentaRequest,
+    PagoVentaUpdateRequest,
+    RegistroPagoContadoRequest,
+    RegistroPagoCuotaRequest,
+)
 
-from ..services.pago_venta_service import (anular_pago,
-                                           obtener_pagos_por_venta,
-                                           obtener_total_pagado,
-                                           recalcular_saldos, registrar_pago,
-                                           registrar_pago_contado,
-                                           registrar_pago_cuota)
+from ..services.pago_venta_service import (
+    anular_pago,
+    obtener_pagos_por_venta,
+    obtener_total_pagado,
+    recalcular_saldos,
+    registrar_pago,
+    registrar_pago_contado,
+    registrar_pago_cuota,
+)
 
 router = APIRouter()
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('pago', 'crear'))], summary="Registrar pago", description="Registra un pago para una venta.")
+@router.post(
+    "/",
+    dependencies=[Depends(permiso_requerido('pago', 'crear'))],
+    summary="Registrar pago",
+    description="Registra un pago para una venta.",
+)
 async def registrarPagoApi(requestBody: PagoVentaRequest):
     """Registra un pago."""
     payload = requestBody.model_dump(exclude_unset=True)
-    
+
     resultado = await registrar_pago(
         id_venta=payload['id_ventafk'],
         monto=payload['monto'],
         tipo=payload['tipo'],
         id_cajafk=payload['id_cajafk'],
         fecha=payload.get('fecha'),
+        id_vendedorfk=payload.get('id_vendedorfk'),
+        # compatibilidad
         id_usuariofk=payload.get('id_usuariofk'),
     )
-    
+
     return {"message": resultado}
 
 

@@ -11,6 +11,8 @@ class PagoVentaRequest(BaseModel):
     fecha: Optional[datetime] = None
     id_ventafk: int
     id_cajafk: int
+    id_vendedorfk: Optional[int] = None
+    # Compatibilidad
     id_usuariofk: Optional[int] = None
 
     class Config:
@@ -32,6 +34,8 @@ class RegistroPagoContadoRequest(BaseModel):
     id_venta: int
     monto_total: float
     id_cajafk: int
+    id_vendedorfk: Optional[int] = None
+    # Compatibilidad
     id_usuariofk: Optional[int] = None
 
     class Config:
@@ -43,6 +47,8 @@ class RegistroPagoCuotaRequest(BaseModel):
     id_venta: int
     monto: float
     id_cajafk: int
+    id_vendedorfk: Optional[int] = None
+    # Compatibilidad
     id_usuariofk: Optional[int] = None
 
     class Config:

@@ -1,9 +1,12 @@
 from datetime import datetime, timezone
 from typing import Optional
 
-from ..repositories.pago_venta_repository import (actualizarPagoVenta,
-                                                  obtenerPagosPorVentaId,
-                                                  obtenerTotalPagadoPorVentaId)
+from ..repositories.pago_venta_repository import (
+    actualizarPagoVenta,
+    obtenerPagosPorVentaId,
+    obtenerTotalPagadoPorVentaId,
+)
+from .vendedor_service import obtener_vendedores
 
 # Tipos de pago
 # NULL para ventas al contado (pago único)
@@ -23,6 +26,8 @@ async def registrar_pago(
     tipo: int,
     id_cajafk: int,
     fecha: Optional[datetime] = None,
+    id_vendedorfk: Optional[int] = None,
+    # compatibilidad (columna real en BD para pagos_venta)
     id_usuariofk: Optional[int] = None,
 ) -> dict:
     """Registra un pago para una venta.
@@ -33,10 +38,8 @@ async def registrar_pago(
         tipo: Tipo de pago (1=Cuota, 2=Entrega)
         id_cajafk: ID de la caja
         fecha: Fecha del pago (por defecto ahora)
-        id_usuariofk: ID del usuario que registra el pago
-    
-    Returns:
-        Dict con el pago creado
+        id_vendedorfk: ID del vendedor que registra el pago
+        id_usuariofk: (compatibilidad) ID del usuario que registra el pago
     """
     if fecha is None:
         fecha = datetime.now(timezone.utc)
@@ -50,9 +53,20 @@ async def registrar_pago(
         'id_cajafk': id_cajafk,
     }
     
-    if id_usuariofk:
-        pago_data['id_usuariofk'] = id_usuariofk
-    
+    # pagos_venta guarda id_usuariofk (no id_vendedorfk).
+    # Si llega id_vendedorfk, lo resolvemos a su id_usuariofk.
+    if id_usuariofk is None and id_vendedorfk is not None:
+        vendedores = await obtener_vendedores({"id": id_vendedorfk})
+        vendedor = vendedores[0] if vendedores else None
+        if vendedor is None:
+            raise ValueError(
+                f"No existe vendedor con id={id_vendedorfk} para derivar id_usuariofk en pagos_venta."
+            )
+        id_usuariofk = vendedor.get("id_usuariofk")
+
+    if id_usuariofk is not None:
+        pago_data["id_usuariofk"] = id_usuariofk
+
     return await actualizarPagoVenta(pago_data)
 
 
@@ -60,6 +74,8 @@ async def registrar_pago_contado(
     id_venta: int,
     monto_total: float,
     id_cajafk: int,
+    id_vendedorfk: Optional[int] = None,
+    # compatibilidad
     id_usuariofk: Optional[int] = None,
     fecha: Optional[datetime] = None,
 ) -> dict:
@@ -79,9 +95,19 @@ async def registrar_pago_contado(
         'id_cajafk': id_cajafk,
     }
     
-    if id_usuariofk:
-        pago_data['id_usuariofk'] = id_usuariofk
-    
+    # pagos_venta guarda id_usuariofk (no id_vendedorfk).
+    if id_usuariofk is None and id_vendedorfk is not None:
+        vendedores = await obtener_vendedores({"id": id_vendedorfk})
+        vendedor = vendedores[0] if vendedores else None
+        if vendedor is None:
+            raise ValueError(
+                f"No existe vendedor con id={id_vendedorfk} para derivar id_usuariofk en pagos_venta."
+            )
+        id_usuariofk = vendedor.get("id_usuariofk")
+
+    if id_usuariofk is not None:
+        pago_data["id_usuariofk"] = id_usuariofk
+
     return await actualizarPagoVenta(pago_data)
 
 
@@ -89,6 +115,8 @@ async def registrar_pago_cuota(
     id_venta: int,
     monto: float,
     id_cajafk: int,
+    id_vendedorfk: Optional[int] = None,
+    # compatibilidad
     id_usuariofk: Optional[int] = None,
 ) -> dict:
     """Registra un pago de cuota (tipo=1).
@@ -100,6 +128,7 @@ async def registrar_pago_cuota(
         monto=monto,
         tipo=TIPO_CUOTA,
         id_cajafk=id_cajafk,
+        id_vendedorfk=id_vendedorfk,
         id_usuariofk=id_usuariofk,
     )
 

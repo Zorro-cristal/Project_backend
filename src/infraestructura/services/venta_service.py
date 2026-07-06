@@ -15,20 +15,22 @@ from .cliente_service import obtener_clientes
 from .detalle_venta_service import (actualizar_detalle_venta,
                                     crear_detalle_venta)
 from .local_service import obtener_locales
+from .orden_stock import desreservar_stock_para_venta
+from ..repositories.orden_repository import actualizarOrden as actualizarOrdenRepo
 
 
 async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
-    """Genera automáticamente el número de factura con el patrón:
-    {locales.cod_num}-{vendedores.cod_num}-{venta.cod_num}
-    
-    Donde venta.cod_num es el max + 1 para esa combinación de local+vendedor.
+    """Genera automáticamente el número de factura para `ventas.cod_num`.
+
+    Nota: en BD `ventas.cod_num` es VARCHAR(6), por lo que el valor retornado
+    debe tener máximo 6 caracteres. No se concatena con códigos de local/vendedor.
     
     Args:
         id_localfk: ID del local donde se realiza la venta
         id_vendedorfk: ID del vendedor que realiza la venta
         
     Returns:
-        String con el código generado, ej: "001-002-000001"
+        String con el código generado (exactamente 6 dígitos), ej: "000001"
     """
     # Obtener datos del local
     locales = await obtenerLocal(filtros={'id': id_localfk})
@@ -74,11 +76,11 @@ async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
     nueva_secuencia = max_secuencia + 1
     secuencia_formateada = f"{nueva_secuencia:06d}"
     
-    # Construir el código completo
-    codigo_completo = f"{local_cod}-{vendedor_cod}-{secuencia_formateada}"
-    
+    # `ventas.cod_num` es VARCHAR(6): retornar solo la secuencia formateada.
+    codigo_completo = secuencia_formateada
+
     print(f"[generar_cod_num_venta] Generado: {codigo_completo} (secuencia: {nueva_secuencia})")
-    
+
     return codigo_completo
 
 
@@ -210,6 +212,22 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
             print(f"[crear_venta] Clima agregado automáticamente: {clima_info}")
 
     
+    # Compatibilidad de autoría:
+    # - La API/negocio quiere guardar en ventas: id_vendedorfk (vendedor que crea).
+    # - Pero si la tabla/BD exige id_usuariofk (NOT NULL) y no viene en payload,
+    #   lo derivamos desde vendedores.id_usuariofk.
+    if payload.get("id_usuariofk") is None and payload.get("id_vendedorfk") is not None:
+        id_vendedorfk = payload.get("id_vendedorfk")
+        try:
+            vendedores = await obtenerVendedor(filtros={"id": id_vendedorfk})
+            if vendedores:
+                vendedor = vendedores[0] if isinstance(vendedores, list) else vendedores
+                if vendedor.get("id_usuariofk") is not None:
+                    payload["id_usuariofk"] = vendedor.get("id_usuariofk")
+        except Exception:
+            # Si no se puede resolver, se deja que la BD arroje error (evita ocultar fallos).
+            pass
+
     # Verificar si tipo_credito está presente en el payload para rutear automáticamente
     # Solo rutear si no ha sido procesado previamente (para evitar recursión infinita)
     tipo_credito = payload.get('tipo_credito')
@@ -239,13 +257,10 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
         'id',
         f"Local con ID {payload.get('id_localfk')} no existe",
     )
-    await validar_fk_existente(
-        payload.get('id_cajafk'),
-        obtener_cajas,
-        'id',
-        f"Caja con ID {payload.get('id_cajafk')} no existe",
-    )
-    
+    # Nota: ventas NO tiene id_cajafk en el esquema (ver bdd.sql).
+    # id_cajafk se usa para registrar pagos en pagos_venta (no para insertar en ventas).
+    payload.pop('id_cajafk', None)
+
 # Extraer detalles_venta antes de construir la entidad venta
 # Si ya fueron extraídos por crear_venta_contado/crear_venta_credito, usarlos; si no, extraer del payload
     if _detalles_venta_extraidos is not None:
@@ -280,7 +295,27 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                 await actualizar_detalle_venta(detalle_id, detalle)
             else:
                 await crear_detalle_venta(detalle)
-    
+
+            # 1) Cambiar ordenes.estado a 5 (a cobrado)
+            id_ordenfk = detalle.get('id_ordenfk')
+            if id_ordenfk is not None:
+                await actualizarOrdenRepo({'estado': 5}, id_ordenfk)
+
+            # 2) Desreservar stock: restar cantidad desde stocks.cant_reservado
+            id_detalleproductofk = detalle.get('id_detalleproductofk')
+            cantidad_detalle = detalle.get('cantidad')
+            if id_detalleproductofk is not None and cantidad_detalle is not None:
+                import logging
+                logger = logging.getLogger(__name__)
+                logger.info(
+                    f"[crear_venta] Desreservar -> id_ordenfk={id_ordenfk}, "
+                    f"id_detalleproductofk={id_detalleproductofk}, cantidad={cantidad_detalle}"
+                )
+                await desreservar_stock_para_venta(
+                    id_detalleproductofk=str(id_detalleproductofk),
+                    cantidad_a_liberar=int(cantidad_detalle),
+                )
+
     return resultado
 
 
@@ -300,13 +335,9 @@ async def actualizar_venta(id: int, payload: dict):
         'id',
         f"Local con ID {payload.get('id_localfk')} no existe",
     )
-    await validar_fk_existente(
-        payload.get('id_cajafk'),
-        obtener_cajas,
-        'id',
-        f"Caja con ID {payload.get('id_cajafk')} no existe",
-    )
-    
+    # Nota: ventas NO tiene id_cajafk en el esquema.
+    payload.pop('id_cajafk', None)
+
 # Extraer detalles_venta para procesarlos
     detalles_venta = payload.pop('detalles_venta', None)
     
