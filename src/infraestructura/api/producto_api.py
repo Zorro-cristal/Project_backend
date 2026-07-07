@@ -31,7 +31,7 @@ async def agregarProductoApi(requestBody: ProductoRequest):
     result = await crear_producto(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('producto', 'leer'))], summary="Obtener productos", description="Obtiene una lista de productos con filtros opcionales.")
+@router.get("/", summary="Obtener productos", description="Obtiene una lista de productos con filtros opcionales.")
 async def obtenerProductosApi(
     id: Optional[str] = Query(None, description="Filtrar productos por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar productos por nombre parcial"),
