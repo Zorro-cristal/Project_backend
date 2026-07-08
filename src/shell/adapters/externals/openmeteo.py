@@ -16,20 +16,21 @@ openmeteo = openmeteo_requests.Client(session = retry_session)
 
 # Parámetros por defecto para Open-Meteo
 PARAMETROS_CLIMA = [
-    "temperature_2m",        # 0
-    "relative_humidity_2m",  # 1
-    "apparent_temperature", # 2
-    "precipitation",         # 3
-    "rain",                  # 4
-    "showers",                # 5
-    "snowfall",               # 6
-    "weather_code",          # 7
-    "cloud_cover",            # 8
-    "pressure_msl",         # 9
-    "surface_pressure",     # 10
-    "wind_speed_10m",        # 11
-    "wind_direction_10m",    # 12
-    "wind_gusts_10m"        # 13
+    "temperature_2m",            # 0
+    "relative_humidity_2m",      # 1
+    "apparent_temperature",      # 2
+    "precipitation_probability", # 3
+    "precipitation",             # 4
+    "rain",                      # 5
+    "showers",                   # 6
+    "snowfall",                  # 7
+    "weather_code",              # 8
+    "cloud_cover",               # 9
+    "pressure_msl",              # 10
+    "surface_pressure",          # 11
+    "wind_speed_10m",            # 12
+    "wind_direction_10m",        # 13
+    "wind_gusts_10m"             # 14
 ]
 
 def obtenerInformacionClimatica(latitud, longitud, parametros=None):
@@ -60,14 +61,14 @@ def obtenerInformacionClimatica(latitud, longitud, parametros=None):
             
             # Crear objeto Clima original
             clima_obj = Clima(
-                temperatura= float(response.Variables(0).Value()),
-                sensacion_termica= float(response.Variables(2).Value()),
-                humedad= float(response.Variables(1).Value()),
-                velocidad_viento= float(response.Variables(11).Value()),
-                weather_code= int(response.Variables(7).Value()),
-                fecha= datetime.fromtimestamp(response.Time()),
-                precipitaciones= float(response.Variables(5).Value()),
-                lluvia= float(response.Variables(4).Value()),
+                temperatura=float(response.Variables(0).Value()),
+                sensacion_termica=float(response.Variables(2).Value()),
+                humedad=float(response.Variables(1).Value()),
+                velocidad_viento=float(response.Variables(12).Value()),
+                weather_code=int(response.Variables(8).Value()),
+                fecha=datetime.fromtimestamp(response.Time()),
+                precipitaciones=float(response.Variables(4).Value()),
+                lluvia=float(response.Variables(5).Value()),
             )
             
             # Retornar diccionario compatible con modelo Venta
@@ -78,6 +79,10 @@ def obtenerInformacionClimatica(latitud, longitud, parametros=None):
                 "clima": clima_obj.weather_code,
                 "temperatura": int(clima_obj.temperatura),
                 "humedad": int(clima_obj.humedad),
+                "velocidad_viento": round(float(clima_obj.velocidad_viento), 2),
+                "lluvia": round(float(clima_obj.lluvia), 2),
+                "precipitaciones": round(float(clima_obj.precipitaciones), 2),
+                "probabilidad_precipitaciones": int(round(float(response.Variables(3).Value()))),
             }
     except Exception as e:
         print(f"[obtenerInformacionClimatica] Error: {str(e)}")

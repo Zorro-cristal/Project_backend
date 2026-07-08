@@ -13,6 +13,7 @@ async def obtenerVenta(filtros=None, limite=100, offset=0, columnas="*", joins=N
 async def actualizarVenta(datos: Union[Venta, dict], id: Optional[int] = None):
     payload = prepararPayloadDb(datos, exclude_fields=['usuario', 'cliente', 'local', 'caja', 'detalles'])
 
+
     if id is None:
         return await insert('ventas', payload)
     return await update('ventas', id, payload, key='id_venta')

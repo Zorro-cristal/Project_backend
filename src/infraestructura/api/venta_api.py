@@ -80,8 +80,15 @@ async def agregarVentaApi(
         vendedor = vendedores[0] if isinstance(vendedores, list) else vendedores
         payload["id_vendedorfk"] = vendedor.get("id")
 
-    # Limpiar id_usuariofk si existiera (evita que se intente persistir un campo viejo)
+    # Limpiar campos que no se deben persistir al crear
+    # - id: la PK es identity en BD; si el cliente envía id (ej: 0/1), puede romper el INSERT.
+    # - id_usuariofk: se deriva desde id_vendedorfk.
+    payload.pop("id", None)
     payload.pop("id_usuariofk", None)
+    # Evitar que viaje id interno del detalle_venta que podría usarse como PK en detalle_venta
+    for d in payload.get("detalles_venta", []) or []:
+        d.pop("id", None)
+
 
     try:
         result = await crear_venta(payload)

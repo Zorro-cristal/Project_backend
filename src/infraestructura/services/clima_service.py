@@ -8,7 +8,7 @@ def pronosticoToArray(valores):
             temperatura_max= valores['temperatura_max'][i],
             velocidad_viento= valores['velocidad_viento'][i],
             lluvia= valores['lluvia'][i],
-            recipitaciones= valores['recipitaciones'][i],
+            precipitaciones= valores['precipitaciones'][i],
             probabilidad_precipitaciones= valores['probabilidad_precipitaciones'][i],
             fecha= valores['time'][i]
         ))

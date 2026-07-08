@@ -54,15 +54,6 @@ async def attach_precios_a_detalles(detalles: list[dict]) -> list[dict]:
 
 
 def _renombrar_marca_en_producto(producto: dict) -> dict:
-    """
-    Supabase usa relación `marcas(...)`, pero el frontend/modelo espera `marca`
-    con el shape del modelo `Marca`.
-
-    Supabase actualmente devuelve:
-      marcas: { id_marcafk: ..., marca_nombre: ..., marca_estado: ... }
-    El modelo frontend espera:
-      marca: { id: ..., nombre: ..., estado: ... }
-    """
     if 'marcas' in producto:
         marca_supabase = producto.pop('marcas') if 'marca' not in producto else None
 

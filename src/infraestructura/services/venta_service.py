@@ -21,18 +21,6 @@ from .vendedor_service import obtener_vendedores
 
 
 async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
-    """Genera automáticamente el número de factura para `ventas.cod_num`.
-
-    Nota: en BD `ventas.cod_num` es VARCHAR(6), por lo que el valor retornado
-    debe tener máximo 6 caracteres. No se concatena con códigos de local/vendedor.
-    
-    Args:
-        id_localfk: ID del local donde se realiza la venta
-        id_vendedorfk: ID del vendedor que realiza la venta
-        
-    Returns:
-        String con el código generado (exactamente 6 dígitos), ej: "000001"
-    """
     # Obtener datos del local
     locales = await obtenerLocal(filtros={'id': id_localfk})
     if not locales:
@@ -198,7 +186,15 @@ async def obtener_detalle_venta_por_venta_id(filtros: dict = None):
 
 
 async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_venta_extraidos: list = None):
-    # Auto-generar cod_num de venta si no está proporcionado y se tienen los datos necesarios
+    # Al crear una venta, la PK `ventas.id` es identity/auto-increment.
+    # Si el cliente envía `id` (aunque sea 0/1), el INSERT fallará con PK duplicada.
+    payload.pop('id', None)
+
+    # Debug para verificar que nunca persiste un id desde el request
+
+    # print(f"[crear_venta] payload.id={payload.get('id')} payload keys={list(payload.keys())}")
+
+    # Auto-generar cod_num de venta si no está proporcionado
     if payload.get('cod_num') is None:
         id_localfk = payload.get('id_localfk')
         id_vendedorfk = payload.get('id_vendedorfk')
@@ -227,6 +223,14 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                 payload['temperatura'] = clima_info.get('temperatura')
             if payload.get('humedad') is None:
                 payload['humedad'] = clima_info.get('humedad')
+            if payload.get('velocidad_viento') is None:
+                payload['velocidad_viento'] = clima_info.get('velocidad_viento')
+            if payload.get('lluvia') is None:
+                payload['lluvia'] = clima_info.get('lluvia')
+            if payload.get('precipitaciones') is None:
+                payload['precipitaciones'] = clima_info.get('precipitaciones')
+            if payload.get('probabilidad_precipitaciones') is None:
+                payload['probabilidad_precipitaciones'] = clima_info.get('probabilidad_precipitaciones')
             print(f"[crear_venta] Clima agregado automáticamente: {clima_info}")
 
     
@@ -314,19 +318,32 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                 if id_orden_para_ocupacion is not None:
                     break
 
-        if id_orden_para_ocupacion is not None:
-            try:
-                # 1) Obtener id_mesafk desde la orden
-                ordenes = await obtenerOrdenes(
-                    filtros={'id': id_orden_para_ocupacion},
-                    columnas='id_mesafk',
-                )
-                orden = ordenes[0] if isinstance(ordenes, list) else ordenes
-                id_mesafk = None if not orden else orden.get('id_mesafk')
+        # Prioridad: usar id_mesafk enviado en el POST (payload) si existe.
+        # Si no viene, caemos al comportamiento anterior derivándolo desde ordenes.id_mesafk.
+        id_mesafk_from_payload = payload.get('id_mesafk')
+        # Evitar que se intente persistir este campo no existente en la tabla `ventas`.
+        payload.pop('id_mesafk', None)
 
-                # 2) Obtener ocupado_desde desde la mesa
+        if (id_mesafk_from_payload is not None) or (id_orden_para_ocupacion is not None):
+            try:
+                id_mesafk = id_mesafk_from_payload
+
+                import logging
+                logging.getLogger(__name__).info(
+                    f"[crear_venta] id_mesafk_from_payload={id_mesafk_from_payload} id_orden_para_ocupacion={id_orden_para_ocupacion}"
+                )
+
+                # Backward compatibility: si no viene por payload, obtener desde la orden
+                if id_mesafk is None and id_orden_para_ocupacion is not None:
+                    ordenes = await obtenerOrdenes(
+                        filtros={'id': id_orden_para_ocupacion},
+                        columnas='id_mesafk',
+                    )
+                    orden = ordenes[0] if isinstance(ordenes, list) else ordenes
+                    id_mesafk = None if not orden else orden.get('id_mesafk')
+
+                # Obtener ocupado_desde desde la mesa y calcular ocupación
                 if id_mesafk is not None:
-                    # Usar repo directamente para obtener columnas específicas
                     from ..repositories.mesa_repository import obtenerMesa as obtener_mesa_repo
 
                     mesas = await obtener_mesa_repo(
@@ -338,15 +355,12 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                     mesa = mesas[0] if isinstance(mesas, list) else mesas
                     ocupado_desde = None if not mesa else mesa.get('ocupado_desde')
 
-                    # 3) ocupado_desde es TIME; calcular duración contra "ahora"
                     if ocupado_desde:
-                        # ocupado_desde puede venir como datetime.time o string 'HH:MM:SS'
                         from datetime import datetime as _dt, time as _time, timedelta as _td
 
                         if isinstance(ocupado_desde, _time):
                             start_time = ocupado_desde
                         else:
-                            # asumir string HH:MM[:SS]
                             parts = str(ocupado_desde).split(':')
                             hh = int(parts[0]) if len(parts) > 0 else 0
                             mm = int(parts[1]) if len(parts) > 1 else 0
@@ -356,16 +370,13 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                         now = _dt.now()
                         start_dt = _dt.combine(now.date(), start_time)
                         dur = now - start_dt
-                        # Si el valor cruza de día (por TIME), normalizar sumando 1 día hasta que sea >=0
                         if dur.total_seconds() < 0:
                             dur = dur + _td(days=1)
 
-                        # Persistimos como TIME (HH:MM:SS)
                         total_seconds = int(dur.total_seconds())
                         horas = total_seconds // 3600
                         minutos = (total_seconds % 3600) // 60
                         segundos = total_seconds % 60
-                        # limitar a 24h para TIME de postgres
                         horas = horas % 24
                         ocupacion_time_str = f"{horas:02d}:{minutos:02d}:{segundos:02d}"
 
@@ -374,6 +385,7 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
             except Exception as exc:
                 import logging
                 logging.getLogger(__name__).exception(f"[crear_venta] No se pudo calcular ocupacion: {exc}")
+
 
         for detalle in detalles_venta:
             # Asignar el ID de la venta al detalle

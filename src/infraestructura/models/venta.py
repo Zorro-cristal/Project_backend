@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from datetime import datetime
+from datetime import datetime, time
 from typing import Optional
 
 from .caja import Caja
@@ -16,7 +16,12 @@ class Venta:
     clima: Optional[int] = None
     temperatura: Optional[int] = None
     humedad: Optional[int] = None
-    evento: Optional[bool] = None
+    velocidad_viento: Optional[float] = None
+    lluvia: Optional[float] = None
+    precipitaciones: Optional[float] = None
+    probabilidad_precipitaciones: Optional[float] = None
+    evento_festivo: Optional[bool] = None
+    ocupacion: Optional[time] = None
     tipo_credito: Optional[int] = None
     total_cuotas: Optional[int] = None
     monto_entrega: Optional[float] = 0

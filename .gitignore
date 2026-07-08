@@ -2,3 +2,4 @@ entorno/
 *.pyc
 .env
 *.env
+src/ml/*

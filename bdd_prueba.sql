@@ -112,76 +112,100 @@ INSERT INTO cajas (id, monto_apertura, id_usuariofk) VALUES (1, 100000, 2);
 -- 7. VENTAS (3 Días x 4 Permutaciones x 3 registros = 36 Ventas)
 -- Permutaciones: tipo_credito (A), evento_festivo (B)
 -- ============================================================
-INSERT INTO ventas (id, nro, fecha, estado, clima, temperatura, humedad, tipo_credito, evento_festivo, id_clientefk, id_vendedorfk, id_localfk) VALUES
+-- ============================================================
+-- 7. VENTAS (3 Días x 4 Permutaciones x 3 registros = 36 Ventas)
+-- Permutaciones basadas en: tipo_credito (A) y evento_festivo (B)
+-- Incluye variables climáticas extendidas y tiempos de ocupación.
+-- ============================================================
+
 -- --- DÍA 1: HOY (NOW()) ---
--- Contado, Sin Evento
-(1, 'V-001', NOW(), 1, 0, 35, 60, false, false, 1, 1, 1),
-(2, 'V-002', NOW(), 1, 0, 34, 62, false, false, 2, 2, 1),
-(3, 'V-003', NOW(), 1, 0, 35, 59, false, false, 3, 1, 1),
--- Crédito, Sin Evento
-(4, 'V-004', NOW(), 1, 0, 32, 65, true, false, 4, 2, 1),
-(5, 'V-005', NOW(), 1, 0, 31, 66, true, false, 5, 1, 1),
-(6, 'V-006', NOW(), 1, 0, 32, 64, true, false, 6, 2, 1),
--- Contado, Con Evento
-(7, 'V-007', NOW(), 1, 1, 28, 70, false, true, 7, 1, 1),
-(8, 'V-008', NOW(), 1, 1, 27, 72, false, true, 8, 2, 1),
-(9, 'V-009', NOW(), 1, 1, 28, 71, false, true, 9, 1, 1),
--- Crédito, Con Evento
-(10, 'V-010', NOW(), 1, 1, 26, 75, true, true, 10, 2, 1),
-(11, 'V-011', NOW(), 1, 1, 25, 78, true, true, 11, 1, 1),
-(12, 'V-012', NOW(), 1, 1, 26, 76, true, true, 12, 2, 1),
+-- Permutación 1: Contado, Sin Evento (A=false, B=false) -> cuotas=0, entrega=0
+INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, cod_num, clima, temperatura, humedad, velocidad_viento, lluvia, precipitaciones, probabilidad_precipitaciones, evento_festivo, ocupacion, id_clientefk, id_localfk, id_vendedorfk) VALUES
+(1, 'V-001', NOW(), 0, 0, false, 1, 'FAC001', 0, 35, 60, 12.5, 0.0, 0.0, 5.0, false, '00:45:00', 1, 1, 1),
+(2, 'V-002', NOW(), 0, 0, false, 1, 'FAC002', 0, 34, 62, 10.2, 0.0, 0.0, 5.0, false, '01:15:00', 2, 1, 2),
+(3, 'V-003', NOW(), 0, 0, false, 1, 'FAC003', 0, 35, 59, 14.0, 0.0, 0.0, 10.0, false, '00:30:00', 3, 1, 1),
 
--- --- DÍA 2: AYER (NOW() - 1 DÍA) ---
--- Contado, Sin Evento
-(13, 'V-013', NOW() - INTERVAL '1 day', 1, 2, 22, 80, false, false, 1, 2, 1),
-(14, 'V-014', NOW() - INTERVAL '1 day', 1, 2, 21, 82, false, false, 2, 1, 1),
-(15, 'V-015', NOW() - INTERVAL '1 day', 1, 2, 22, 81, false, false, 3, 2, 1),
--- Crédito, Sin Evento
-(16, 'V-016', NOW() - INTERVAL '1 day', 1, 2, 20, 85, true, false, 4, 1, 1),
-(17, 'V-017', NOW() - INTERVAL '1 day', 1, 2, 19, 88, true, false, 5, 2, 1),
-(18, 'V-018', NOW() - INTERVAL '1 day', 1, 2, 20, 86, true, false, 6, 1, 1),
--- Contado, Con Evento
-(19, 'V-019', NOW() - INTERVAL '1 day', 1, 3, 18, 90, false, true, 7, 2, 1),
-(20, 'V-020', NOW() - INTERVAL '1 day', 1, 3, 17, 92, false, true, 8, 1, 1),
-(21, 'V-021', NOW() - INTERVAL '1 day', 1, 3, 18, 91, false, true, 9, 2, 1),
--- Crédito, Con Evento
-(22, 'V-022', NOW() - INTERVAL '1 day', 1, 3, 16, 95, true, true, 10, 1, 1),
-(23, 'V-023', NOW() - INTERVAL '1 day', 1, 3, 15, 96, true, true, 11, 2, 1),
-(24, 'V-024', NOW() - INTERVAL '1 day', 1, 3, 16, 94, true, true, 12, 1, 1),
+-- Permutación 2: Crédito, Sin Evento (A=true, B=false) -> cuotas>0, entrega variable
+(4, 'V-004', NOW(), 3, 50000, true, 1, 'FAC004', 0, 32, 65, 8.5, 0.0, 0.0, 15.0, false, '01:40:00', 4, 1, 2),
+(5, 'V-005', NOW(), 2, 0, true, 1, 'FAC005', 0, 31, 66, 9.0, 0.0, 0.0, 15.0, false, '02:00:00', 5, 1, 1),
+(6, 'V-006', NOW(), 4, 100000, true, 1, 'FAC006', 0, 32, 64, 11.1, 0.0, 0.0, 20.0, false, '01:10:00', 6, 1, 2),
 
--- --- DÍA 3: ANTEAYER (NOW() - 2 DÍAS) ---
--- Contado, Sin Evento
-(25, 'V-025', NOW() - INTERVAL '2 days', 1, 0, 30, 50, false, false, 1, 1, 1),
-(26, 'V-026', NOW() - INTERVAL '2 days', 1, 0, 29, 52, false, false, 2, 2, 1),
-(27, 'V-027', NOW() - INTERVAL '2 days', 1, 0, 30, 51, false, false, 3, 1, 1),
--- Crédito, Sin Evento
-(28, 'V-028', NOW() - INTERVAL '2 days', 1, 0, 28, 55, true, false, 4, 2, 1),
-(29, 'V-029', NOW() - INTERVAL '2 days', 1, 0, 27, 58, true, false, 5, 1, 1),
-(30, 'V-030', NOW() - INTERVAL '2 days', 1, 0, 28, 56, true, false, 6, 2, 1),
--- Contado, Con Evento
-(31, 'V-031', NOW() - INTERVAL '2 days', 1, 1, 25, 60, false, true, 7, 1, 1),
-(32, 'V-032', NOW() - INTERVAL '2 days', 1, 1, 24, 62, false, true, 8, 2, 1),
-(33, 'V-033', NOW() - INTERVAL '2 days', 1, 1, 25, 61, false, true, 9, 1, 1),
--- Crédito, Con Evento
-(34, 'V-034', NOW() - INTERVAL '2 days', 1, 1, 23, 65, true, true, 10, 2, 1),
-(35, 'V-035', NOW() - INTERVAL '2 days', 1, 1, 22, 68, true, true, 11, 1, 1),
-(36, 'V-036', NOW() - INTERVAL '2 days', 1, 1, 23, 66, true, true, 12, 2, 1);
+-- Permutación 3: Contado, Con Evento (A=false, B=true) -> Alto movimiento, ocupación más larga
+(7, 'V-007', NOW(), 0, 0, false, 1, 'FAC007', 1, 28, 70, 18.5, 0.0, 0.0, 40.0, true, '02:15:00', 7, 1, 1),
+(8, 'V-008', NOW(), 0, 0, false, 1, 'FAC008', 1, 27, 72, 20.0, 0.5, 0.5, 50.0, true, '01:50:00', 8, 1, 2),
+(9, 'V-009', NOW(), 0, 0, false, 1, 'FAC009', 1, 28, 71, 16.2, 0.0, 0.0, 45.0, true, '02:30:00', 9, 1, 1),
 
--- Detalles de Venta correspondientes (1 por venta)
+-- Permutación 4: Crédito, Con Evento (A=true, B=true)
+(10, 'V-010', NOW(), 3, 150000, true, 1, 'FAC010', 1, 26, 75, 22.0, 1.2, 1.2, 70.0, true, '03:00:00', 10, 1, 2),
+(11, 'V-011', NOW(), 5, 200000, true, 1, 'FAC011', 1, 25, 78, 25.4, 2.0, 2.0, 85.0, true, '01:35:00', 11, 1, 1),
+(12, 'V-012', NOW(), 2, 50000, true, 1, 'FAC012', 1, 26, 76, 21.0, 1.5, 1.5, 80.0, true, '02:05:00', 12, 1, 2),
+
+
+-- --- DÍA 2: AYER (NOW() - INTERVAL '1 day') ---
+-- Permutación 1: Contado, Sin Evento (A=false, B=false)
+(13, 'V-013', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC013', 2, 22, 80, 15.0, 4.5, 4.5, 90.0, false, '00:50:00', 1, 1, 2),
+(14, 'V-014', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC014', 2, 21, 82, 14.2, 5.0, 5.0, 95.0, false, '01:05:00', 2, 1, 1),
+(15, 'V-015', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC015', 2, 22, 81, 16.0, 3.8, 3.8, 85.0, false, '00:55:00', 3, 1, 2),
+
+-- Permutación 2: Crédito, Sin Evento (A=true, B=false)
+(16, 'V-016', NOW() - INTERVAL '1 day', 2, 30000, true, 1, 'FAC016', 2, 20, 85, 12.0, 2.1, 2.1, 60.0, false, '01:20:00', 4, 1, 1),
+(17, 'V-017', NOW() - INTERVAL '1 day', 3, 0, true, 1, 'FAC017', 2, 19, 88, 10.5, 1.0, 1.0, 40.0, false, '01:45:00', 5, 1, 2),
+(18, 'V-018', NOW() - INTERVAL '1 day', 4, 80000, true, 1, 'FAC018', 2, 20, 86, 11.8, 1.5, 1.5, 50.0, false, '01:15:00', 6, 1, 1),
+
+-- Permutación 3: Contado, Con Evento (A=false, B=true)
+(19, 'V-019', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC019', 3, 18, 90, 28.0, 12.0, 12.0, 100.0, true, '02:40:00', 7, 1, 2),
+(20, 'V-020', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC020', 3, 17, 92, 30.5, 15.0, 15.0, 100.0, true, '01:55:00', 8, 1, 1),
+(21, 'V-021', NOW() - INTERVAL '1 day', 0, 0, false, 1, 'FAC021', 3, 18, 91, 26.2, 10.5, 10.5, 95.0, true, '02:10:00', 9, 1, 2),
+
+-- Permutación 4: Crédito, Con Evento (A=true, B=true)
+(22, 'V-022', NOW() - INTERVAL '1 day', 3, 40000, true, 1, 'FAC022', 3, 16, 95, 32.0, 18.0, 18.0, 100.0, true, '01:50:00', 10, 1, 1),
+(23, 'V-023', NOW() - INTERVAL '1 day', 6, 0, true, 1, 'FAC023', 3, 15, 96, 35.0, 22.5, 22.5, 100.0, true, '03:10:00', 11, 1, 2),
+(24, 'V-024', NOW() - INTERVAL '1 day', 2, 150000, true, 1, 'FAC024', 3, 16, 94, 29.0, 14.0, 14.0, 100.0, true, '02:25:00', 12, 1, 1),
+
+
+-- --- DÍA 3: ANTEAYER (NOW() - INTERVAL '2 days') ---
+-- Permutación 1: Contado, Sin Evento (A=false, B=false)
+(25, 'V-025', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC025', 0, 30, 50, 8.0, 0.0, 0.0, 0.0, false, '00:40:00', 1, 1, 1),
+(26, 'V-026', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC026', 0, 29, 52, 7.5, 0.0, 0.0, 0.0, false, '01:00:00', 2, 1, 2),
+(27, 'V-027', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC027', 0, 30, 51, 9.2, 0.0, 0.0, 0.0, false, '00:50:00', 3, 1, 1),
+
+-- Permutación 2: Crédito, Sin Evento (A=true, B=false)
+(28, 'V-028', NOW() - INTERVAL '2 days', 3, 60000, true, 1, 'FAC028', 0, 28, 55, 6.0, 0.0, 0.0, 0.0, false, '01:15:00', 4, 1, 2),
+(29, 'V-029', NOW() - INTERVAL '2 days', 2, 20000, true, 1, 'FAC029', 0, 27, 58, 5.4, 0.0, 0.0, 0.0, false, '01:30:00', 5, 1, 1),
+(30, 'V-030', NOW() - INTERVAL '2 days', 4, 0, true, 1, 'FAC030', 0, 28, 56, 7.1, 0.0, 0.0, 5.0, false, '01:20:00', 6, 1, 2),
+
+-- Permutación 3: Contado, Con Evento (A=false, B=true)
+(31, 'V-031', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC031', 1, 25, 60, 11.0, 0.0, 0.0, 10.0, true, '02:00:00', 7, 1, 1),
+(32, 'V-032', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC032', 1, 24, 62, 13.4, 0.0, 0.0, 15.0, true, '02:20:00', 8, 1, 2),
+(33, 'V-033', NOW() - INTERVAL '2 days', 0, 0, false, 1, 'FAC033', 1, 25, 61, 10.0, 0.0, 0.0, 10.0, true, '01:45:00', 9, 1, 1),
+
+-- Permutación 4: Crédito, Con Evento (A=true, B=true)
+(34, 'V-034', NOW() - INTERVAL '2 days', 3, 50000, true, 1, 'FAC034', 1, 23, 65, 14.0, 0.0, 0.0, 20.0, true, '02:30:00', 10, 1, 2),
+(35, 'V-035', NOW() - INTERVAL '2 days', 2, 100000, true, 1, 'FAC035', 1, 22, 68, 15.5, 0.2, 0.2, 30.0, true, '01:55:00', 11, 1, 1),
+(36, 'V-036', NOW() - INTERVAL '2 days', 4, 40000, true, 1, 'FAC036', 1, 23, 66, 12.1, 0.0, 0.0, 25.0, true, '02:10:00', 12, 1, 2);
+
+
+-- ============================================================
+-- DETALLES DE VENTA (Vínculo correlativo estricto 1 a 1 con ventas)
+-- ============================================================
 INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(1,5000,0,'P001',1), (1,5000,0,'P002',2), (1,5000,0,'P003',3),
-(1,10000,0,'P004',4), (1,10000,0,'P005',5), (1,10000,0,'P006',6),
-(1,15000,0,'P007',7), (1,15000,0,'P008',8), (1,15000,0,'P009',9),
-(1,20000,0,'P010',10), (1,20000,0,'P011',11), (1,20000,0,'P012',12),
-(1,5000,0,'P001',13), (1,5000,0,'P002',14), (1,5000,0,'P003',15),
-(1,10000,0,'P004',16), (1,10000,0,'P005',17), (1,10000,0,'P006',18),
-(1,15000,0,'P007',19), (1,15000,0,'P008',20), (1,15000,0,'P009',21),
-(1,20000,0,'P010',22), (1,20000,0,'P011',23), (1,20000,0,'P012',24),
-(1,5000,0,'P001',25), (1,5000,0,'P002',26), (1,5000,0,'P003',27),
-(1,10000,0,'P004',28), (1,10000,0,'P005',29), (1,10000,0,'P006',30),
-(1,15000,0,'P007',31), (1,15000,0,'P008',32), (1,15000,0,'P009',33),
-(1,20000,0,'P010',34), (1,20000,0,'P011',35), (1,20000,0,'P012',36);
+-- Detalles Día 1 (Ventas 1 al 12)
+(1, 5000, 0, 'P001', 1),   (2, 5000, 0, 'P002', 2),   (1, 5000, 0, 'P003', 3),
+(1, 10000, 0, 'P004', 4),  (3, 10000, 0, 'P005', 5),  (1, 10000, 0, 'P006', 6),
+(4, 15000, 0, 'P007', 7),  (2, 15000, 0, 'P008', 8),  (5, 15000, 0, 'P009', 9),
+(2, 20000, 10, 'P010', 10),(1, 20000, 0, 'P011', 11), (3, 20000, 0, 'P012', 12),
 
+-- Detalles Día 2 (Ventas 13 al 24)
+(2, 5000, 0, 'P001', 13),  (1, 5000, 0, 'P002', 14),  (3, 5000, 0, 'P003', 15),
+(1, 10000, 0, 'P004', 16), (2, 10000, 0, 'P005', 17), (1, 10000, 0, 'P006', 18),
+(2, 15000, 0, 'P007', 19), (4, 15000, 0, 'P008', 20), (2, 15000, 0, 'P009', 21),
+(1, 20000, 0, 'P010', 22), (5, 20000, 15, 'P011', 23),(2, 20000, 0, 'P012', 24),
+
+-- Detalles Día 3 (Ventas 25 al 36)
+(3, 5000, 0, 'P001', 25),  (2, 5000, 0, 'P002', 26),  (1, 5000, 0, 'P003', 27),
+(2, 10000, 0, 'P004', 28), (1, 10000, 0, 'P005', 29), (3, 10000, 0, 'P006', 30),
+(3, 15000, 0, 'P007', 31), (1, 15000, 0, 'P008', 32), (2, 15000, 0, 'P009', 33),
+(2, 20000, 0, 'P010', 34), (2, 20000, 0, 'P011', 35), (4, 20000, 5, 'P012', 36);
 
 -- ============================================================
 -- 8. COMPRAS (3 Días x 2 Permutaciones x 3 registros = 18 Compras)

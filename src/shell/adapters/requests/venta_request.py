@@ -17,7 +17,7 @@ class VentaBase(BaseModel):
     nro: Optional[str] = None
     fecha: datetime
     estado: Optional[int] = 1
-    evento: Optional[bool] = None
+    evento_festivo: Optional[bool] = None
     tipo_credito: Optional[int] = None
     total_cuotas: Optional[int] = None
     monto_entrega: Optional[float] = 0
@@ -26,13 +26,22 @@ class VentaBase(BaseModel):
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
+
+    # Para POST /venta (evitar depender de ordenes.id_mesafk)
+    # Si viene desde el front, se usa para calcular ventas.ocupacion.
+    id_mesafk: Optional[int] = None
+
     cliente: Optional[ClienteRequest] = None
     local: Optional[LocalRequest] = None
     detalles_venta: Optional[List[DetalleVentaRequest]] = None
     # Campos para venta a crédito
     fecha_inicio: Optional[datetime] = None
     # subtotal se calcula en el servicio, no se recibe en entrada
-    # Los datos de clima (clima, temperatura, humedad) se obtienen automáticamente en el backend
+    # Los datos de clima (clima, temperatura, humedad y métricas adicionales) se obtienen automáticamente en el backend
+    velocidad_viento: Optional[float] = None
+    lluvia: Optional[float] = None
+    precipitaciones: Optional[float] = None
+    probabilidad_precipitaciones: Optional[float] = None
 
     class Config:
         validate_by_name = True
