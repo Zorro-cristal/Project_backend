@@ -1,5 +1,5 @@
 -- ============================================================
--- 1. PERSONAS (15 Registros: Staff, Clientes, Proveedores)
+-- 1. PERSONAS (15 Registros - Base Intacta)
 -- ============================================================
 INSERT INTO personas (cedula, nombres, apellidos, telefono, direccion, nacionalidad) VALUES
 (1000001, 'Administrador', 'Root', 981000001, 'Centro, Villarrica', 'PRY'),
@@ -19,13 +19,11 @@ INSERT INTO personas (cedula, nombres, apellidos, telefono, direccion, nacionali
 (3000005, 'Cliente', 'Ocasional', null, 'Sin especificar', 'PRY');
 
 -- ============================================================
--- 2. ROLES, PERMISOS Y USUARIOS
+-- 2. ROLES, PERMISOS Y USUARIOS (5 Usuarios)
 -- ============================================================
 INSERT INTO roles (id, nombre, observacion, estado) VALUES
-(1, 'Admin', 'Acceso Total', 1),
-(2, 'Cajero', 'Caja y Cobros', 1),
-(3, 'Mozo', 'Atención en salón', 1),
-(4, 'Gerente', 'Reportes y auditoría', 1),
+(1, 'Admin', 'Acceso Total', 1), (2, 'Cajero', 'Caja y Cobros', 1),
+(3, 'Mozo', 'Atención en salón', 1), (4, 'Gerente', 'Reportes y auditoría', 1),
 (5, 'Cocinero', 'Visualización de comandas', 1);
 
 INSERT INTO permisos (id, nombre) VALUES 
@@ -36,208 +34,228 @@ INSERT INTO permisos_roles (crear, editar, eliminar, leer, id_permisofk, id_rolf
 (true, false, false, true, 1, 2), (false, false, false, true, 2, 2),
 (true, true, false, true, 1, 3);
 
-INSERT INTO usuarios (id, contra, alias, estado, id_rolfk, id_personafk) VALUES
-(1, 'hash1', 'admin', 1, 1, 1000001),
-(2, 'hash2', 'ana_caja', 1, 2, 1000002),
-(3, 'hash3', 'luis_caja2', 1, 2, 1000003),
-(4, 'hash4', 'marta_mozo', 1, 3, 1000004),
-(5, 'hash5', 'diego_mozo', 1, 3, 1000005);
-
+INSERT INTO "public"."usuarios" ("id", "contra", "alias", "estado", "fecha_creado", "id_rolfk", "id_personafk") VALUES 
+(1, 'scrypt$pQDitONnZE/sjyQuLA373w==$3qTf0pWmVEm36W5957vaqUXTmH8dTbjsB65un1+sd3o=', 'admin', 1, '2026-07-04 15:17:08.935272+00', 1, 1000001),
+(2, 'scrypt$wYqY5zrKgamMvne3Hz6ZNg==$TDxeVqjuOEQBcqCcn+tqZQh2Dm5UvaQjf8rJbzDD7eY=', 'ana_caja', 1, '2026-07-04 15:17:09.30662+00', 2, 1000002),
+(3, 'scrypt$ky8MgYQXw+VquxN0UAVIJw==$K5wt85o6hLInbu0r/Gj2i1ZzeNi3zBaYUhdtw0ADuJc=', 'luis_caja2', 1, '2026-07-04 15:17:09.557405+00', 2, 1000003),
+(4, 'scrypt$xEsISuHV67XSfLqsgOdRTw==$8044bJlqnJYRAJzjN2/zD3ZtPM/PZTSzor5CHZJ1Jnc=', 'marta_mozo', 1, '2026-07-04 15:17:09.826143+00', 3, 1000004),
+(5, 'scrypt$YhNDBgTevJhqpM3vptf+qw==$qx/IxjhsVaG7hm/ouk6/fHQJIog6ieM4MszlyQEzZMM=', 'diego_mozo', 1, '2026-07-04 15:17:10.076216+00', 3, 1000005);
 -- ============================================================
--- 3. CLIENTES, PROVEEDORES Y VENDEDORES (5 de cada uno)
--- ============================================================
-INSERT INTO clientes (id, id_personafk, ruc, razon_social, persona_fisica) VALUES
-(1, 3000001, 30000018, 'Juan Pérez', 1),
-(2, 3000002, 30000029, 'María López', 1),
-(3, 3000003, null, 'Carlos Gómez', 1),
-(4, 3000004, 80012345, 'Constructora XYZ S.A.', 0),
-(5, 3000005, null, 'Sin Nombre', 1);
-
-INSERT INTO proveedores (id, id_personafk, razon_social, ruc, correo, estado) VALUES
-(1, 2000001, 'Distri Guairá S.A.', 80000011, 'ventas@guaira.com', true),
-(2, 2000002, 'Frigorífico Villarrica', 80000022, 'carne@frigo.com', true),
-(3, 2000003, 'Bebidas Unidas S.R.L.', 80000033, 'pedidos@bebidas.com', true),
-(4, 2000004, 'Insumos Gastronómicos', 80000044, 'insumos@gastro.com', true),
-(5, 2000005, 'Granja San José', 80000055, 'huevos@sanjose.com', true);
-
-INSERT INTO vendedores (id, salario, comision, cod_num, estado, id_personafk) VALUES
-(1, 3000000, 3.5, 'V01', true, 1000004),
-(2, 3000000, 3.5, 'V02', true, 1000005),
-(3, 3500000, 5.0, 'V03', true, 1000001),
-(4, 2800000, 2.0, 'V04', false, 1000002),
-(5, 2800000, 2.0, 'V05', true, 1000003);
-
--- ============================================================
--- 4. LOCALES Y MESAS (5+ Permutaciones de estado)
+-- 3. LOCALES Y MESAS
 -- ============================================================
 INSERT INTO locales (id, nombre, direccion, cod_num, telefono, estado, latitud, longitud) VALUES
-(1, 'Local Principal', 'Bvr. Yegros', 'L01', '021000111', true, -25.78, -56.43),
-(2, 'Sucursal Ybaroty', 'Barrio Ybaroty', 'L02', '021000222', true, -25.79, -56.44);
+(1, 'Local Principal', 'Bvr. Yegros', 'L01', '021000111', true, -25.78, -56.43);
 
-INSERT INTO mesas (id, nombre, estado, capacidad, id_localfk, id_clientefk) VALUES
-(1, 'Mesa 1', true, 4, 1, null),       -- Libre
-(2, 'Mesa 2', false, 2, 1, 1),        -- Ocupada por Juan Pérez
-(3, 'Mesa 3', true, 6, 1, null),       -- Libre
-(4, 'Mesa 4', false, 4, 1, 2),        -- Ocupada por María
-(5, 'Mesa 5 VIP', true, 8, 1, null),   -- Libre VIP
-(6, 'Mesa 1 (Suc 2)', true, 4, 2, null);
+INSERT INTO mesas (id, nombre, estado, capacidad, id_localfk) VALUES
+(1, 'Mesa 1', 1, 4, 1), (2, 'Mesa 2', 0, 2, 1);
 
 -- ============================================================
--- 5. CATEGORÍAS, MARCAS Y PRODUCTOS (Cruces Varios)
+-- 4. CLIENTES Y PROVEEDORES
 -- ============================================================
-INSERT INTO categorias (id, nombre, descripcion, estado) VALUES
-(1, 'Bebidas Frías', 'Cervezas, Gaseosas, Jugos', 1),
-(2, 'Parrilla', 'Carnes y asados', 1),
-(3, 'Comidas Típicas', 'Sopa, Chipa Guasu, Mbeju', 1),
-(4, 'Insumos', 'Materia prima', 1),
-(5, 'Postres', 'Dulces y helados', 1);
+INSERT INTO clientes (id, id_personafk, ruc, razon_social, persona_fisica) VALUES
+(1, 3000001, null, 'Juan Pérez 1', 1), (2, 3000002, null, 'María López 1', 1), (3, 3000003, null, 'Carlos Gómez 1', 1),
+(4, 3000001, 30000018, 'Juan Pérez 2', 1), (5, 3000002, 30000029, 'María López 2', 1), (6, 3000003, 30000030, 'Carlos Gómez 2', 1),
+(7, 3000004, null, 'Constructora XYZ 1', 0), (8, 3000005, null, 'Empresa Sin RUC 1', 0), (9, 3000004, null, 'Constructora XYZ 2', 0),
+(10, 3000004, 80012345, 'Constructora XYZ 3', 0), (11, 3000005, 80099999, 'Empresa Local S.A.', 0), (12, 3000004, 80011111, 'Constructora XYZ 4', 0);
 
-INSERT INTO marcas (id, nombre, estado) VALUES 
-(1, 'Pilsen', 1), (2, 'Coca-Cola', 1), (3, 'Guaraní', 1), (4, 'Casero', 1), (5, 'Lactolanda', 1);
+INSERT INTO proveedores (id, id_personafk, razon_social, ruc, correo, estado) VALUES
+(1, 2000001, 'Distri Guairá A', 80000011, null, true), (2, 2000002, 'Frigorífico A', 80000022, null, true), (3, 2000003, 'Bebidas A', 80000033, null, true),
+(4, 2000001, 'Distri Guairá B', 80000044, 'ventas1@guaira.com', true), (5, 2000002, 'Frigorífico B', 80000055, 'carne1@frigo.com', true), (6, 2000003, 'Bebidas B', 80000066, 'pedidos@bebidas.com', true);
+
+INSERT INTO vendedores (id, salario, comision, cod_num, estado, id_usuariofk) VALUES
+(1, 3000000, 3.5, 'V01', true, 4), (2, 3000000, 3.5, 'V02', true, 5);
+
+-- ============================================================
+-- 5. PRODUCTOS, PRECIOS Y STOCK
+-- ============================================================
+INSERT INTO categorias (id, nombre, estado) VALUES (1, 'General', 1);
+INSERT INTO marcas (id, nombre, estado) VALUES (1, 'Genérica', 1);
 
 INSERT INTO productos (id, nombre, estado, impuesto, pesable, perecedero, unidad_medida, es_ingrediente, es_comida, id_categoriafk, id_marcafk) VALUES
-(1, 'Cerveza Pilsen 1L', 1, 10, false, false, 'Unidad', false, false, 1, 1),
-(2, 'Asado de Tira', 1, 5, true, true, 'Kg', false, true, 2, 3),
-(3, 'Sopa Paraguaya', 1, 5, false, true, 'Porción', false, true, 3, 4),
-(4, 'Harina de Maíz', 1, 5, true, false, 'Kg', true, false, 4, 4),
-(5, 'Queso Paraguay', 1, 5, true, true, 'Kg', true, false, 4, 5),
-(6, 'Gaseosa 2L', 1, 10, false, false, 'Unidad', false, false, 1, 2),
-(7, 'Helado Artesanal', 1, 10, false, true, 'Porción', false, true, 5, 4);
+(1, 'Gaseosa Lata 1', 1, 10, false, false, 'Unidad', false, false, 1, 1), (2, 'Gaseosa Lata 2', 1, 10, false, false, 'Unidad', false, false, 1, 1), (3, 'Gaseosa Lata 3', 1, 10, false, false, 'Unidad', false, false, 1, 1),
+(4, 'Clavos x Kilo 1', 1, 10, true, false, 'Kg', false, false, 1, 1), (5, 'Clavos x Kilo 2', 1, 10, true, false, 'Kg', false, false, 1, 1), (6, 'Clavos x Kilo 3', 1, 10, true, false, 'Kg', false, false, 1, 1),
+(7, 'Empanada 1', 1, 5, false, true, 'Unidad', false, true, 1, 1), (8, 'Empanada 2', 1, 5, false, true, 'Unidad', false, true, 1, 1), (9, 'Empanada 3', 1, 5, false, true, 'Unidad', false, true, 1, 1),
+(10, 'Colorante 1', 1, 5, false, false, 'Unidad', true, false, 1, 1), (11, 'Colorante 2', 1, 5, false, false, 'Unidad', true, false, 1, 1), (12, 'Colorante 3', 1, 5, false, false, 'Unidad', true, false, 1, 1),
+(13, 'Asado Crudo 1', 1, 5, true, true, 'Kg', false, true, 1, 1), (14, 'Asado Crudo 2', 1, 5, true, true, 'Kg', false, true, 1, 1), (15, 'Asado Crudo 3', 1, 5, true, true, 'Kg', false, true, 1, 1),
+(16, 'Sal Gruesa 1', 1, 5, true, false, 'Kg', true, false, 1, 1), (17, 'Sal Gruesa 2', 1, 5, true, false, 'Kg', true, false, 1, 1), (18, 'Sal Gruesa 3', 1, 5, true, false, 'Kg', true, false, 1, 1),
+(19, 'Leche Sachet 1', 1, 5, false, true, 'Unidad', true, false, 1, 1), (20, 'Leche Sachet 2', 1, 5, false, true, 'Unidad', true, false, 1, 1), (21, 'Leche Sachet 3', 1, 5, false, true, 'Unidad', true, false, 1, 1),
+(22, 'Queso Paraguay 1', 1, 5, true, true, 'Kg', true, false, 1, 1), (23, 'Queso Paraguay 2', 1, 5, true, true, 'Kg', true, false, 1, 1), (24, 'Queso Paraguay 3', 1, 5, true, true, 'Kg', true, false, 1, 1);
 
--- DETALLES Y PRECIOS
 INSERT INTO detalles_producto (cod_barra, unidad_por_lote, id_productofk) VALUES
-('7840001001', 12, 1), ('2000000001', 1, 2), ('7840001002', 1, 3), 
-('2000000002', 1, 4), ('2000000003', 1, 5), ('7840001003', 6, 6), ('7840001004', 1, 7);
+('P001',1,1), ('P002',1,2), ('P003',1,3), ('P004',1,4), ('P005',1,5), ('P006',1,6),
+('P007',1,7), ('P008',1,8), ('P009',1,9), ('P010',1,10), ('P011',1,11), ('P012',1,12),
+('P013',1,13), ('P014',1,14), ('P015',1,15), ('P016',1,16), ('P017',1,17), ('P018',1,18),
+('P019',1,19), ('P020',1,20), ('P021',1,21), ('P022',1,22), ('P023',1,23), ('P024',1,24);
 
-INSERT INTO precios (id, monto, valido_desde) VALUES
-(1, 15000, NOW() - INTERVAL '60 days'), (2, 55000, NOW() - INTERVAL '60 days'), 
-(3, 12000, NOW() - INTERVAL '60 days'), (4, 8000, NOW() - INTERVAL '60 days'), 
-(5, 35000, NOW() - INTERVAL '60 days'), (6, 14000, NOW() - INTERVAL '60 days'), 
-(7, 10000, NOW() - INTERVAL '60 days');
+INSERT INTO precios (id, monto, valido_desde) VALUES 
+(1,5000,NOW()),(2,5000,NOW()),(3,5000,NOW()),(4,10000,NOW()),(5,10000,NOW()),(6,10000,NOW()),
+(7,15000,NOW()),(8,15000,NOW()),(9,15000,NOW()),(10,20000,NOW()),(11,20000,NOW()),(12,20000,NOW()),
+(13,25000,NOW()),(14,25000,NOW()),(15,25000,NOW()),(16,30000,NOW()),(17,30000,NOW()),(18,30000,NOW()),
+(19,35000,NOW()),(20,35000,NOW()),(21,35000,NOW()),(22,40000,NOW()),(23,40000,NOW()),(24,40000,NOW());
 
 INSERT INTO detalles_precio (id_preciofk, id_detalleproductofk) VALUES
-(1, '7840001001'), (2, '2000000001'), (3, '7840001002'), (4, '2000000002'), 
-(5, '2000000003'), (6, '7840001003'), (7, '7840001004');
+(1,'P001'),(2,'P002'),(3,'P003'),(4,'P004'),(5,'P005'),(6,'P006'),(7,'P007'),(8,'P008'),
+(9,'P009'),(10,'P010'),(11,'P011'),(12,'P012'),(13,'P013'),(14,'P014'),(15,'P015'),(16,'P016'),
+(17,'P017'),(18,'P018'),(19,'P019'),(20,'P020'),(21,'P021'),(22,'P022'),(23,'P023'),(24,'P024');
 
--- INGREDIENTES (La Sopa Paraguaya usa Harina de Maíz y Queso)
-INSERT INTO ingredientes (cantidad, unidad_medida, id_producto_ingredientefk, id_producto_finalfk) VALUES
-(200, 'Gramos', 4, 3), (150, 'Gramos', 5, 3);
-
--- STOCKS
+-- Es crucial tener registros en 'stocks' para poder vincularlos con el detalle de las compras
 INSERT INTO stocks (id, cant_deposito, cant_mostrador, cant_reservado, id_detalleproductofk, id_localfk) VALUES
-(1, 100, 24, 0, '7840001001', 1), (2, 50, 10, 0, '2000000001', 1),
-(3, 0, 20, 0, '7840001002', 1),  (4, 20, 0, 0, '2000000002', 1),
-(5, 10, 5, 0, '2000000003', 1),   (6, 60, 12, 0, '7840001003', 1),
-(7, 0, 30, 0, '7840001004', 1);
+(1, 100, 20, 0, 'P001', 1), (2, 100, 20, 0, 'P002', 1), (3, 100, 20, 0, 'P003', 1),
+(4, 50, 10, 0, 'P004', 1),  (5, 50, 10, 0, 'P005', 1),  (6, 50, 10, 0, 'P006', 1);
 
 -- ============================================================
--- 6. CAJAS (2 Cajas Abiertas)
+-- 6. CAJAS
 -- ============================================================
-INSERT INTO cajas (id, monto_apertura, id_usuariofk) VALUES
-(1, 500000, 2), (2, 300000, 3);
+INSERT INTO cajas (id, monto_apertura, id_usuariofk) VALUES (1, 100000, 2);
 
 -- ============================================================
--- 7. 5 PERMUTACIONES DE VENTAS (Clima, Crédito/Contado, Entregas)
+-- 7. VENTAS (3 Días x 4 Permutaciones x 3 registros = 36 Ventas)
+-- Permutaciones: tipo_credito (A), evento_festivo (B)
 -- ============================================================
--- Venta 1: CONTADO - Día de CALOR EXTREMO (39°C, WMO 0). Venta de mucha bebida.
-INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, clima, temperatura, humedad, evento, id_clientefk, id_localfk, id_usuariofk, id_vendedorfk) VALUES
-(1, '001-001', NOW() - INTERVAL '5 days', 0, 0, false, 1, 0, 39, 45, false, 5, 1, 2, 1);
+INSERT INTO ventas (id, nro, fecha, estado, clima, temperatura, humedad, tipo_credito, evento_festivo, id_clientefk, id_vendedorfk, id_localfk) VALUES
+-- --- DÍA 1: HOY (NOW()) ---
+-- Contado, Sin Evento
+(1, 'V-001', NOW(), 1, 0, 35, 60, false, false, 1, 1, 1),
+(2, 'V-002', NOW(), 1, 0, 34, 62, false, false, 2, 2, 1),
+(3, 'V-003', NOW(), 1, 0, 35, 59, false, false, 3, 1, 1),
+-- Crédito, Sin Evento
+(4, 'V-004', NOW(), 1, 0, 32, 65, true, false, 4, 2, 1),
+(5, 'V-005', NOW(), 1, 0, 31, 66, true, false, 5, 1, 1),
+(6, 'V-006', NOW(), 1, 0, 32, 64, true, false, 6, 2, 1),
+-- Contado, Con Evento
+(7, 'V-007', NOW(), 1, 1, 28, 70, false, true, 7, 1, 1),
+(8, 'V-008', NOW(), 1, 1, 27, 72, false, true, 8, 2, 1),
+(9, 'V-009', NOW(), 1, 1, 28, 71, false, true, 9, 1, 1),
+-- Crédito, Con Evento
+(10, 'V-010', NOW(), 1, 1, 26, 75, true, true, 10, 2, 1),
+(11, 'V-011', NOW(), 1, 1, 25, 78, true, true, 11, 1, 1),
+(12, 'V-012', NOW(), 1, 1, 26, 76, true, true, 12, 2, 1),
+
+-- --- DÍA 2: AYER (NOW() - 1 DÍA) ---
+-- Contado, Sin Evento
+(13, 'V-013', NOW() - INTERVAL '1 day', 1, 2, 22, 80, false, false, 1, 2, 1),
+(14, 'V-014', NOW() - INTERVAL '1 day', 1, 2, 21, 82, false, false, 2, 1, 1),
+(15, 'V-015', NOW() - INTERVAL '1 day', 1, 2, 22, 81, false, false, 3, 2, 1),
+-- Crédito, Sin Evento
+(16, 'V-016', NOW() - INTERVAL '1 day', 1, 2, 20, 85, true, false, 4, 1, 1),
+(17, 'V-017', NOW() - INTERVAL '1 day', 1, 2, 19, 88, true, false, 5, 2, 1),
+(18, 'V-018', NOW() - INTERVAL '1 day', 1, 2, 20, 86, true, false, 6, 1, 1),
+-- Contado, Con Evento
+(19, 'V-019', NOW() - INTERVAL '1 day', 1, 3, 18, 90, false, true, 7, 2, 1),
+(20, 'V-020', NOW() - INTERVAL '1 day', 1, 3, 17, 92, false, true, 8, 1, 1),
+(21, 'V-021', NOW() - INTERVAL '1 day', 1, 3, 18, 91, false, true, 9, 2, 1),
+-- Crédito, Con Evento
+(22, 'V-022', NOW() - INTERVAL '1 day', 1, 3, 16, 95, true, true, 10, 1, 1),
+(23, 'V-023', NOW() - INTERVAL '1 day', 1, 3, 15, 96, true, true, 11, 2, 1),
+(24, 'V-024', NOW() - INTERVAL '1 day', 1, 3, 16, 94, true, true, 12, 1, 1),
+
+-- --- DÍA 3: ANTEAYER (NOW() - 2 DÍAS) ---
+-- Contado, Sin Evento
+(25, 'V-025', NOW() - INTERVAL '2 days', 1, 0, 30, 50, false, false, 1, 1, 1),
+(26, 'V-026', NOW() - INTERVAL '2 days', 1, 0, 29, 52, false, false, 2, 2, 1),
+(27, 'V-027', NOW() - INTERVAL '2 days', 1, 0, 30, 51, false, false, 3, 1, 1),
+-- Crédito, Sin Evento
+(28, 'V-028', NOW() - INTERVAL '2 days', 1, 0, 28, 55, true, false, 4, 2, 1),
+(29, 'V-029', NOW() - INTERVAL '2 days', 1, 0, 27, 58, true, false, 5, 1, 1),
+(30, 'V-030', NOW() - INTERVAL '2 days', 1, 0, 28, 56, true, false, 6, 2, 1),
+-- Contado, Con Evento
+(31, 'V-031', NOW() - INTERVAL '2 days', 1, 1, 25, 60, false, true, 7, 1, 1),
+(32, 'V-032', NOW() - INTERVAL '2 days', 1, 1, 24, 62, false, true, 8, 2, 1),
+(33, 'V-033', NOW() - INTERVAL '2 days', 1, 1, 25, 61, false, true, 9, 1, 1),
+-- Crédito, Con Evento
+(34, 'V-034', NOW() - INTERVAL '2 days', 1, 1, 23, 65, true, true, 10, 2, 1),
+(35, 'V-035', NOW() - INTERVAL '2 days', 1, 1, 22, 68, true, true, 11, 1, 1),
+(36, 'V-036', NOW() - INTERVAL '2 days', 1, 1, 23, 66, true, true, 12, 2, 1);
+
+-- Detalles de Venta correspondientes (1 por venta)
 INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(15, 15000, 0, '7840001001', 1), (5, 14000, 0, '7840001003', 1);
-INSERT INTO pagos_venta (tipo, monto, fecha, id_ventafk, id_cajafk) VALUES (1, 295000, NOW() - INTERVAL '5 days', 1, 1);
+(1,5000,0,'P001',1), (1,5000,0,'P002',2), (1,5000,0,'P003',3),
+(1,10000,0,'P004',4), (1,10000,0,'P005',5), (1,10000,0,'P006',6),
+(1,15000,0,'P007',7), (1,15000,0,'P008',8), (1,15000,0,'P009',9),
+(1,20000,0,'P010',10), (1,20000,0,'P011',11), (1,20000,0,'P012',12),
+(1,5000,0,'P001',13), (1,5000,0,'P002',14), (1,5000,0,'P003',15),
+(1,10000,0,'P004',16), (1,10000,0,'P005',17), (1,10000,0,'P006',18),
+(1,15000,0,'P007',19), (1,15000,0,'P008',20), (1,15000,0,'P009',21),
+(1,20000,0,'P010',22), (1,20000,0,'P011',23), (1,20000,0,'P012',24),
+(1,5000,0,'P001',25), (1,5000,0,'P002',26), (1,5000,0,'P003',27),
+(1,10000,0,'P004',28), (1,10000,0,'P005',29), (1,10000,0,'P006',30),
+(1,15000,0,'P007',31), (1,15000,0,'P008',32), (1,15000,0,'P009',33),
+(1,20000,0,'P010',34), (1,20000,0,'P011',35), (1,20000,0,'P012',36);
 
--- Venta 2: CRÉDITO SIN ENTREGA (2 cuotas) - Día FRÍO (10°C, WMO 3). Comida caliente.
-INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, clima, temperatura, humedad, evento, id_clientefk, id_localfk, id_usuariofk, id_vendedorfk) VALUES
-(2, '001-002', NOW() - INTERVAL '4 days', 2, 0, true, 1, 3, 10, 85, false, 4, 1, 2, 2);
-INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(10, 12000, 0, '7840001002', 2), (2, 55000, 0, '2000000001', 2); -- 120mil + 110mil = 230mil
-INSERT INTO cuotas_venta (monto, fecha, descuento, interes, id_ventafk, id_usuariofk) VALUES
-(115000, NOW() + INTERVAL '15 days', 0, 0, 2, 2), (115000, NOW() + INTERVAL '30 days', 0, 0, 2, 2);
-
--- Venta 3: CRÉDITO CON ENTREGA INICIAL - Día TORMENTA (22°C, WMO 95). Cliente particular.
-INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, clima, temperatura, humedad, evento, id_clientefk, id_localfk, id_usuariofk, id_vendedorfk) VALUES
-(3, '001-003', NOW() - INTERVAL '3 days', 1, 50000, true, 1, 95, 22, 95, false, 1, 1, 3, 1);
-INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(3, 55000, 0, '2000000001', 3); -- 165mil total. Entrega 50mil, saldo 115mil.
-INSERT INTO pagos_venta (tipo, monto, fecha, id_ventafk, id_cajafk) VALUES (1, 50000, NOW() - INTERVAL '3 days', 3, 2);
-INSERT INTO cuotas_venta (monto, fecha, descuento, interes, id_ventafk, id_usuariofk) VALUES (115000, NOW() + INTERVAL '7 days', 0, 0, 3, 3);
-
--- Venta 4: CONTADO - CLIMA AGRADABLE CON EVENTO (Día de la Madre)
-INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, clima, temperatura, humedad, evento, id_clientefk, id_localfk, id_usuariofk, id_vendedorfk) VALUES
-(4, '001-004', NOW() - INTERVAL '1 days', 0, 0, false, 1, 1, 24, 60, true, 2, 1, 2, 2);
-INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(4, 10000, 0, '7840001004', 4), (2, 12000, 0, '7840001002', 4);
-INSERT INTO pagos_venta (tipo, monto, fecha, id_ventafk, id_cajafk) VALUES (1, 64000, NOW() - INTERVAL '1 days', 4, 1);
-
--- Venta 5: CONTADO CON DESCUENTO APLICADO - Día Nublado
-INSERT INTO ventas (id, nro, fecha, total_cuotas, monto_entrega, tipo_credito, estado, clima, temperatura, humedad, evento, id_clientefk, id_localfk, id_usuariofk, id_vendedorfk) VALUES
-(5, '001-005', NOW(), 0, 0, false, 1, 3, 20, 70, false, 3, 1, 3, 1);
-INSERT INTO detalle_venta (cantidad, precio, descuento, id_detalleproductofk, id_ventafk) VALUES
-(5, 15000, 5000, '7840001001', 5); -- Llevó 5, se le descontó 5000 al total.
-INSERT INTO pagos_venta (tipo, monto, fecha, id_ventafk, id_cajafk) VALUES (1, 70000, NOW(), 5, 2);
 
 -- ============================================================
--- 8. 5 PERMUTACIONES DE COMPRAS (Proveedores, Contado/Crédito)
+-- 8. COMPRAS (3 Días x 2 Permutaciones x 3 registros = 18 Compras)
+-- Permutaciones: tipo_credito (True / False)
 -- ============================================================
--- Compra 1: CONTADO - Insumos perecederos
 INSERT INTO compras (id, nro, id_localfk, fecha, estado, monto_entrega, total_cuotas, tipo_credito, id_proveedorfk, id_cajafk) VALUES
-(1, 'FAC-P01', 1, NOW() - INTERVAL '10 days', 1, 0, 0, false, 4, 1);
-INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES (50, 6000, 1, 4); -- Harina
-INSERT INTO pagos_compra (monto, fecha, id_comprafk, id_cajafk) VALUES (300000, NOW() - INTERVAL '10 days', 1, 1);
+-- --- DÍA 1: HOY ---
+-- Contado
+(1, 'C-001', 1, NOW(), 1, 0, 0, false, 1, 1),
+(2, 'C-002', 1, NOW(), 1, 0, 0, false, 2, 1),
+(3, 'C-003', 1, NOW(), 1, 0, 0, false, 3, 1),
+-- Crédito
+(4, 'C-004', 1, NOW(), 1, 50000, 3, true, 4, 1),
+(5, 'C-005', 1, NOW(), 1, 60000, 2, true, 5, 1),
+(6, 'C-006', 1, NOW(), 1, 40000, 4, true, 6, 1),
 
--- Compra 2: CRÉDITO 3 CUOTAS SIN ENTREGA - Bebidas
-INSERT INTO compras (id, nro, id_localfk, fecha, estado, monto_entrega, total_cuotas, tipo_credito, id_proveedorfk, id_cajafk) VALUES
-(2, 'FAC-P02', 1, NOW() - INTERVAL '8 days', 1, 0, 3, true, 3, 1);
-INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES (200, 10000, 2, 1); -- Cerveza (2 Millones)
-INSERT INTO cuotas_compra (monto, fecha, interes, id_comprafk, id_usuariofk) VALUES 
-(666666, NOW() + INTERVAL '22 days', 0, 2, 1), (666667, NOW() + INTERVAL '52 days', 0, 2, 1), (666667, NOW() + INTERVAL '82 days', 0, 2, 1);
+-- --- DÍA 2: AYER ---
+-- Contado
+(7, 'C-007', 1, NOW() - INTERVAL '1 day', 1, 0, 0, false, 1, 1),
+(8, 'C-008', 1, NOW() - INTERVAL '1 day', 1, 0, 0, false, 2, 1),
+(9, 'C-009', 1, NOW() - INTERVAL '1 day', 1, 0, 0, false, 3, 1),
+-- Crédito
+(10, 'C-010', 1, NOW() - INTERVAL '1 day', 1, 30000, 3, true, 4, 1),
+(11, 'C-011', 1, NOW() - INTERVAL '1 day', 1, 20000, 2, true, 5, 1),
+(12, 'C-012', 1, NOW() - INTERVAL '1 day', 1, 50000, 4, true, 6, 1),
 
--- Compra 3: CRÉDITO CON ENTREGA - Carne
-INSERT INTO compras (id, nro, id_localfk, fecha, estado, monto_entrega, total_cuotas, tipo_credito, id_proveedorfk, id_cajafk) VALUES
-(3, 'FAC-P03', 1, NOW() - INTERVAL '2 days', 1, 500000, 1, true, 2, 1);
-INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES (30, 45000, 3, 2); -- Carne (1.35 Millones)
-INSERT INTO pagos_compra (monto, fecha, id_comprafk, id_cajafk) VALUES (500000, NOW() - INTERVAL '2 days', 3, 1);
-INSERT INTO cuotas_compra (monto, fecha, interes, id_comprafk, id_usuariofk) VALUES (850000, NOW() + INTERVAL '13 days', 0, 3, 1);
+-- --- DÍA 3: ANTEAYER ---
+-- Contado
+(13, 'C-013', 1, NOW() - INTERVAL '2 days', 1, 0, 0, false, 1, 1),
+(14, 'C-014', 1, NOW() - INTERVAL '2 days', 1, 0, 0, false, 2, 1),
+(15, 'C-015', 1, NOW() - INTERVAL '2 days', 1, 0, 0, false, 3, 1),
+-- Crédito
+(16, 'C-016', 1, NOW() - INTERVAL '2 days', 1, 100000, 5, true, 4, 1),
+(17, 'C-017', 1, NOW() - INTERVAL '2 days', 1, 0, 3, true, 5, 1),
+(18, 'C-018', 1, NOW() - INTERVAL '2 days', 1, 25000, 2, true, 6, 1);
 
--- Compra 4: CONTADO - Varios Productos
-INSERT INTO compras (id, nro, id_localfk, fecha, estado, monto_entrega, total_cuotas, tipo_credito, id_proveedorfk, id_cajafk) VALUES
-(4, 'FAC-P04', 1, NOW() - INTERVAL '1 days', 1, 0, 0, false, 1, 2);
-INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES (20, 10000, 4, 6), (10, 25000, 4, 5); 
-INSERT INTO pagos_compra (monto, fecha, id_comprafk, id_cajafk) VALUES (450000, NOW() - INTERVAL '1 days', 4, 2);
+-- Detalles de Compra correspondientes (Asociados a stocks id 1 al 6)
+INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES
+(10, 4500, 1, 1), (10, 4500, 2, 2), (10, 4500, 3, 3), (5, 9000, 4, 4), (5, 9000, 5, 5), (5, 9000, 6, 6),
+(10, 4500, 7, 1), (10, 4500, 8, 2), (10, 4500, 9, 3), (5, 9000, 10, 4), (5, 9000, 11, 5), (5, 9000, 6, 6),
+(10, 4500, 13, 1), (10, 4500, 14, 2), (10, 4500, 15, 3), (5, 9000, 16, 4), (5, 9000, 17, 5), (5, 9000, 6, 6);
 
--- Compra 5: CRÉDITO 1 CUOTA - Insumos varios
-INSERT INTO compras (id, nro, id_localfk, fecha, estado, monto_entrega, total_cuotas, tipo_credito, id_proveedorfk, id_cajafk) VALUES
-(5, 'FAC-P05', 1, NOW(), 1, 0, 1, true, 5, 2);
-INSERT INTO detalle_compra (cantidad, precio, id_comprafk, id_stockfk) VALUES (10, 15000, 5, 5);
-INSERT INTO cuotas_compra (monto, fecha, interes, id_comprafk, id_usuariofk) VALUES (150000, NOW() + INTERVAL '30 days', 0, 5, 1);
-
--- ============================================================
--- 9. 5 RESERVAS (Diferentes estados y cantidades)
--- ============================================================
-INSERT INTO reservas (estado, cantidad_personas, observacion, fecha_reserva, id_mesafk, id_usuariofk, id_clientefk) VALUES
-(1, 4, 'Cerca de la ventana', NOW() + INTERVAL '2 hours', 1, 2, 1),
-(1, 8, 'Cumpleaños', NOW() + INTERVAL '1 day', 5, 2, 4),
-(0, 2, 'Cancelada por el cliente', NOW() - INTERVAL '1 day', 2, 3, 3),
-(2, 6, 'Reserva completada (Ya comieron)', NOW() - INTERVAL '2 days', 3, 2, 2),
-(1, 4, 'Traer sillita de bebé', NOW() + INTERVAL '3 hours', 6, 3, 5);
 
 -- ============================================================
--- 10. 5 ÓRDENES (Comandas en diferentes mesas y estados)
--- ============================================================
--- Estado 1: Pendiente (Cocina/Barra), Estado 2: Entregado
-INSERT INTO ordenes (estado, cantidad, observacion, id_mesafk, id_usuariofk, id_detalleproductofk, id_preciofk) VALUES
-(1, 2, 'Asado bien cocido', 2, 4, '2000000001', 2),
-(2, 2, 'Cervezas frías', 2, 4, '7840001001', 1),
-(1, 4, 'Sopa sin bordes quemados', 4, 5, '7840001002', 3),
-(2, 1, 'Gaseosa natural', 4, 5, '7840001003', 6),
-(1, 2, 'Helado para después', 4, 5, '7840001004', 7);
-
--- ============================================================
--- 11. 5 EGRESOS (Gastos operativos comunes)
+-- 9. EGRESOS (3 Días x 3 registros = 9 Egresos variados)
 -- ============================================================
 INSERT INTO egresos (estado, monto, descripcion, fecha, id_cajafk) VALUES
-(1, 25000, 'Compra de hielo en estación de servicio', NOW() - INTERVAL '2 days', 1),
-(1, 50000, 'Anticipo salario mozo Diego', NOW() - INTERVAL '1 day', 1),
-(1, 35000, 'Pago por flete / delivery', NOW(), 2),
-(1, 150000, 'Pago ANDE / Recarga de saldo', NOW(), 1),
-(1, 40000, 'Artículos de limpieza varios', NOW(), 2);
+-- Hoy
+(1, 150000, 'Pago de agua (ESSAP)', NOW(), 1),
+(1, 45000, 'Compra de insumos de limpieza urgentes', NOW(), 1),
+(1, 30000, 'Viático entrega de pedidos corporativos', NOW(), 1),
+-- Ayer
+(1, 450000, 'Pago de energía eléctrica (ANDE)', NOW() - INTERVAL '1 day', 1),
+(1, 80000, 'Reparación menor cerradura puerta principal', NOW() - INTERVAL '1 day', 1),
+(1, 25000, 'Hielo para conservación de bebidas', NOW() - INTERVAL '1 day', 1),
+-- Anteayer
+(1, 120000, 'Servicio técnico mantenimiento preventivo POS', NOW() - INTERVAL '2 days', 1),
+(1, 35000, 'Compra de rollos de papel térmico para facturas', NOW() - INTERVAL '2 days', 1),
+(1, 60000, 'Combustible para moto de delivery', NOW() - INTERVAL '2 days', 1);
+
+
+-- ============================================================
+-- 10. RESERVAS (Base Intacta)
+-- ============================================================
+INSERT INTO reservas (estado, cantidad_personas, fecha_reserva, observacion, id_clientefk, id_mesafk, id_usuariofk) VALUES
+(1, 2, NOW() + INTERVAL '1 day', null, null, 1, 1),
+(1, 4, NOW() + INTERVAL '2 days', null, null, 1, 1),
+(1, 2, NOW() + INTERVAL '3 days', null, null, 1, 1),
+(1, 4, NOW() + INTERVAL '1 day', 'Cerca de la ventana', null, 1, 1),
+(1, 6, NOW() + INTERVAL '2 days', 'Traer sillita', null, 1, 1),
+(1, 2, NOW() + INTERVAL '3 days', 'Alergia al maní', null, 1, 1),
+(1, 2, NOW() + INTERVAL '1 day', null, 1, 1, 1),
+(1, 4, NOW() + INTERVAL '2 days', null, 2, 1, 1),
+(1, 2, NOW() + INTERVAL '3 days', null, 3, 1, 1),
+(1, 8, NOW() + INTERVAL '1 day', 'Festejo de cumpleaños', 4, 1, 1),
+(1, 10, NOW() + INTERVAL '2 days', 'Reunión de trabajo', 5, 1, 1),
+(1, 4, NOW() + INTERVAL '3 days', 'Mesa tranquila', 6, 1, 1);
