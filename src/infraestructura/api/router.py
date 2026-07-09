@@ -7,9 +7,14 @@ from . import (caja_api, categoria_api, cliente_api, compra_api,
                cuota_venta_api, cuota_compra_api, detalle_compra_api, detalle_venta_api,
                detalles_producto_api, egreso_api, ingrediente_api, local_api,
                marca_api, mesa_api, orden_api, pago_venta_api, pago_compra_api, permiso_api,
-               permiso_rol_api, persona_api, precio_api, prediccion_ventas_api, producto_api,
+
+               permiso_rol_api, persona_api, precio_api, prediccion_mesas_api, producto_api,
+
                proveedor_api, reserva_api, rol_api, stock_api, usuario_api,
                vendedor_api, venta_api)
+
+from . import mesa_api
+
 
 router = APIRouter()
 
@@ -47,7 +52,8 @@ router.include_router(caja_api.router, prefix="/caja", tags=["Caja"])
 router.include_router(venta_api.router, prefix="/venta", tags=["Venta"])
 router.include_router(detalle_venta_api.router, prefix="/detalle_venta", tags=["Detalle Venta"])
 router.include_router(egreso_api.router, prefix="/egreso", tags=["Egreso"])
-router.include_router(prediccion_ventas_api.router, prefix="/prediccion_ventas", tags=["Predicción Ventas"])
+
+
 
 router.include_router(compra_api.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra_api.router, prefix="/detalle_compra", tags=["Detalle Compra"])

@@ -2,11 +2,18 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
+from typing import Any
+
+
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.mesa_request import (MesaRequest,
                                                       MesaUpdateRequest)
 
 from ..services.mesa_service import actualizar_mesa, crear_mesa, obtener_mesas
+from ..services.prediccion_mesas_service import (
+    entrenar_modelo,
+    predecir_tiempo_ocupacion,
+)
 
 router = APIRouter()
 
@@ -69,3 +76,44 @@ async def obtenerMesaPorIdApi(id: int):
 	if not result:
 		return {"message": f"Mesa con ID {id} no encontrada"}
 	return {"message": result[0] if isinstance(result, list) else result}
+
+
+@router.get(
+	"/modelo/entrenar",
+	summary="Entrenar modelo de ocupación de mesas",
+	description="Lee la tabla ventas y entrena un modelo de regresión lineal múltiple por local.",
+)
+async def entrenar_modelo_mesas(
+	local: str | None = Query(None, description="Local para entrenar el modelo"),
+) -> dict[str, Any]:
+	try:
+		return entrenar_modelo(local=local)
+	except ValueError as exc:
+		raise HTTPException(status_code=400, detail=str(exc)) from exc
+	except RuntimeError as exc:
+		raise HTTPException(status_code=500, detail=str(exc)) from exc
+	except Exception as exc:  # pragma: no cover
+		raise HTTPException(status_code=500, detail=f"Error inesperado al entrenar el modelo: {exc}") from exc
+
+
+@router.get(
+	"/modelo/predecir",
+	summary="Predecir tiempo de ocupación de mesas",
+	description="Recibe la cantidad de personas y el local para estimar el tiempo de ocupación.",
+)
+async def predecir_mesas(
+	cantidad_personas: int = Query(..., ge=0, description="Cantidad de personas en la mesa"),
+	local: str | None = Query(None, description="Local para el que se estima el tiempo"),
+	es_dia_festivo: bool = Query(False, description="Indica si el día es festivo"),
+) -> dict[str, Any]:
+	try:
+		return predecir_tiempo_ocupacion(
+			cantidad_personas,
+			local=local,
+			es_dia_festivo=es_dia_festivo,
+		)
+	except ValueError as exc:
+		raise HTTPException(status_code=400, detail=str(exc)) from exc
+	except Exception as exc:  # pragma: no cover
+		raise HTTPException(status_code=500, detail=f"Error inesperado al predecir: {exc}") from exc
+
