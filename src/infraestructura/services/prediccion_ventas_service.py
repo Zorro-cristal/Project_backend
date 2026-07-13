@@ -3,6 +3,7 @@ from __future__ import annotations
 from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any, Iterable
+from io import BytesIO
 
 import requests
 
@@ -11,11 +12,13 @@ import pandas as pd
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
+from src.configs.settings import get_settings
 from src.infraestructura.config.supabase import get_supabase_client
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 
 MODEL_DIR = Path(__file__).resolve().parents[3] / "src" / "ml" / "ventas_prediccion"
 MODEL_PATH = MODEL_DIR / "ventas_model.joblib"
+
 WEATHER_API_KEY = "4b2f4f5d78c0d6e5d2b9f41fed90393f"
 WEATHER_API_URL = "https://api.openweathermap.org/data/2.5/forecast"
 LATITUD_EMPRESA = -25.801843
@@ -121,7 +124,11 @@ def save_sales_forecast_model(
     feature_columns: Iterable[str],
     path: Path | str | None = None,
 ) -> Path:
-    """Guarda el modelo y las columnas esperadas por el endpoint de predicción."""
+    """
+    Mantiene compatibilidad con entrenamiento local.
+    Por defecto, sigue usando el archivo local.
+    La subida a Supabase se realiza desde train_and_save_sales_forecast_model().
+    """
     model_path = Path(path or MODEL_PATH)
     model_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -134,19 +141,116 @@ def save_sales_forecast_model(
     return model_path
 
 
-def load_sales_forecast_model(path: Path | str | None = None) -> dict[str, Any]:
-    """Carga el modelo entrenado desde el archivo local."""
-    model_path = Path(path or MODEL_PATH)
-    if not model_path.exists():
-        raise FileNotFoundError(
-            f"No existe un modelo entrenado en {model_path}. Primero ejecuta el entrenamiento."
+def _serialize_sales_forecast_payload_to_bytes(payload: dict[str, Any]) -> bytes:
+    buf = BytesIO()
+    joblib.dump(payload, buf)
+    return buf.getvalue()
+
+
+def _deserialize_sales_forecast_payload_from_bytes(data: bytes) -> dict[str, Any]:
+    buf = BytesIO(data)
+    payload = joblib.load(buf)
+    if not isinstance(payload, dict) or "model" not in payload:
+        raise ValueError("El payload del modelo no tiene el formato esperado.")
+    return payload
+
+
+def _download_sales_forecast_payload_from_supabase_storage() -> dict[str, Any]:
+    """
+    Descarga el modelo entrenado desde Supabase Storage y lo deserializa.
+    Maneja variaciones del SDK en el tipo de retorno (bytes vs objeto con atributos).
+    """
+    settings = get_settings()
+    supabase = get_supabase_client()
+
+    storage = supabase.storage.from_(settings.SUPABASE_STORAGE_BUCKET_VENTAS_MODELS)
+    obj = storage.download(settings.SUPABASE_STORAGE_OBJECT_VENTAS_MODEL)
+
+    # Casos posibles:
+    # - bytes directamente
+    # - bytearray
+    # - objeto con .read()
+    # - objeto con atributos como .content/.data
+    data: bytes | None = None
+
+    if isinstance(obj, (bytes, bytearray)):
+        data = bytes(obj)
+    elif hasattr(obj, "read"):
+        data = obj.read()
+    elif hasattr(obj, "content") and isinstance(getattr(obj, "content"), (bytes, bytearray)):
+        data = bytes(getattr(obj, "content"))
+    elif hasattr(obj, "data") and isinstance(getattr(obj, "data"), (bytes, bytearray)):
+        data = bytes(getattr(obj, "data"))
+
+    if data is None:
+        # fallback: intenta convertir a bytes (por ejemplo si es un response tipo stream)
+        try:
+            data = bytes(obj)  # type: ignore[arg-type]
+        except Exception as exc:  # pragma: no cover
+            raise ValueError("No se pudo convertir la descarga a bytes.") from exc
+
+    return _deserialize_sales_forecast_payload_from_bytes(data)
+
+
+def _upload_sales_forecast_payload_to_supabase_storage(payload: dict[str, Any]) -> None:
+    """
+    Sube el payload del modelo entrenado a Supabase Storage como objeto joblib.
+    Usar `file` como bytes (no BytesIO) para compatibilidad con el SDK.
+
+    Idempotencia: en re-entrenamientos, el objeto puede existir y el SDK devolver 409 Duplicate.
+    En ese caso intentamos eliminar y volver a subir.
+    """
+    settings = get_settings()
+    supabase = get_supabase_client()
+
+    storage = supabase.storage.from_(settings.SUPABASE_STORAGE_BUCKET_VENTAS_MODELS)
+    data = _serialize_sales_forecast_payload_to_bytes(payload)
+    object_path = settings.SUPABASE_STORAGE_OBJECT_VENTAS_MODEL
+
+    try:
+        storage.upload(
+            path=object_path,
+            file=data,
+            file_options={"content-type": "application/octet-stream"},
+        )
+    except Exception as exc:
+        msg = str(exc)
+        is_duplicate = "409" in msg or "Duplicate" in msg or "already exists" in msg
+        if not is_duplicate:
+            raise
+
+        try:
+            storage.remove(object_path)
+        except Exception:
+            # si no se puede remover, igualmente intentamos subir nuevamente
+            pass
+
+        storage.upload(
+            path=object_path,
+            file=data,
+            file_options={"content-type": "application/octet-stream"},
         )
 
-    payload = joblib.load(model_path)
-    if not isinstance(payload, dict) or "model" not in payload:
-        raise ValueError("El archivo del modelo no tiene el formato esperado.")
 
-    return payload
+def load_sales_forecast_model(path: Path | str | None = None) -> dict[str, Any]:
+    """
+    Carga el modelo entrenado:
+    - Prioriza Supabase Storage (para servidores read-only).
+    - Mantiene fallback al filesystem local si path existe (útil en desarrollo).
+    """
+    try:
+        return _download_sales_forecast_payload_from_supabase_storage()
+    except Exception:
+        # fallback local si se proporciona path o si existe el archivo local
+        model_path = Path(path or MODEL_PATH)
+        if not model_path.exists():
+            raise FileNotFoundError(
+                f"No existe un modelo entrenado en Supabase ni en {model_path}. Primero ejecuta el entrenamiento."
+            )
+        payload = joblib.load(model_path)
+        if not isinstance(payload, dict) or "model" not in payload:
+            raise ValueError("El archivo del modelo no tiene el formato esperado.")
+        return payload
 
 
 def _fetch_sales_history(limite: int | None = None) -> pd.DataFrame:
@@ -225,21 +329,49 @@ def _fetch_sales_history(limite: int | None = None) -> pd.DataFrame:
 
 
 def train_and_save_sales_forecast_model(limite: int | None = None, path: Path | str | None = None) -> dict[str, Any]:
-    """Obtiene datos, entrena y guarda el modelo localmente."""
+    """
+    Obtiene datos, entrena y sube el modelo a Supabase Storage.
+    path se mantiene para compatibilidad (fallback local si hiciera falta),
+    pero en read-only no se debe depender de escritura.
+    """
     historial = _fetch_sales_history(limite=limite)
     if historial.empty or len(historial) < 2:
         raise ValueError("Se necesitan al menos 2 días de historial para entrenar el modelo.")
 
     model = train_sales_forecast_model(historial)
     feature_frame = build_feature_frame(historial, target_column="ventas_totales")
-    model_path = save_sales_forecast_model(model, feature_frame.drop(columns=["ventas_totales"]).columns, path=path)
+
+    payload = {
+        "model": model,
+        "feature_columns": list(feature_frame.drop(columns=["ventas_totales"]).columns),
+        "created_at": datetime.utcnow().isoformat(),
+    }
+
+    # Subir a Supabase (fuente de verdad para servidor read-only)
+    _upload_sales_forecast_payload_to_supabase_storage(payload)
+
+    # (Opcional) compatibilidad con entrenamiento local: si path existe y el runtime lo permite,
+    # guardamos también en disco. No debe fallar si el servidor es read-only.
+    model_path: Path | None = None
+    if path is not None:
+        try:
+            model_path = save_sales_forecast_model(
+                model,
+                payload["feature_columns"],
+                path=path,
+            )
+        except Exception:
+            model_path = None
 
     predictions = model.predict(feature_frame.drop(columns=["ventas_totales"]))
     mae = mean_absolute_error(feature_frame["ventas_totales"], predictions)
 
+    info = get_settings()
     return {
         "message": "Modelo entrenado correctamente",
-        "model_path": str(model_path),
+        "storage_bucket": info.SUPABASE_STORAGE_BUCKET_VENTAS_MODELS,
+        "storage_object": info.SUPABASE_STORAGE_OBJECT_VENTAS_MODEL,
+        "model_path": str(model_path) if model_path else None,
         "rows_used": int(len(historial)),
         "mae": round(float(mae), 4),
     }

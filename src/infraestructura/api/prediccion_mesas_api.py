@@ -15,7 +15,7 @@ router = APIRouter()
 @router.get(
     "/entrenar",
     summary="Entrenar modelo de ocupación de mesas",
-    description="Lee la tabla ventas y entrena un modelo de regresión lineal múltiple por local.",
+    description="Lee la tabla ventas, entrena el modelo y lo guarda en Supabase Storage por local.",
 )
 async def entrenar_modelo_mesas(local: str | None = Query(None, description="Local para entrenar el modelo")) -> dict[str, Any]:
     try:

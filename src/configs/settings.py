@@ -8,7 +8,15 @@ class Settings(BaseSettings):
     # Supabase
     SUPABASE_URL: str
     SUPABASE_KEY: str
-    
+
+    # Supabase Storage (modelo predicción ventas)
+    SUPABASE_STORAGE_BUCKET_VENTAS_MODELS: str = "modelos"
+    SUPABASE_STORAGE_OBJECT_VENTAS_MODEL: str = "ventas_prediccion/ventas_model.joblib"
+
+    # Supabase Storage (modelo predicción tiempo ocupación mesas)
+    SUPABASE_STORAGE_BUCKET_MESAS_MODELS: str = "modelos"
+    SUPABASE_STORAGE_OBJECT_MESAS_MODEL: str = "mesas_prediccion/mesas_model.joblib"
+
     # App
     APP_NAME: str = "FastAPI Functional"
     DEBUG: bool = False

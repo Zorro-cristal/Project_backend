@@ -2,12 +2,15 @@ from __future__ import annotations
 
 import calendar
 from datetime import date, datetime
+from io import BytesIO
 from pathlib import Path
 from typing import Any
 
 import joblib
 import pandas as pd
 from sklearn.linear_model import LinearRegression
+
+from src.configs.settings import get_settings
 
 try:
     from src.infraestructura.config.supabase import get_supabase_client
@@ -112,21 +115,109 @@ def _normalizar_payload_modelo(payload: Any) -> dict[str, Any]:
     raise ValueError("El archivo del modelo no tiene el formato esperado.")
 
 
+def _serialize_payload_to_bytes(payload: dict[str, Any]) -> bytes:
+    buf = BytesIO()
+    joblib.dump(payload, buf)
+    return buf.getvalue()
+
+
+def _deserialize_payload_from_bytes(data: bytes) -> dict[str, Any]:
+    payload = joblib.load(BytesIO(data))
+    if not isinstance(payload, dict):
+        raise ValueError("Payload de modelo inválido.")
+    return _normalizar_payload_modelo(payload)
+
+
+def _download_payload_from_supabase_storage() -> dict[str, Any] | None:
+    settings = get_settings()
+    if get_supabase_client is None:
+        return None
+
+    supabase = get_supabase_client()
+    storage = supabase.storage.from_(settings.SUPABASE_STORAGE_BUCKET_MESAS_MODELS)
+    obj = storage.download(settings.SUPABASE_STORAGE_OBJECT_MESAS_MODEL)
+
+    data: bytes | None = None
+    if isinstance(obj, (bytes, bytearray)):
+        data = bytes(obj)
+    elif hasattr(obj, "read"):
+        data = obj.read()
+    elif hasattr(obj, "content") and isinstance(getattr(obj, "content"), (bytes, bytearray)):
+        data = bytes(getattr(obj, "content"))
+    elif hasattr(obj, "data") and isinstance(getattr(obj, "data"), (bytes, bytearray)):
+        data = bytes(getattr(obj, "data"))
+
+    if data is None:
+        # último recurso: convertir a bytes (si el SDK lo devuelve como stream/response)
+        try:
+            data = bytes(obj)  # type: ignore[arg-type]
+        except Exception:
+            return None
+
+    return _deserialize_payload_from_bytes(data)
+
+
+def _upload_payload_to_supabase_storage(payload: dict[str, Any]) -> None:
+    settings = get_settings()
+    if get_supabase_client is None:
+        raise RuntimeError("No hay un cliente de Supabase disponible para subir el modelo.")
+
+    supabase = get_supabase_client()
+    storage = supabase.storage.from_(settings.SUPABASE_STORAGE_BUCKET_MESAS_MODELS)
+
+    data = _serialize_payload_to_bytes(payload)
+    object_path = settings.SUPABASE_STORAGE_OBJECT_MESAS_MODEL
+
+    try:
+        storage.upload(
+            path=object_path,
+            file=data,
+            file_options={"content-type": "application/octet-stream"},
+        )
+    except Exception as exc:
+        # Idempotencia para re-entrenar: si el objeto ya existe, eliminar y re-subir.
+        # El error puede venir con estructura dict/str dependiendo del SDK.
+        msg = str(exc)
+        is_duplicate = "409" in msg or "Duplicate" in msg or "already exists" in msg
+
+        if not is_duplicate:
+            raise
+
+        try:
+            # Intentar eliminar el objeto existente
+            storage.remove(object_path)
+        except Exception:
+            # Si falla el remove igual intentamos subir (por algunas implementaciones el estado puede cambiar)
+            pass
+
+        storage.upload(
+            path=object_path,
+            file=data,
+            file_options={"content-type": "application/octet-stream"},
+        )
+
+
 def cargar_modelo_en_memoria() -> dict[str, Any] | None:
-    """Carga el modelo desde disco una sola vez y lo mantiene en memoria."""
+    """Carga el modelo (preferente Supabase Storage) una sola vez y lo mantiene en memoria."""
     global MODEL_CACHE
 
     if MODEL_CACHE is not None:
         return MODEL_CACHE
 
+    # Preferir Supabase (read-only server)
+    try:
+        payload = _download_payload_from_supabase_storage()
+        MODEL_CACHE = payload
+        return MODEL_CACHE
+    except Exception:
+        # fallback a disco (solo desarrollo; no es requerido para producción read-only)
+        MODEL_CACHE = None
+
     try:
         if not MODEL_PATH.exists():
             return None
-
         payload = joblib.load(MODEL_PATH)
         MODEL_CACHE = _normalizar_payload_modelo(payload)
-    except FileNotFoundError:
-        MODEL_CACHE = None
     except Exception:
         MODEL_CACHE = None
 
@@ -183,16 +274,19 @@ def entrenar_modelo(local: str | int | None = None) -> dict[str, Any]:
         "created_at": datetime.utcnow().isoformat(),
     }
 
-    MODEL_PATH.parent.mkdir(parents=True, exist_ok=True)
-    joblib.dump(payload, MODEL_PATH)
+    # Subir a Supabase Storage (read-only server)
+    _upload_payload_to_supabase_storage(payload)
 
+    # Mantener cache en memoria para la instancia actual
     global MODEL_CACHE
     MODEL_CACHE = payload
 
+    info = get_settings()
     return {
         "mensaje": "Modelo entrenado correctamente",
         "registros_usados": int(len(datos)),
-        "archivo": MODEL_PATH.name,
+        "storage_bucket": info.SUPABASE_STORAGE_BUCKET_MESAS_MODELS,
+        "storage_object": info.SUPABASE_STORAGE_OBJECT_MESAS_MODEL,
         "local": local_key,
     }
 
