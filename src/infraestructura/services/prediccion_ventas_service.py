@@ -612,6 +612,8 @@ def predict_sales_forecast(
     path: Path | str | None = None,
 ) -> list[dict[str, Any]]:
     """Predice ventas para una lista de fechas futuras a partir del modelo guardado."""
+    # Forzamos a usar el modelo desde Supabase Storage (read-only) cuando no se pasa path.
+    # Si no existe en Supabase, el propio load_sales_forecast_model hace fallback a disco (dev).
     model_payload = load_sales_forecast_model(path=path)
     model = model_payload["model"]
     expected_columns = model_payload.get("feature_columns", [])
@@ -629,8 +631,15 @@ def predict_sales_forecast(
         forecast_frame["condicion_clima"] = forecast_frame.get("clima", "desconocido")
     forecast_frame["condicion_clima"] = forecast_frame["condicion_clima"].fillna("desconocido")
 
+    # build_feature_frame genera columnas extra; re-indexamos a las columnas que el modelo espera.
     features = build_feature_frame(
-        forecast_frame.rename(columns={"fecha": "fecha", "evento_festivo": "evento_festivo", "condicion_clima": "condicion_clima"}),
+        forecast_frame.rename(
+            columns={
+                "fecha": "fecha",
+                "evento_festivo": "evento_festivo",
+                "condicion_clima": "condicion_clima",
+            }
+        ),
         target_column=None,
     )
     features = features.reindex(columns=expected_columns, fill_value=0)

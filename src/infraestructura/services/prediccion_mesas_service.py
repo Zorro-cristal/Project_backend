@@ -296,7 +296,7 @@ def predecir_tiempo_ocupacion(
     local: str | int | None = None,
     es_dia_festivo: bool = False,
 ) -> dict[str, Any]:
-    """Predice el tiempo de ocupación usando el modelo o una fórmula de respaldo."""
+    """Predice el tiempo de ocupación usando el modelo de Supabase (si existe) o fórmula de respaldo."""
     if cantidad_personas < 0:
         raise ValueError("cantidad_personas debe ser mayor o igual a 0.")
 
@@ -305,11 +305,15 @@ def predecir_tiempo_ocupacion(
     es_fin_de_semana = _es_fin_de_semana(fecha_hoy)
     es_fin_de_mes = _es_fin_de_mes(fecha_hoy)
 
+    # Forzamos consistencia con el modelo entrenado en Supabase.
+    # cargar_modelo_en_memoria prioriza Supabase, y mantiene cache para esta instancia.
     modelo_payload = cargar_modelo_en_memoria()
     if modelo_payload is not None:
         modelo_por_local = modelo_payload.get("model_by_local", {})
         modelo = modelo_por_local.get(local_key) or modelo_por_local.get("general")
         if modelo is not None:
+            # el modelo fue entrenado con features:
+            #   X = [["cantidad_personas", "es_fin_de_semana"]]
             features = [[float(cantidad_personas), 1.0 if es_fin_de_semana else 0.0]]
             tiempo_estimado = int(round(float(modelo.predict(features)[0])))
             return {
@@ -318,6 +322,7 @@ def predecir_tiempo_ocupacion(
                 "local": local_key,
             }
 
+    # fallback teórico si el modelo no existe o no tiene modelo para el local solicitado
     tiempo_estimado = 30 + (15 * cantidad_personas)
     if es_fin_de_semana:
         tiempo_estimado += 15
