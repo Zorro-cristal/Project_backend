@@ -10,7 +10,6 @@ from .usuario import Usuario
 
 @dataclass(frozen=True)
 class Venta:
-    nro: Optional[str] = None
     fecha: datetime = None
     estado: int = 1
     clima: Optional[int] = None

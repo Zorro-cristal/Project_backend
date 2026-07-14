@@ -97,7 +97,7 @@ def build_feature_frame(
     )
     features = pd.concat([features, clima_dummies], axis=1)
 
-    for column in ["temperatura", "humedad", "velocidad_viento", "lluvia", "precipitaciones", "probabilidad_precipitaciones"]:
+    for column in ["temperatura", "humedad", "velocidad_viento", "lluvia", "precipitaciones"]:
         if column in data.columns:
             features[column] = pd.to_numeric(data[column], errors="coerce").fillna(0)
 
@@ -433,7 +433,6 @@ def _get_weather_forecast_for_range(
                 "velocidad_viento": round(float(item.get("wind", {}).get("speed", 0)), 2),
                 "lluvia": round(rain_3h, 2),
                 "precipitaciones": round(rain_3h + snow_3h, 2),
-                "probabilidad_precipitaciones": int(round(float(item.get("pop", 0)) * 100)),
             }
         except Exception:
             continue
@@ -453,7 +452,6 @@ def _get_weather_forecast_for_range(
             "velocidad_viento": float(fallback.get("velocidad_viento", 0)),
             "lluvia": float(fallback.get("lluvia", 0)),
             "precipitaciones": float(fallback.get("precipitaciones", 0)),
-            "probabilidad_precipitaciones": int(fallback.get("probabilidad_precipitaciones", 0)),
         }
     }
 
@@ -484,7 +482,6 @@ def _build_forecast_rows(
             "velocidad_viento": 0.0,
             "lluvia": 0.0,
             "precipitaciones": 0.0,
-            "probabilidad_precipitaciones": 0,
         })
         rows.append({
             "fecha": fecha_str,
@@ -496,7 +493,6 @@ def _build_forecast_rows(
                 "velocidad_viento": meteorologia.get("velocidad_viento", 0.0),
                 "lluvia": meteorologia.get("lluvia", 0.0),
                 "precipitaciones": meteorologia.get("precipitaciones", 0.0),
-                "probabilidad_precipitaciones": meteorologia.get("probabilidad_precipitaciones", 0),
             },
         })
         current = current + timedelta(days=1)
@@ -556,7 +552,6 @@ def build_daily_prediction_payloads(
             "velocidad_viento": weather_payload.get("velocidad_viento", 0.0),
             "lluvia": weather_payload.get("lluvia", 0.0),
             "precipitaciones": weather_payload.get("precipitaciones", 0.0),
-            "probabilidad_precipitaciones": weather_payload.get("probabilidad_precipitaciones", 0),
         })
         current = current + timedelta(days=1)
 
@@ -583,11 +578,10 @@ def build_daily_prediction_payloads(
                 "temperatura_max": weather_payload.get("temperatura_max", 0.0),
                 "humedad": weather_payload.get("humedad", 0),
                 "condicion_clima": weather_payload.get("condicion_clima", "variable"),
-                "velocidad_viento": weather_payload.get("velocidad_viento", 0.0),
-                "lluvia": weather_payload.get("lluvia", 0.0),
-                "precipitaciones": weather_payload.get("precipitaciones", 0.0),
-                "probabilidad_precipitaciones": weather_payload.get("probabilidad_precipitaciones", 0),
-            },
+            "velocidad_viento": weather_payload.get("velocidad_viento", 0.0),
+            "lluvia": weather_payload.get("lluvia", 0.0),
+            "precipitaciones": weather_payload.get("precipitaciones", 0.0),
+        },
             "ventas_previstas": round(ventas_previstas, 2),
             "monto_a_recaudar_estimado": round(ventas_previstas, 2),
             "prevision_productos": _estimate_product_breakdown(ventas_previstas),

@@ -14,7 +14,6 @@ from src.shell.adapters.requests.local_request import LocalRequest
 # =============================================================================
 class VentaBase(BaseModel):
     """Base model con campos comunes. No usar directamente."""
-    nro: Optional[str] = None
     fecha: datetime
     estado: Optional[int] = 1
     evento_festivo: Optional[bool] = None
@@ -52,7 +51,6 @@ class VentaBase(BaseModel):
 # =============================================================================
 class VentaUpdateRequest(VentaBase):
     """Request para actualizar venta - todos los campos opcionales."""
-    nro: Optional[str] = None
     fecha: Optional[datetime] = None
     cod_num: Optional[str] = None
 

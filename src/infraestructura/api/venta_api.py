@@ -101,7 +101,6 @@ async def agregarVentaApi(
 @router.get("/", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener ventas", description="Obtiene una lista de ventas con filtros opcionales.")
 async def obtenerVentasApi(
     id: Optional[str] = Query(None, description="Filtrar ventas por ID"),
-    nro: Optional[str] = Query(None, description="Filtrar ventas por número"),
     fecha: Optional[str] = Query(None, description="Filtrar ventas por fecha"),
     estado: Optional[int] = Query(None, description="Filtrar ventas por estado"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar ventas por ID de cliente"),
@@ -115,8 +114,6 @@ async def obtenerVentasApi(
     filtros = {}
     if id is not None:
         filtros["id"] = id
-    if nro is not None:
-        filtros["nro"] = nro
     if fecha is not None:
         filtros["fecha"] = fecha
     if estado is not None:
