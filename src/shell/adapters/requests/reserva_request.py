@@ -10,7 +10,7 @@ class ReservaRequest(BaseModel):
     fecha_reserva: str
     cantidad_personas: int
     observacion: Optional[str] = None
-    estado: Optional[str] = "Activo"
+    estado: Optional[int] = 1
     id_clientefk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
 
@@ -22,7 +22,7 @@ class ReservaUpdateRequest(BaseModel):
     fecha_reserva: Optional[str] = None
     cantidad_personas: Optional[int] = None
     observacion: Optional[str] = None
-    estado: Optional[str] = None
+    estado: Optional[int] = None
     id_clientefk: Optional[int] = None
     cliente: Optional[ClienteUpdateRequest] = None
 

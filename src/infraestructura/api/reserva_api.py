@@ -39,7 +39,7 @@ async def agregarReservaApi(requestBody: ReservaRequest):
 @router.get("/", dependencies=[Depends(permiso_requerido('reserva', 'leer'))], summary="Obtener reservas", description="Obtiene una lista de reservas con filtros opcionales.")
 async def obtenerReservasApi(
     id: Optional[int] = Query(None, description="Filtrar reservas por ID"),
-    estado: Optional[str] = Query(None, description="Filtrar por estado"),
+    estado: Optional[int] = Query(None, description="Filtrar por estado"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar por ID de cliente"),
     fecha_reserva: Optional[str] = Query(None, description="Filtrar por fecha de reserva (string)"),
 ):

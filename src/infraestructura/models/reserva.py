@@ -9,7 +9,7 @@ class Reserva:
     fecha_reserva: str
     cantidad_personas: int
     observacion: str = ""
-    estado: str = "Activo"
+    estado: int = 1
     id_clientefk: Optional[int] = None
     cliente: Optional[Cliente] = None
     id: Optional[int] = None
