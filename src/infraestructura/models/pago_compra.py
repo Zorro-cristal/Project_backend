@@ -8,8 +8,8 @@ class PagoCompra:
     """Modelo para la tabla pagos_compra.
     
     Tipos de pago:
-    - 1: Contado (pago total - único)
-    - 2: Cuota (pago de cuota - crédito)
+    - 1: Cuota
+    - 2: Entrega
     
     Estados:
     - 1: Activo

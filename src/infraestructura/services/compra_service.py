@@ -158,28 +158,41 @@ async def actualizar_compra(id: int, payload: dict):
 
 async def crear_compra_con_pago(payload: dict) -> dict:
     """Crea una compra al contado y automáticamente registra el pago total.
-    
+
     Reglas de Negocio:
     - tipo_credito: False (0) = Compra al contado
     - Se inserta automáticamente el pago en pagos_compra (tipo = 1, que indica pago total)
-    
+    - El monto_total NUNCA se toma del payload: siempre se calcula desde `detalles`
+    - Para compras al contado, si no viene id_usuariofk, se obtiene desde la caja por id_cajafk.
+
     Args:
         payload: Diccionario con los datos de la compra más 'id_cajafk' y opcionalmente 'id_usuariofk'
-    
+
     Returns:
         Dict con la compra creada y el pago registrado
     """
     # Extraer datos para el pago
     id_cajafk = payload.pop('id_cajafk', None)
     id_usuariofk = payload.pop('id_usuariofk', None)
-    monto_total = payload.pop('monto_total', None)
-    
+    # Nota: se ignora monto_total si viniera (no forma parte del modelo de Compra)
+    payload.pop('monto_total', None)
+
+    # Reinyectar id_cajafk al payload porque build_compra_entity(payload) lo usará para insertar en compras
+    payload['id_cajafk'] = id_cajafk
+
     if not id_cajafk:
         raise ValueError('Para compra al contado se requiere id_cajafk')
-    
-    if not monto_total:
-        raise ValueError('Para compra al contado se requiere monto_total')
-    
+
+    detalles = payload.get('detalles') or []
+    if not detalles:
+        raise ValueError('Para compra al contado se requieren detalles')
+
+    monto_total = 0.0
+    for d in detalles:
+        precio = float(d.get('precio') or 0)
+        cantidad = int(d.get('cantidad') or 0)
+        monto_total += precio * cantidad
+
     # Validar FKs
     if payload.get('id_localfk'):
         await validar_fk_existente(
@@ -188,7 +201,7 @@ async def crear_compra_con_pago(payload: dict) -> dict:
             'id',
             f"Local con ID {payload.get('id_localfk')} no existe",
         )
-    
+
     if payload.get('id_proveedorfk'):
         await validar_fk_existente(
             payload.get('id_proveedorfk'),
@@ -196,21 +209,30 @@ async def crear_compra_con_pago(payload: dict) -> dict:
             'id',
             f"Proveedor con ID {payload.get('id_proveedorfk')} no existe",
         )
-    
+
     # Establecer tipo_credito como falso (contado)
     payload['tipo_credito'] = 0
-    
+
     # Crear la compra
     compra = build_compra_entity(payload)
     resultado = await actualizarCompra(compra)
-    
-    # Obtener el ID de la compra creada
-    id_compra = resultado.get('id_compra') if resultado else None
+
+    # Obtener el ID de la compra creada (el repo puede devolver 'id' o 'id_compra')
+    id_compra = (resultado.get('id_compra') or resultado.get('id')) if resultado else None
 
     # Si no hay id_compra, mejor lanzar el error real (para debug)
     if not id_compra:
         raise Exception(f"Error al crear la compra: respuesta inválida -> {resultado}")
-    
+
+    # Si no se envió id_usuariofk, obtenerlo desde la caja (id_cajafk)
+    # Importante: usamos helper "light" para traer solo id_usuariofk y evitar fallos
+    # de adjuntos/join que disparan errores de "Usuario no encontrado".
+    if id_usuariofk is None:
+        from .caja_service import obtener_caja_id_usuario  # para evitar import circular
+        id_usuariofk = await obtener_caja_id_usuario(id_cajafk=id_cajafk)
+        if not id_usuariofk:
+            raise ValueError(f"Caja con ID {id_cajafk} no existe o no tiene id_usuariofk")
+
     # Registrar automáticamente el pago total (tipo=1 = Contado)
     pago = await registrar_pago_contado(
         id_compra=id_compra,
@@ -218,7 +240,7 @@ async def crear_compra_con_pago(payload: dict) -> dict:
         id_cajafk=id_cajafk,
         id_usuariofk=id_usuariofk,
     )
-    
+
     return {
         'compra': resultado,
         'pago': pago,

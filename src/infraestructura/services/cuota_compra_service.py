@@ -57,7 +57,6 @@ async def crear_cuotas_para_compra(cuota_base: CuotaCompra) -> list[dict]:
         # Crear cuota con estado=1 (activo)
         cuota_data = {
             'estado': ESTADO_ACTIVO,
-            'total_cuotas': total_cuotas,
             'monto': monto_final,
             'fecha': fecha_cuota.isoformat(),
             'descuento': descuento,

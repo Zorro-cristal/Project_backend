@@ -7,9 +7,12 @@ from typing import Optional
 class PagoVenta:
     """Modelo para la tabla pagos_venta.
     
-    Tipos de pago:
-    - 1: Entrega (pago inicial - contado)
-    - 2: Cuota (pago de cuota - crédito)
+    Tipos de pago (PagoVenta.tipo):
+    - 1: Cuota
+    - 2: Entrega
+    
+    Nota:
+    - Para ventas al contado, el servicio guarda `tipo = NULL` (no se usa 1 o 2).
     
     Estados:
     - 1: Activo

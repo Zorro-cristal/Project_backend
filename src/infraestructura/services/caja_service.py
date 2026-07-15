@@ -1,3 +1,5 @@
+from typing import Optional
+
 from src.shell.utils import (attach_grouped, attach_related,
                              validar_fk_existente)
 
@@ -22,6 +24,31 @@ async def obtener_cajas(filtros: dict = None, columnas: str = '*'):
     if not cajas:
         return cajas
     return await attach_related(cajas, 'id_usuariofk', obtener_usuarios, 'id', 'id', 'usuario')
+
+
+async def obtener_caja_id_usuario(filtros: dict = None, id_cajafk: int | None = None) -> Optional[int]:
+    """
+    Obtiene SOLO el id_usuariofk de una caja, sin adjuntar usuario/persona/rol.
+
+    Esto evita errores de "Usuario no encontrado" cuando el join/adjunto falla
+    pero el flujo de compra necesita únicamente el FK.
+    """
+    if id_cajafk is not None:
+        filtros = {'id': id_cajafk}
+
+    if not filtros:
+        return None
+
+    cajas = await obtenerCaja(filtros=filtros, columnas='id_usuariofk')
+    if isinstance(cajas, list):
+        caja = cajas[0] if cajas else None
+    else:
+        caja = cajas
+
+    if not caja:
+        return None
+
+    return caja.get('id_usuariofk')
 
 
 async def crear_caja(payload: dict):
