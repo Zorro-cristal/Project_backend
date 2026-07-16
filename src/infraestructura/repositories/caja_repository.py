@@ -6,7 +6,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerCaja(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('cajas', filtros, limite, offset)
+    return await get('cajas', filtros, limite, offset, order_by='fecha_cierre')
 
 
 async def actualizarCaja(datos: Union[Caja, dict], id: Optional[int] = None):
