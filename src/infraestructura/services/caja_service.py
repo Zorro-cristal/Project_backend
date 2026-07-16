@@ -109,5 +109,15 @@ async def obtener_caja_por_id_con_movimientos(filtros: dict = None, columnas: st
     cajas_list = await attach_grouped(
         cajas_list, 'id', obtenerPagoCompra, 'id_cajafk', 'id_cajafk', 'pagos_cuota'
     )
-    
+
+    # Adjuntar usuario (persona/rol) asociado a la caja
+    cajas_list = await attach_related(
+        cajas_list,
+        'id_usuariofk',
+        obtener_usuarios,
+        'id',
+        'id',
+        'usuario',
+    )
+
     return cajas_list[0]
