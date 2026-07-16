@@ -45,11 +45,10 @@ def prepararPayloadDb(
 
     # Ajuste para fechas: si vienen como datetime, conviértelos a ISO string
     # antes de aplicar el filtro de primitividad.
-    for key in ("valido_desde", "valido_hasta", "fecha"):
+    for key in ("valido_desde", "valido_hasta", "fecha", "fecha_cierre", "fecha_creado"):
         if key in payload and isinstance(payload[key], datetime):
             payload[key] = payload[key].isoformat()
-        # También convertir cualquier campo datetime que venga como objeto datetime
-        # (para campos como fecha de compra, venta, etc.)
+        # También convertir cualquier campo datetime que venga como objeto con isoformat
         elif key in payload and hasattr(payload[key], "isoformat"):
             payload[key] = payload[key].isoformat()
 
