@@ -8,6 +8,8 @@ from src.shell.utils import (attach_grouped, attach_related,
 from ..models.venta import Venta
 from ..repositories.detalle_venta_repository import obtenerDetalleVenta
 from ..repositories.local_repository import obtenerLocal
+from ..repositories.orden_repository import \
+    actualizarOrden as actualizarOrdenRepo
 from ..repositories.vendedor_repository import obtenerVendedor
 from ..repositories.venta_repository import actualizarVenta, obtenerVenta
 from .caja_service import obtener_cajas
@@ -16,61 +18,10 @@ from .detalle_venta_service import (actualizar_detalle_venta,
                                     crear_detalle_venta)
 from .local_service import obtener_locales
 from .orden_stock import desreservar_stock_para_venta
-from ..repositories.orden_repository import actualizarOrden as actualizarOrdenRepo
 from .vendedor_service import obtener_vendedores
 
-
-async def generar_cod_num_venta(id_localfk: int, id_vendedorfk: int) -> str:
-    # Obtener datos del local
-    locales = await obtenerLocal(filtros={'id': id_localfk})
-    if not locales:
-        raise ValueError(f"Local con ID {id_localfk} no encontrado")
-    local = locales[0] if isinstance(locales, list) else locales
-    local_cod = local.get('cod_num') or '000'
-    
-    # Obtener datos del vendedor
-    vendedores = await obtenerVendedor(filtros={'id': id_vendedorfk})
-    if not vendedores:
-        raise ValueError(f"Vendedor con ID {id_vendedorfk} no encontrado")
-    vendedor = vendedores[0] if isinstance(vendedores, list) else vendedores
-    vendedor_cod = vendedor.get('cod_num') or '000'
-    
-    # Buscar el máximo código de factura para esta combinación local+vendedor
-    # Filtrar ventas por id_localfk E id_vendedorfk
-    ventas_existentes = await obtenerVenta(
-        filtros={
-            'id_localfk': id_localfk,
-            'id_vendedorfk': id_vendedorfk
-        },
-        columnas='cod_num'
-    )
-    
-    max_secuencia = 0
-    if ventas_existentes:
-        for v in ventas_existentes:
-            cod_num = v.get('cod_num')
-            if cod_num:
-                # El código tiene formato: {local_cod}-{vendedor_cod}-{secuencia}
-                # Extraer la parte de la secuencia (últimos 6 dígitos)
-                partes = cod_num.split('-')
-                if len(partes) == 3:
-                    try:
-                        secuencia = int(partes[2])
-                        if secuencia > max_secuencia:
-                            max_secuencia = secuencia
-                    except (ValueError, IndexError):
-                        pass
-    
-    # Generar nuevo número de secuencia (6 dígitos con ceros a la izquierda)
-    nueva_secuencia = max_secuencia + 1
-    secuencia_formateada = f"{nueva_secuencia:06d}"
-    
-    # `ventas.cod_num` es VARCHAR(6): retornar solo la secuencia formateada.
-    codigo_completo = secuencia_formateada
-
-    print(f"[generar_cod_num_venta] Generado: {codigo_completo} (secuencia: {nueva_secuencia})")
-
-    return codigo_completo
+# (Deprecated) Antes se calculaba cod_num por "max" en ventas (NO es seguro ante concurrencia).
+# Ahora se obtiene desde lógica de servidor (`timbrado_service`) en vez de RPC.
 
 
 async def obtener_clima_para_venta_por_local(id_localfk: int):
@@ -194,18 +145,26 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
 
     # print(f"[crear_venta] payload.id={payload.get('id')} payload keys={list(payload.keys())}")
 
-    # Auto-generar cod_num de venta si no está proporcionado
+    # Auto-generar cod_num e id_secuencias_ventafk
+    # utilizando lógica de servidor (timbrado_service) en vez de RPC.
     if payload.get('cod_num') is None:
         id_localfk = payload.get('id_localfk')
         id_vendedorfk = payload.get('id_vendedorfk')
         if id_localfk and id_vendedorfk:
+            from .timbrado_service import \
+                emitir_cod_num_venta as emitir_cod_num_venta_srv
             try:
-                cod_num_generado = await generar_cod_num_venta(id_localfk, id_vendedorfk)
-                payload['cod_num'] = cod_num_generado
-                print(f"[crear_venta] cod_num generado automáticamente: {cod_num_generado}")
+                row = await emitir_cod_num_venta_srv(id_local=id_localfk, id_vendedor=id_vendedorfk)
+
+                payload['cod_num'] = row.get('cod_num_completo')
+                payload['id_secuencias_ventafk'] = row.get('id_secuencia')
+
+                if payload.get('cod_num') is None or payload.get('id_secuencias_ventafk') is None:
+                    raise ValueError(f'emitir_cod_num_venta inválida: {row}')
+
+                print(f"[crear_venta] cod_num generado automáticamente: {payload['cod_num']}")
             except Exception as e:
-                print(f"[crear_venta] Error al generar cod_num: {e}")
-                # Continuar sin cod_num si hay error
+                raise ValueError(f'Error al generar cod_num: {e}')
     
     # Obtener información climática automáticamente si no está proporcionada
     print(f"procesado? [_ya_procesado]")
@@ -283,6 +242,10 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
     # id_cajafk se usa para registrar pagos en pagos_venta (no para insertar en ventas).
     payload.pop('id_cajafk', None)
 
+# Evitar persistir ids que ya no existen en la tabla `ventas`
+    payload.pop('id_localfk', None)
+    payload.pop('id_vendedorfk', None)
+
 # Extraer detalles_venta antes de construir la entidad venta
 # Si ya fueron extraídos por crear_venta_contado/crear_venta_credito, usarlos; si no, extraer del payload
     if _detalles_venta_extraidos is not None:
@@ -344,7 +307,8 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
 
                 # Obtener ocupado_desde desde la mesa y calcular ocupación
                 if id_mesafk is not None:
-                    from ..repositories.mesa_repository import obtenerMesa as obtener_mesa_repo
+                    from ..repositories.mesa_repository import \
+                        obtenerMesa as obtener_mesa_repo
 
                     mesas = await obtener_mesa_repo(
                         filtros={'id': id_mesafk},
@@ -356,7 +320,9 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                     ocupado_desde = None if not mesa else mesa.get('ocupado_desde')
 
                     if ocupado_desde:
-                        from datetime import datetime as _dt, time as _time, timedelta as _td
+                        from datetime import datetime as _dt
+                        from datetime import time as _time
+                        from datetime import timedelta as _td
 
                         if isinstance(ocupado_desde, _time):
                             start_time = ocupado_desde
