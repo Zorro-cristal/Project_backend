@@ -302,7 +302,6 @@ CREATE TABLE secuencias_venta (
     id_vendedorfk          INTEGER,
     id_timbradofk         INTEGER,
     ultimo_nro             INTEGER NOT NULL DEFAULT 0,
-    PRIMARY KEY (id_localfk, id_vendedorfk, id_timbradofk),
     CONSTRAINT fk_secuencias_venta_local FOREIGN KEY (id_localfk) REFERENCES locales (id),
     CONSTRAINT fk_secuencias_venta_vendedor FOREIGN KEY (id_vendedorfk) REFERENCES vendedores (id),
     CONSTRAINT fk_secuencias_venta_timbrado FOREIGN KEY (id_timbradofk) REFERENCES timbrados (id)

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import re
 from datetime import datetime, timezone
 from typing import Any, Optional
 
@@ -54,9 +55,13 @@ async def crear_timbrado(payload: dict) -> dict:
         }
     )
 
+    fin_vigencia_serializable = timbrado.fin_vigencia
+    if isinstance(fin_vigencia_serializable, datetime):
+        fin_vigencia_serializable = fin_vigencia_serializable.isoformat()
+
     normalized_payload = {
         "nro_timbrado": timbrado.nro_timbrado,
-        "fin_vigencia": timbrado.fin_vigencia,
+        "fin_vigencia": fin_vigencia_serializable,
     }
     if timbrado.id is not None:
         normalized_payload["id"] = timbrado.id
@@ -74,7 +79,10 @@ async def actualizar_timbrado(id: int, payload: dict) -> dict:
     if "nro_timbrado" in payload and payload.get("nro_timbrado") is not None:
         normalized_payload["nro_timbrado"] = str(timbrado.nro_timbrado)
     if "fin_vigencia" in payload and payload.get("fin_vigencia") is not None:
-        normalized_payload["fin_vigencia"] = timbrado.fin_vigencia
+        fin_vigencia_serializable = timbrado.fin_vigencia
+        if isinstance(fin_vigencia_serializable, datetime):
+            fin_vigencia_serializable = fin_vigencia_serializable.isoformat()
+        normalized_payload["fin_vigencia"] = fin_vigencia_serializable
 
     return await update("timbrados", id, normalized_payload, key="id")
 
@@ -90,21 +98,13 @@ async def obtener_secuencias_venta(
 
 async def obtener_timbrado_vigente():
     # Regla: escoger timbrado con fin_vigencia > now() (y el mayor id si hay varios)
-    now = datetime.now(timezone.utc).isoformat()
-    filas = await get(
-        "timbrados",
-        {"fin_vigencia": now},
-        limit=100,
-        offset=0,
-        columns="*",
-    )
-    # generic_crud no soporta gte/lte desde este helper por 'fin_vigencia' exacto.
-    # Por eso hacemos selección adicional desde python si se listan algunos.
-    # (Este comportamiento asume que el query devuelve filas filtradas correctamente;
-    # en caso contrario, ajustarlo a un filtro con gte/lte en el repositorio genérico)
-    if not filas:
-        # fallback: obtener todos activos y elegir el correcto
-        filas = await get("timbrados", {}, limit=1000, offset=0, columns="*")
+    now_utc = datetime.now(timezone.utc)
+
+    # IMPORTANTE:
+    # No se debe filtrar por igualdad exacta fin_vigencia == now,
+    # porque casi nunca coinciden al mismo segundo/milisegundo.
+    # En su lugar, cargamos timbrados y decidimos desde Python.
+    filas = await get("timbrados", {}, limit=1000, offset=0, columns="*")
 
     vigente = None
     for t in filas:
@@ -118,7 +118,7 @@ async def obtener_timbrado_vigente():
         except Exception:
             continue
 
-        if fv_dt > datetime.now(timezone.utc):
+        if fv_dt > now_utc:
             if vigente is None or int(t.get("id", 0)) > int(vigente.get("id", 0)):
                 vigente = t
 
@@ -132,21 +132,27 @@ async def _obtener_or_crear_secuencia_venta(
     id_vendedor: int,
     id_timbrado: int,
 ) -> dict:
-    # Como secuencias_venta tiene PK compuesta (id_localfk,id_vendedorfk,id_timbradofk),
-    # la forma segura sin SQL atómico es:
+    """
+    Asegura que retorne SIEMPRE:
+      - id (PK de secuencias_venta)
+      - ultimo_nro
+
+    generic_crud puede no devolver todas las columnas en el INSERT; por eso,
+    si el insert no retorna 'id', hacemos un GET posterior por la PK compuesta.
+    """
     # 1) intentar obtener
-    # 2) si no existe, insertar con ultimo_nro=0 (o 1 luego de incrementar)
     filas = await get(
         "secuencias_venta",
         {"id_localfk": id_local, "id_vendedorfk": id_vendedor, "id_timbradofk": id_timbrado},
         limit=1,
         offset=0,
-        columns="*",
+        columns="id,ultimo_nro",
     )
     if filas:
         return filas[0]
 
-    return await insert(
+    # 2) si no existe, insertar
+    inserted = await insert(
         "secuencias_venta",
         {
             "id_localfk": id_local,
@@ -155,6 +161,21 @@ async def _obtener_or_crear_secuencia_venta(
             "ultimo_nro": 0,
         },
     )
+
+    # Si el insert trajo 'id', úsalo; si no, hacemos GET posterior.
+    if isinstance(inserted, dict) and inserted.get("id") is not None:
+        return inserted
+
+    filas = await get(
+        "secuencias_venta",
+        {"id_localfk": id_local, "id_vendedorfk": id_vendedor, "id_timbradofk": id_timbrado},
+        limit=1,
+        offset=0,
+        columns="id,ultimo_nro",
+    )
+    if not filas:
+        raise ValueError("No se pudo crear/recuperar secuencia_venta")
+    return filas[0]
 
 
 async def emitir_cod_num_venta(id_local: int, id_vendedor: int) -> dict:
@@ -174,8 +195,12 @@ async def emitir_cod_num_venta(id_local: int, id_vendedor: int) -> dict:
     if not vendedores:
         raise ValueError(f"Vendedor {id_vendedor} no existe")
 
-    cod_local = locales[0].get("cod_num") or "000"
-    cod_vendedor = vendedores[0].get("cod_num") or "000"
+    cod_local_raw = locales[0].get("cod_num") or "000"
+    cod_vendedor_raw = vendedores[0].get("cod_num") or "000"
+
+    # Extraer SOLO números (si vienen como "L01" / "V01", etc.)
+    cod_local_digits = re.sub(r"\D", "", str(cod_local_raw)) or "0"
+    cod_vendedor_digits = re.sub(r"\D", "", str(cod_vendedor_raw)) or "0"
 
     secuencia = await _obtener_or_crear_secuencia_venta(id_local, id_vendedor, id_timbrado)
     id_secuencia = secuencia.get("id")
@@ -214,11 +239,11 @@ async def emitir_cod_num_venta(id_local: int, id_vendedor: int) -> dict:
             raise ValueError("No se pudo actualizar secuencias_venta. (PK compuesta no encontrada)")
 
     cod_num_completo = (
-        str(cod_local).zfill(3)
+        str(cod_local_digits).zfill(3)
         + "-"
-        + str(cod_vendedor).zfill(3)
+        + str(cod_vendedor_digits).zfill(3)
         + "-"
-        + str(nuevo).zfill(6)
+        + str(nuevo).zfill(7)
     )
 
     return {

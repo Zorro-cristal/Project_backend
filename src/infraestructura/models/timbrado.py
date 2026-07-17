@@ -4,6 +4,6 @@ from typing import Optional
 
 @dataclass(frozen=True)
 class Timbrado:
-    nro_timbrado: str
+    nro_timbrado: int
     fin_vigencia: datetime
     id: Optional[int] = None

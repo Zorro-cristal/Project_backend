@@ -157,10 +157,46 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                 row = await emitir_cod_num_venta_srv(id_local=id_localfk, id_vendedor=id_vendedorfk)
 
                 payload['cod_num'] = row.get('cod_num_completo')
-                payload['id_secuencias_ventafk'] = row.get('id_secuencia')
+
+                # Asegurar que el FK obligatorio NO quede en NULL
+                id_sec = (
+                    row.get('id_secuencia')
+                    or row.get('id')
+                    or row.get('id_secuencias_ventafk')
+                )
+
+                # Fallback definitivo: si el row no trae id de secuencia,
+                # lo consultamos por la PK compuesta de secuencias_venta.
+                if id_sec is None:
+                    from src.shell.adapters.database.generic_crud import \
+                        get as get_crud
+                    id_timbrado = row.get('id_timbrado')
+                    if id_timbrado is None:
+                        raise ValueError(f'emitir_cod_num_venta inválida (sin id_timbrado): {row}')
+
+                    filas = await get_crud(
+                        "secuencias_venta",
+                        {
+                            "id_localfk": id_localfk,
+                            "id_vendedorfk": id_vendedorfk,
+                            "id_timbradofk": id_timbrado,
+                        },
+                        limit=1,
+                        offset=0,
+                        columns="id",
+                    )
+                    id_sec = filas[0].get("id") if filas else None
+
+                payload['id_secuencias_ventafk'] = id_sec
+
+                print(
+                    f"[crear_venta] cod_num row={row} "
+                    f"id_secuencias_ventafk={payload.get('id_secuencias_ventafk')} "
+                    f"(local={id_localfk}, vendedor={id_vendedorfk})"
+                )
 
                 if payload.get('cod_num') is None or payload.get('id_secuencias_ventafk') is None:
-                    raise ValueError(f'emitir_cod_num_venta inválida: {row}')
+                    raise ValueError(f'emitir_cod_num_venta inválida (sin id_secuencias_ventafk): {row}')
 
                 print(f"[crear_venta] cod_num generado automáticamente: {payload['cod_num']}")
             except Exception as e:
@@ -188,8 +224,8 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
                 payload['lluvia'] = clima_info.get('lluvia')
             if payload.get('precipitaciones') is None:
                 payload['precipitaciones'] = clima_info.get('precipitaciones')
-            if payload.get('probabilidad_precipitaciones') is None:
-                payload['probabilidad_precipitaciones'] = clima_info.get('probabilidad_precipitaciones')
+            # Nota: se elimina el campo venta.probabilidad_precipitaciones
+            # para que no se persista en BD.
             print(f"[crear_venta] Clima agregado automáticamente: {clima_info}")
 
     
@@ -253,7 +289,12 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
     else:
         detalles_venta = payload.pop('detalles_venta', None)
     
-# Crear la venta
+    # Crear la venta
+    print(
+        f"[crear_venta] payload final para ventas: "
+        f"id_secuencias_ventafk in payload={'id_secuencias_ventafk' in payload} "
+        f"valor={payload.get('id_secuencias_ventafk')}"
+    )
     venta = build_venta_entity(payload)
     resultado = await actualizarVenta(venta)
     
