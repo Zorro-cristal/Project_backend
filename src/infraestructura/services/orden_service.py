@@ -4,8 +4,8 @@ from ..models.orden import Orden
 from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
 from ..repositories.precio_repository import obtenerPrecio
 from .detalles_producto_service import obtener_detalles_productos
-from .mesa_service import obtener_mesas
-from .orden_stock import consumir_stock_para_orden, consumir_ingredientes_para_producto_comida
+from .orden_stock import (consumir_ingredientes_para_producto_comida,
+                          consumir_stock_para_orden)
 
 
 def build_orden_entity(payload: dict) -> Orden:
@@ -34,6 +34,9 @@ async def obtener_orden_por_id(filtros: dict = None, columnas: str = '*'):
 
 
 async def attach_related_data(ordenes: list[dict]) -> list[dict]:
+    # Importación perezosa para evitar circular import
+    from .mesa_service import obtener_mesas
+
     # Attach mesa data
     mesa_ids = {o.get('id_mesafk') for o in ordenes if o.get('id_mesafk')}
     if mesa_ids:

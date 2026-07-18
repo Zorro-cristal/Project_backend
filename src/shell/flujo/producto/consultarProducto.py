@@ -2,14 +2,12 @@ from typing import Any
 
 from src.infraestructura.repositories.detalle_precio_repository import \
     obtenerDetallePrecio
+from src.infraestructura.services.ingrediente_service import \
+    obtener_ingredientes
 from src.infraestructura.services.precio_service import obtener_precios
 from src.infraestructura.services.producto_service import (
-    obtener_producto,
-    obtener_productos,
-    obtener_detallesProducto,
-)
+    obtener_detallesProducto, obtener_producto, obtener_productos)
 from src.infraestructura.services.stock_service import obtener_stocks
-from src.infraestructura.services.ingrediente_service import obtener_ingredientes
 
 
 def _extraer_producto_unico(producto: Any) -> Any:
@@ -202,6 +200,10 @@ async def obtener_producto_con_detalles(id: int):
     detalles = producto.get('detalles_producto') or []
     await attach_precios_a_detalles(detalles)
     await _attach_stock_a_detalles(detalles)
+
+    # Adjuntar ingredientes (siempre)
+    ingredientes = await obtener_ingredientes({'id_producto_finalfk': id})
+    producto['ingredientes'] = ingredientes or []
 
     await _attach_produccion_posible_a_detalles([producto])
     return producto

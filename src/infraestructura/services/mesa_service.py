@@ -1,9 +1,11 @@
-from src.shell.utils import attach_related, validar_fk_existente
+from src.shell.utils import (attach_grouped, attach_related,
+                             validar_fk_existente)
 
 from ..models.mesa import Mesa
 from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
+from .orden_service import obtener_ordenes
 
 
 def build_mesa_entity(payload: dict) -> Mesa:
@@ -18,7 +20,18 @@ async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
     mesas = await obtenerMesa(filtros=filtros, columnas=columnas)
     if not mesas:
         return mesas
-    return await attach_related(mesas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
+
+    mesas = await attach_related(mesas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
+    mesas = await attach_related(mesas, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
+    mesas = await attach_grouped(
+        mesas,
+        parent_id_field='id',
+        fetch_func=obtener_ordenes,
+        fetch_filter_name='id_mesafk',
+        child_parent_field='id_mesafk',
+        output_field='ordenes',
+    )
+    return mesas
 
 
 async def crear_mesa(payload: dict):

@@ -5,13 +5,15 @@ from pydantic import BaseModel
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shared.security.auth_handler import crear_token_acceso
+from src.shell.adapters.database.generic_crud import count
 from src.shell.adapters.requests.usuario_request import (UsuarioRequest,
                                                          UsuarioUpdateRequest)
 from src.shell.flujo.usuario.procesarLogin import procesarLogin
-from src.shell.adapters.database.generic_crud import count
+
 from ..models.usuario import Usuario
 from ..services.usuario_service import (actualizar_usuario, crear_usuario,
                                         obtener_usuarios)
+from .schemas.relational_sanitizers import UsuarioListResponse
 
 router = APIRouter()
 
@@ -59,7 +61,13 @@ async def agregarUsuarioApi(requestBody: UsuarioRequest):
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('Usuarios', 'leer'))], summary="Obtener usuarios", description="Obtiene una lista de usuarios con filtros opcionales.")
+@router.get(
+    "/",
+    dependencies=[Depends(permiso_requerido('Usuarios', 'leer'))],
+    summary="Obtener usuarios",
+    description="Obtiene una lista de usuarios con filtros opcionales.",
+    response_model=UsuarioListResponse,
+)
 async def obtenerUsuariosApi(
     id: Optional[str] = None,
     alias: Optional[str] = None,

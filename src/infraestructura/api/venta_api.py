@@ -2,22 +2,17 @@ from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 
-
 from src.infraestructura.api.dependencies import permiso_requerido
-from src.shell.adapters.requests.venta_request import (
-    VentaBase,
-    VentaUpdateRequest,
-)
+from src.shell.adapters.requests.venta_request import (VentaBase,
+                                                       VentaUpdateRequest)
 
-from ..services.venta_service import (
-    actualizar_venta,
-    crear_venta,
-    obtener_detalle_venta_por_venta_id,
-    obtener_venta_por_id_con_detalles,
-    obtener_venta_por_id_sin_detalles,
-    obtener_ventas,
-)
 from ..services.vendedor_service import obtener_vendedores
+from ..services.venta_service import (actualizar_venta, crear_venta,
+                                      obtener_detalle_venta_por_venta_id,
+                                      obtener_venta_por_id_con_detalles,
+                                      obtener_venta_por_id_sin_detalles,
+                                      obtener_ventas)
+from .schemas.relational_sanitizers import VentaFKOnly, VentaListResponse
 
 router = APIRouter()
 
@@ -98,7 +93,13 @@ async def agregarVentaApi(
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener ventas", description="Obtiene una lista de ventas con filtros opcionales.")
+@router.get(
+    "/",
+    dependencies=[Depends(permiso_requerido("venta", "leer"))],
+    summary="Obtener ventas",
+    description="Obtiene una lista de ventas con filtros opcionales.",
+    response_model=VentaListResponse,
+)
 async def obtenerVentasApi(
     id: Optional[str] = Query(None, description="Filtrar ventas por ID"),
     fecha: Optional[str] = Query(None, description="Filtrar ventas por fecha"),
@@ -156,7 +157,13 @@ async def obtenerVentasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('venta', 'leer'))], summary="Obtener venta por ID", description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.")
+@router.get(
+    "/{id}",
+    dependencies=[Depends(permiso_requerido('venta', 'leer'))],
+    summary="Obtener venta por ID",
+    description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.",
+    response_model=VentaFKOnly,
+)
 async def obtenerVentaPorIdApi(
     id: int,
     include: Optional[str] = Query(None, description="include=detalleVenta para incluir detalle_venta")
@@ -227,9 +234,7 @@ async def calcularSaldoVentaApi(id: int):
 from pydantic import BaseModel, Field
 
 from src.infraestructura.services.prediccion_ventas_service import (
-    build_daily_prediction_payloads,
-    train_and_save_sales_forecast_model,
-)
+    build_daily_prediction_payloads, train_and_save_sales_forecast_model)
 
 
 class TrainingRequest(BaseModel):

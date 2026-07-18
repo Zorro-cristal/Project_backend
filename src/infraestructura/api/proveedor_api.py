@@ -58,13 +58,11 @@ async def obtenerProveedoresApi(
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
     result = await obtener_proveedores(filtros)
+
+    # Si se filtra por id, devolvemos un array con el único proveedor (misma forma que /proveedor con id).
+    if id is not None:
+        if not result:
+            return {"message": f"Proveedor con ID {id} no encontrado"}
+        return {"message": result if isinstance(result, list) else [result]}
+
     return {"message": result}
-
-
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedor por ID", description="Obtiene un proveedor específico por su ID.")
-async def obtenerProveedorPorIdApi(id: int):
-    filtros = {"id": id}
-    result = await obtener_proveedores(filtros)
-    if not result:
-        return {"message": f"Proveedor con ID {id} no encontrado"}
-    return {"message": result[0] if isinstance(result, list) else result}

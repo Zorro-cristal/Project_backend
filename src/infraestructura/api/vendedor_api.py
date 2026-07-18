@@ -54,13 +54,14 @@ async def obtenerVendedoresApi(
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
     result = await obtener_vendedores(filtros)
+
+    # Si se filtra por id, se busca un vendedor específico.
+    # Se mantiene el "contrato" del endpoint: devolver un array (con un solo vendedor).
+    if id is not None:
+        if not result:
+            return {"message": f"Vendedor con ID {id} no encontrado"}
+        return {"message": result if isinstance(result, list) else [result]}
+
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedor por ID", description="Obtiene un vendedor específico por su ID.")
-async def obtenerVendedorPorIdApi(id: int):
-    filtros = {"id": id}
-    result = await obtener_vendedores(filtros)
-    if not result:
-        return {"message": f"Vendedor con ID {id} no encontrado"}
-    return {"message": result[0] if isinstance(result, list) else result}
