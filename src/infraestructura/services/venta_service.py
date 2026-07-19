@@ -59,9 +59,6 @@ async def attach_related_data(ventas: list[dict]) -> list[dict]:
         ventas, "id_clientefk", obtener_clientes, "id", "id", "cliente"
     )
     ventas = await attach_related(
-        ventas, "id_localfk", obtener_locales, "id", "id", "local"
-    )
-    ventas = await attach_related(
         ventas, "id_cajafk", obtener_cajas, "id", "id", "caja"
     )
     ventas = await attach_related(

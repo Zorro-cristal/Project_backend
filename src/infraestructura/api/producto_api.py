@@ -3,10 +3,12 @@ from typing import Optional
 from fastapi import APIRouter, Depends, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
+from src.shell.adapters.database.generic_crud import get as crud_get
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
 from src.shell.flujo.producto.consultarProducto import (
-    obtener_producto_con_detalles, obtener_productos_con_detalles)
+    attach_precios_a_detalles, obtener_producto_con_detalles,
+    obtener_productos_con_detalles)
 
 from ..services.producto_service import (actualizar_producto, crear_producto,
                                          obtener_detallesProducto,
@@ -93,11 +95,12 @@ async def obtenerProductosApi(
     if mostrar_inactivo != 1 and "estado" not in filtros:
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
+    # Siempre incluir detalles_producto.
+    # Optimización: NO traer precios salvo que include=detallesProducto.
     if include == "detallesProducto":
-        result = await obtener_productos_con_detalles(filtros)
+        result = await obtener_productos_con_detalles(filtros, incluir_precios=True)
     else:
-        columnas = "*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)"
-        result = await obtener_productos(filtros, columnas)
+        result = await obtener_productos_con_detalles(filtros, incluir_precios=False)
 
     return {"message": result}
 
@@ -127,3 +130,37 @@ async def obtenerProductoApi(
 async def obtenerDetallesProductoApi(id: int):
     result = await obtener_detallesProducto(id)
     return {"message": result}
+
+
+@router.get(
+    "/detalles_producto/{id}",
+    dependencies=[Depends(permiso_requerido("producto", "leer"))],
+    summary="Obtener detalles_producto por cod_barra (alias)",
+    description="Alias: Retorna el detalle_producto por cod_barra, con precios y el producto asociado.",
+)
+async def obtenerDetalleProductoPorCodBarraApi(id: int):
+    detalles = await crud_get(
+        "detalles_producto",
+        filtros={"cod_barra": id},
+        limite=100,
+        offset=0,
+        columns="*",
+    )
+    if not detalles:
+        return {"message": None}
+
+    detalle = detalles[0] if isinstance(detalles, list) else detalles
+    detalle_list = [detalle] if not isinstance(detalle, list) else detalle
+
+    detalle_con_precios = await attach_precios_a_detalles(detalle_list)
+    detalle_con_precios_obj = detalle_con_precios[0] if detalle_con_precios else detalle
+
+    id_producto = detalle_con_precios_obj.get("id_productofk") if isinstance(detalle_con_precios_obj, dict) else None
+    producto_asociado = None
+    if id_producto is not None:
+        # producto con marca (sin detalles)
+        producto_asociado = await obtener_producto(id_producto)
+
+    return {"message": {"detalle": detalle_con_precios_obj, "producto": producto_asociado}}
+
+

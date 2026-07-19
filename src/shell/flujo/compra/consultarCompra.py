@@ -1,4 +1,3 @@
-from src.infraestructura.services.cliente_service import obtener_clientes
 from src.infraestructura.services.compra_service import \
     obtener_compra_solo as obtener_compra_solo_service
 from src.infraestructura.services.compra_service import \
@@ -32,7 +31,7 @@ async def obtener_compra_con_detalles(id: int, solo_detalles: bool = False):
     return compra
 
 
-async def attach_related_data(compras: list[dict]) -> list[dict]:
+
     compras = await attach_related(compras, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
     compras = await attach_related(compras, 'id_localfk', obtener_locales, 'id', 'id', 'local')
     compras = await attach_related(compras, 'id_proveedorfk', obtener_proveedores, 'id', 'id', 'proveedor')

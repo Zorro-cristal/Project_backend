@@ -65,6 +65,14 @@ class UsuarioFKOnly(ExtraIgnoredModel):
     id_personafk: Optional[int] = None
 
 
+class UsuarioWithPersona(ExtraIgnoredModel):
+    alias: Optional[str] = None
+    id_rolfk: Optional[int] = None
+    id_personafk: Optional[int] = None
+    # attach_related en usuario_service agrega el objeto bajo la clave "persona"
+    persona: Optional[Any] = None
+
+
 class ProductoFKOnly(ExtraIgnoredModel):
     id: Optional[int] = None
     nombre: Optional[str] = None
@@ -81,6 +89,27 @@ class ProductoFKOnly(ExtraIgnoredModel):
     # FK-only (omit nested objects like categoria)
     id_categoriafk: Optional[int] = None
     id_marcafk: Optional[int] = None
+
+
+class ProductoWithDetallesProducto(ExtraIgnoredModel):
+    id: Optional[int] = None
+    nombre: Optional[str] = None
+    descripcion: Optional[str] = None
+    estado: Optional[int] = None
+    impuesto: Optional[int] = None
+    pesable: Optional[bool] = None
+    perecedero: Optional[bool] = None
+    costeo: Optional[int] = None
+    unidad_medida: Optional[str] = None
+    es_ingrediente: Optional[bool] = None
+    es_comida: Optional[bool] = None
+
+    # FK-only
+    id_categoriafk: Optional[int] = None
+    id_marcafk: Optional[int] = None
+
+    # Se incluye cuando include=detallesProducto
+    detalles_producto: Optional[Any] = None
 
 
 class VentaFKOnly(ExtraIgnoredModel):
@@ -121,11 +150,11 @@ class CajaListResponse(MessageEnvelope[List[CajaFull]]):
 # FK-only list/obj response models (general endpoints)
 # ----------------------------
 
-class UsuarioListResponse(MessageEnvelope[List[UsuarioFKOnly]]):
+class UsuarioListResponse(MessageEnvelope[List[UsuarioWithPersona]]):
     pass
 
 
-class ProductoListResponse(MessageEnvelope[List[ProductoFKOnly]]):
+class ProductoListResponse(MessageEnvelope[List[ProductoWithDetallesProducto]]):
     pass
 
 

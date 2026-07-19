@@ -1,8 +1,9 @@
 from src.shell.utils import attach_related
 
 from ..models.vendedor import Vendedor
-from ..repositories.vendedor_repository import (actualizarVendedor, obtenerVendedor)
-from .usuario_service import obtener_usuarios
+from ..repositories.vendedor_repository import (actualizarVendedor,
+                                                obtenerVendedor)
+from .usuario_service import obtener_usuarios_sin_rol
 
 
 def build_vendedor_entity(payload: dict) -> Vendedor:
@@ -18,7 +19,8 @@ async def obtener_vendedores(filtros: dict = None, columnas: str = '*'):
     if not vendedores:
         return vendedores
     # Vincula el vendedor con su usuario por id_usuariofk (tabla `vendedores`)
-    return await attach_related(vendedores, 'id_usuariofk', obtener_usuarios, 'id', 'id', 'usuario')
+    # pero sin adjuntar `usuario.rol`
+    return await attach_related(vendedores, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
 
 
 async def crear_vendedor(payload: dict):

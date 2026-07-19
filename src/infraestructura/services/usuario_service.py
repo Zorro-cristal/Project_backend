@@ -56,6 +56,18 @@ async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     return await attach_related(usuarios, 'id_rolfk', obtener_roles, 'id', 'id', 'rol')
 
 
+async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
+    """
+    Igual que `obtener_usuarios` pero NO adjunta el rol completo.
+    Útil para endpoints GET donde se incluye `usuario` anidado
+    pero no se quiere exponer `usuario.rol`.
+    """
+    usuarios = await obtenerUsuarios(filtros, 100, 0)
+    if not usuarios:
+        return usuarios
+    usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    return usuarios
+
 
 async def crear_usuario(payload: dict):
     # Extraer y procesar la persona relacionada

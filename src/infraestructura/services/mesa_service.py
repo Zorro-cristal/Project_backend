@@ -21,7 +21,6 @@ async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
     if not mesas:
         return mesas
 
-    mesas = await attach_related(mesas, 'id_localfk', obtener_locales, 'id', 'id', 'local')
     mesas = await attach_related(mesas, 'id_clientefk', obtener_clientes, 'id', 'id', 'cliente')
     mesas = await attach_grouped(
         mesas,

@@ -8,7 +8,7 @@ from ..repositories.caja_repository import actualizarCaja, obtenerCaja
 from ..repositories.egreso_repository import obtenerEgreso
 from ..repositories.pago_compra_repository import obtenerPagoCompra
 from ..repositories.pago_venta_repository import obtenerPagoVenta
-from .usuario_service import obtener_usuarios
+from .usuario_service import obtener_usuarios_sin_rol
 
 
 def build_caja_entity(payload: dict) -> Caja:
@@ -23,7 +23,8 @@ async def obtener_cajas(filtros: dict = None, columnas: str = '*'):
     cajas = await obtenerCaja(filtros=filtros, columnas=columnas)
     if not cajas:
         return cajas
-    return await attach_related(cajas, 'id_usuariofk', obtener_usuarios, 'id', 'id', 'usuario')
+    # En endpoints GET adjuntamos `usuario` sin `rol`
+    return await attach_related(cajas, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
 
 
 async def obtener_caja_id_usuario(filtros: dict = None, id_cajafk: int | None = None) -> Optional[int]:
@@ -54,7 +55,7 @@ async def obtener_caja_id_usuario(filtros: dict = None, id_cajafk: int | None = 
 async def crear_caja(payload: dict):
     await validar_fk_existente(
         payload.get('id_usuariofk'),
-        obtener_usuarios,
+        obtener_usuarios_sin_rol,
         'id',
         f"Usuario con ID {payload.get('id_usuariofk')} no existe",
     )
@@ -68,7 +69,7 @@ async def actualizar_caja(id: int, payload: dict):
 
     await validar_fk_existente(
         payload.get('id_usuariofk'),
-        obtener_usuarios,
+        obtener_usuarios_sin_rol,
         'id',
         f"Usuario con ID {payload.get('id_usuariofk')} no existe",
     )
@@ -110,11 +111,11 @@ async def obtener_caja_por_id_con_movimientos(filtros: dict = None, columnas: st
         cajas_list, 'id', obtenerPagoCompra, 'id_cajafk', 'id_cajafk', 'pagos_cuota'
     )
 
-    # Adjuntar usuario (persona/rol) asociado a la caja
+    # Adjuntar usuario (persona/rol) asociado a la caja, pero SIN `rol`
     cajas_list = await attach_related(
         cajas_list,
         'id_usuariofk',
-        obtener_usuarios,
+        obtener_usuarios_sin_rol,
         'id',
         'id',
         'usuario',

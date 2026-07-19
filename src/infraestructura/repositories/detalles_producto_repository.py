@@ -21,7 +21,7 @@ async def obtenerDetalleProducto(
     
     if include_producto:
         # Construir filtros para producto si se proporcionan
-        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida,categorias(id,nombre),marcas(id,nombre)"
+        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida,marcas(id,nombre)"
         
         # Inicializar como lista vacía por defecto
         productos_data = []
@@ -74,10 +74,15 @@ async def obtenerDetalleProducto(
     
     result = await get('detalles_producto', filtros, limite, offset, columns=columnas)
     
-    # Renombrar el campo detalles_precio a precios para mejor experiencia de API
-    if include_precios and result:
+    # Normalizar campos para mejor experiencia de API
+    if result:
         for item in result:
-            if 'detalles_precio' in item:
+            # Supabase devuelve la relación como 'id_productofk' cuando se incluye producto
+            if include_producto and 'id_productofk' in item:
+                item['producto'] = item.pop('id_productofk')
+
+            # Renombrar el campo detalles_precio a precios
+            if include_precios and 'detalles_precio' in item:
                 item['precios'] = item.pop('detalles_precio')
     
     return result

@@ -173,7 +173,7 @@ async def _attach_produccion_posible_a_detalles(productos: list[dict]) -> None:
             # cantidad posible de producción se refleja como cant_deposito
             d['cant_deposito'] = int(produccion_posible)
 
-async def obtener_productos_con_detalles(filtros: dict = None):
+async def obtener_productos_con_detalles(filtros: dict = None, incluir_precios: bool = True):
     columnas = '*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
     productos = await obtener_productos(filtros, columnas)
     if not productos:
@@ -182,7 +182,8 @@ async def obtener_productos_con_detalles(filtros: dict = None):
     for producto in productos:
         _renombrar_marca_en_producto(producto)
         detalles = producto.get('detalles_producto') or []
-        await attach_precios_a_detalles(detalles)
+        if incluir_precios:
+            await attach_precios_a_detalles(detalles)
         await _attach_stock_a_detalles(detalles)
 
     await _attach_produccion_posible_a_detalles(productos)

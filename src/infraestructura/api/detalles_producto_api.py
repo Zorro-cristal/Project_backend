@@ -28,6 +28,16 @@ async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest):
     result = await crear_detalles_producto(payload)
     return {"message": result}
 
+@router.get("/{cod_barra}", dependencies=[Depends(permiso_requerido('detallesproducto', 'leer'))], summary="Obtener detalle de producto por código de barra", description="Obtiene el detalle de producto asociado a un código de barra e incluye producto y precios.")
+async def obtenerDetalleProductoPorCodBarraApi(cod_barra: str):
+    result = await obtener_detalles_productos(
+        filtros={"cod_barra": cod_barra},
+        include_producto=True,
+        include_precios=True,
+        filtros_producto=None
+    )
+    return {"message": result}
+
 @router.get("/", dependencies=[Depends(permiso_requerido('detallesproducto', 'leer'))], summary="Obtener detalles de productos", description="Obtiene una lista de detalles de productos con filtros opcionales.")
 async def obtenerDetallesProductosApi(
     q: Optional[str] = Query(None, description="Buscar en nombre de producto (contiene)"),
