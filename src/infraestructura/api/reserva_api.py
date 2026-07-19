@@ -50,8 +50,17 @@ async def obtenerReservasApi(
         filtros['estado'] = estado
     if id_clientefk is not None:
         filtros['id_clientefk'] = id_clientefk
+    # Si viene como YYYY-MM-DD aplicamos rango de día completo.
+    # Si viene como timestamp completo, cae al filtro exacto.
     if fecha_reserva is not None:
-        filtros['fecha_reserva'] = fecha_reserva
+        fecha_reserva = fecha_reserva.strip()
+        if len(fecha_reserva) == 10 and fecha_reserva[4] == '-' and fecha_reserva[7] == '-':
+            # gte/lt para capturar cualquier hora en esa fecha (UTC o la zona de BD)
+            filtros['fecha_reserva_inicio'] = f"{fecha_reserva}T00:00:00+00:00"
+            filtros['fecha_reserva_fin'] = f"{fecha_reserva}T23:59:59.999+00:00"
+        else:
+            filtros['fecha_reserva'] = fecha_reserva
+
 
     result = await obtener_reservas(filtros)
     return {"message": result}
