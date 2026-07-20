@@ -18,13 +18,29 @@ class MessageEnvelope(ExtraIgnoredModel, Generic[T]):
 
 
 # ----------------------------
-# Full models (for specific resources)
+# Models usados como response_model en endpoints
 # ----------------------------
 
 class RolFull(ExtraIgnoredModel):
     id: Optional[int] = None
     nombre: Optional[str] = None
     estado: Optional[int] = None
+
+
+class RolListResponse(MessageEnvelope[List[RolFull]]):
+    pass
+
+
+class UsuarioWithPersona(ExtraIgnoredModel):
+    alias: Optional[str] = None
+    id_rolfk: Optional[int] = None
+    id_personafk: Optional[int] = None
+    # attach_related en usuario_service agrega el objeto bajo la clave "persona"
+    persona: Optional[Any] = None
+
+
+class UsuarioListResponse(MessageEnvelope[List[UsuarioWithPersona]]):
+    pass
 
 
 class LocalFull(ExtraIgnoredModel):
@@ -36,60 +52,6 @@ class LocalFull(ExtraIgnoredModel):
     telefono: Optional[str] = None
     latitud: Optional[float] = None
     longitud: Optional[float] = None
-
-
-class CategoriaFull(ExtraIgnoredModel):
-    id: Optional[int] = None
-    nombre: Optional[str] = None
-    estado: Optional[int] = None
-    descripcion: Optional[str] = None
-
-
-class CajaFull(ExtraIgnoredModel):
-    id: Optional[int] = None
-    monto_apertura: Optional[float] = None
-    fecha_creado: Optional[datetime] = None
-    monto_cierre: Optional[float] = None
-    fecha_cierre: Optional[datetime] = None
-    id_usuariofk: Optional[int] = None
-    usuario: Optional[Any] = None
-
-
-# ----------------------------
-# FK-only models (for general GET endpoints)
-# ----------------------------
-
-class UsuarioFKOnly(ExtraIgnoredModel):
-    alias: Optional[str] = None
-    id_rolfk: Optional[int] = None
-    id_personafk: Optional[int] = None
-
-
-class UsuarioWithPersona(ExtraIgnoredModel):
-    alias: Optional[str] = None
-    id_rolfk: Optional[int] = None
-    id_personafk: Optional[int] = None
-    # attach_related en usuario_service agrega el objeto bajo la clave "persona"
-    persona: Optional[Any] = None
-
-
-class ProductoFKOnly(ExtraIgnoredModel):
-    id: Optional[int] = None
-    nombre: Optional[str] = None
-    descripcion: Optional[str] = None
-    estado: Optional[int] = None
-    impuesto: Optional[int] = None
-    pesable: Optional[bool] = None
-    perecedero: Optional[bool] = None
-    costeo: Optional[int] = None
-    unidad_medida: Optional[str] = None
-    es_ingrediente: Optional[bool] = None
-    es_comida: Optional[bool] = None
-
-    # FK-only (omit nested objects like categoria)
-    id_categoriafk: Optional[int] = None
-    id_marcafk: Optional[int] = None
-
 
 class ProductoWithDetallesProducto(ExtraIgnoredModel):
     id: Optional[int] = None
@@ -111,6 +73,9 @@ class ProductoWithDetallesProducto(ExtraIgnoredModel):
     # Se incluye cuando include=detallesProducto
     detalles_producto: Optional[Any] = None
 
+class LocalListResponse(MessageEnvelope[List[LocalFull]]):
+    pass
+
 
 class VentaFKOnly(ExtraIgnoredModel):
     id: Optional[int] = None
@@ -119,44 +84,15 @@ class VentaFKOnly(ExtraIgnoredModel):
     evento_festivo: Optional[bool] = None
     tipo_credito: Optional[int] = None
 
-    # FK-only (omit nested objects like local/caja/rol/categoria)
+    # FK-only (omit nested objects)
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
     id_vendedorfk: Optional[int] = None
 
 
-# ----------------------------
-# Full models for specific resources in list endpoints
-# ----------------------------
-
-class RolListResponse(MessageEnvelope[List[RolFull]]):
-    pass
-
-
-class LocalListResponse(MessageEnvelope[List[LocalFull]]):
-    pass
-
-
-class CategoriaListResponse(MessageEnvelope[List[CategoriaFull]]):
-    pass
-
-
-class CajaListResponse(MessageEnvelope[List[CajaFull]]):
-    pass
-
-
-# ----------------------------
-# FK-only list/obj response models (general endpoints)
-# ----------------------------
-
-class UsuarioListResponse(MessageEnvelope[List[UsuarioWithPersona]]):
-    pass
-
-
 class ProductoListResponse(MessageEnvelope[List[ProductoWithDetallesProducto]]):
     pass
-
 
 class VentaListResponse(MessageEnvelope[List[VentaFKOnly]]):
     pass
