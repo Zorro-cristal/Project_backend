@@ -38,9 +38,13 @@ async def procesarLogin(usuario: Usuario):
         id_rol = usuario_db.get('id_rolfk')
         if id_rol:
             permisos = await obtenerPermisosPorRol(id_rol)
-            # Agregar permisos al resultado
-            result[0]['permisos'] = permisos
-        
+        # Agregar permisos al resultado
+        result[0]['permisos'] = permisos
+
+        # Sanitizar para no devolver la contraseña al cliente
+        result[0].pop('contra', None)
+
         return result
+
 
     return []

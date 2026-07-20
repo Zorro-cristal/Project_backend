@@ -32,7 +32,9 @@ class RolListResponse(MessageEnvelope[List[RolFull]]):
 
 
 class UsuarioWithPersona(ExtraIgnoredModel):
+    id: Optional[int] = None
     alias: Optional[str] = None
+    estado: Optional[int] = None
     id_rolfk: Optional[int] = None
     id_personafk: Optional[int] = None
     # attach_related en usuario_service agrega el objeto bajo la clave "persona"

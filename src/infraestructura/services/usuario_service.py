@@ -52,8 +52,15 @@ async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
+
     usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
-    return await attach_related(usuarios, 'id_rolfk', obtener_roles, 'id', 'id', 'rol')
+    usuarios = await attach_related(usuarios, 'id_rolfk', obtener_roles, 'id', 'id', 'rol')
+
+    # Sanitizar para no exponer la contraseña
+    for u in usuarios:
+        u.pop('contra', None)
+
+    return usuarios
 
 
 async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
@@ -65,8 +72,15 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
+
     usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+
+    # Sanitizar para no exponer la contraseña (cubre /vendedor que adjunta usuario)
+    for u in usuarios:
+        u.pop('contra', None)
+
     return usuarios
+
 
 
 async def crear_usuario(payload: dict):
