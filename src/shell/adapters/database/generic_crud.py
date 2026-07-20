@@ -99,9 +99,14 @@ async def get(
             if isinstance(value, (list, tuple)):
                 query = query.in_(field, list(value))
             elif ("inicio" in field):
-                query = query.gte(field, value)
+                # Convención: "<col>_inicio" aplica gte contra la columna real "<col>"
+                base_field = field.removesuffix("_inicio")
+                query = query.gte(base_field, value)
             elif ("fin" in field):
-                query = query.lte(field, value)
+                # Convención: "<col>_fin" aplica lte contra la columna real "<col>"
+                base_field = field.removesuffix("_fin")
+                query = query.lte(base_field, value)
+
             elif ("mostrar_inactivo" in field):
                 if value == 0:
                     query = query.neq("estado", 0)  # estado != 0 (show all active records)
