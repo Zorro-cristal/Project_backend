@@ -3,9 +3,9 @@ from src.shell.utils import (attach_grouped, attach_related,
 
 from ..models.mesa import Mesa
 from ..repositories.mesa_repository import actualizarMesa, obtenerMesa
+from ..repositories.orden_repository import obtenerOrdenes
 from .cliente_service import obtener_clientes
 from .local_service import obtener_locales
-from .orden_service import obtener_ordenes
 
 
 def build_mesa_entity(payload: dict) -> Mesa:
@@ -25,7 +25,7 @@ async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
     mesas = await attach_grouped(
         mesas,
         parent_id_field='id',
-        fetch_func=obtener_ordenes,
+        fetch_func=obtenerOrdenes,
         fetch_filter_name='id_mesafk',
         child_parent_field='id_mesafk',
         output_field='ordenes',
