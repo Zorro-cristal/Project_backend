@@ -2,13 +2,10 @@ from typing import Optional
 
 from fastapi import APIRouter, Depends, HTTPException
 
-from src.shell.adapters.requests.timbrado_request import (
-    EmitirCodNumRequest,
-    TimbradoBase,
-    TimbradoUpdate,
-)
-
 from src.infraestructura.api.dependencies import permiso_requerido
+from src.shell.adapters.requests.timbrado_request import (EmitirCodNumRequest,
+                                                          TimbradoBase,
+                                                          TimbradoUpdate)
 
 from ..services.timbrado_service import (actualizar_timbrado, crear_timbrado,
                                          emitir_cod_num_venta,
@@ -22,9 +19,21 @@ router = APIRouter()
 
 
 @router.get("/", dependencies=[Depends(permiso_requerido("timbrado", "leer"))])
-async def listar_timbrados():
+async def listar_timbrados(
+    id: Optional[int] = None,
+    fin_vigencia_inicio: Optional[str] = None,
+    fin_vigencia_fin: Optional[str] = None,
+):
     try:
-        return {"message": await obtener_timbrados()}
+        filtros = {}
+        if id is not None:
+            filtros["id"] = id
+        if fin_vigencia_inicio is not None:
+            filtros["fin_vigencia_inicio"] = fin_vigencia_inicio
+        if fin_vigencia_fin is not None:
+            filtros["fin_vigencia_fin"] = fin_vigencia_fin
+
+        return {"message": await obtener_timbrados(filtros)}
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 
