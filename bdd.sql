@@ -464,6 +464,8 @@ CREATE TABLE reservas (
     cantidad_personas     INTEGER NOT NULL DEFAULT 1,
     observacion           VARCHAR(255),
     fecha_reserva         TIMESTAMP WITH TIME ZONE NOT NULL,
+    tiempo_estimado       TIME,
+    tiempo_ocupacion      TIME,
     id_mesafk             INTEGER,
     id_usuariofk          INTEGER,
     id_clientefk          INTEGER,

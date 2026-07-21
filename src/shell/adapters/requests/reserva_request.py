@@ -11,6 +11,7 @@ class ReservaRequest(BaseModel):
     cantidad_personas: int
     observacion: Optional[str] = None
     estado: Optional[int] = 1
+    tiempo_ocupacion: Optional[str] = None
     id_clientefk: Optional[int] = None
     cliente: Optional[ClienteRequest] = None
 
@@ -23,6 +24,7 @@ class ReservaUpdateRequest(BaseModel):
     cantidad_personas: Optional[int] = None
     observacion: Optional[str] = None
     estado: Optional[int] = None
+    tiempo_ocupacion: Optional[str] = None
     id_clientefk: Optional[int] = None
     cliente: Optional[ClienteUpdateRequest] = None
 
