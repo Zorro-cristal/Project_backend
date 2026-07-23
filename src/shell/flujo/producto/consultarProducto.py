@@ -202,9 +202,16 @@ async def obtener_producto_con_detalles(id: int):
     await attach_precios_a_detalles(detalles)
     await _attach_stock_a_detalles(detalles)
 
-    # Adjuntar ingredientes (siempre)
-    ingredientes = await obtener_ingredientes({'id_producto_finalfk': id})
-    producto['ingredientes'] = ingredientes or []
+    # Adjuntar ingredientes (siempre), con la info del producto referenciado
+    ingredientes_raw = await obtener_ingredientes({'id_producto_finalfk': id})
+    ingredientes_con_producto = []
+    for ing in (ingredientes_raw or []):
+        id_prod_ing = ing.get('id_producto_ingredientefk')
+        if id_prod_ing is not None:
+            producto_ingrediente = await obtener_producto(id_prod_ing)
+            ing['producto_ingrediente'] = _extraer_producto_unico(producto_ingrediente)
+        ingredientes_con_producto.append(ing)
+    producto['ingredientes'] = ingredientes_con_producto
 
     await _attach_produccion_posible_a_detalles([producto])
     return producto
