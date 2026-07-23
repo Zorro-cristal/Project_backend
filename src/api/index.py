@@ -1,8 +1,6 @@
 import logging
 
 from fastapi import FastAPI, Request, Response
-from fastapi.middleware.cors import CORSMiddleware as CORSMiddleware
-from fastapi.responses import JSONResponse
 
 from src.configs.settings import get_settings
 from src.infraestructura.api.router import router as api_router
@@ -37,13 +35,11 @@ else:
 
 logger.info(f"Final CORS origins: {origins}")
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
+# NOTA: NO usamos el CORSMiddleware de FastAPI porque en Vercel (serverless)
+# serializa incorrectamente la lista de orígenes como string JSON en vez de
+# devolver el origen específico de la solicitud. Usamos nuestro propio
+# middleware HTTP que maneja correctamente los preflight OPTIONS y asegura
+# que TODAS las respuestas tengan las cabeceras CORS correctas.
 
 # Middleware para logging de requests
 @app.middleware("http")
