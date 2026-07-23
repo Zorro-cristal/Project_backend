@@ -55,6 +55,12 @@ class LocalFull(ExtraIgnoredModel):
     latitud: Optional[float] = None
     longitud: Optional[float] = None
 
+class MarcaInfo(ExtraIgnoredModel):
+    id: Optional[int] = None
+    nombre: Optional[str] = None
+    estado: Optional[int] = None
+
+
 class ProductoWithDetallesProducto(ExtraIgnoredModel):
     id: Optional[int] = None
     nombre: Optional[str] = None
@@ -71,6 +77,9 @@ class ProductoWithDetallesProducto(ExtraIgnoredModel):
     # FK-only
     id_categoriafk: Optional[int] = None
     id_marcafk: Optional[int] = None
+
+    # Marca data (resolved from id_marcafk via Supabase relationship)
+    marca: Optional[MarcaInfo] = None
 
     # Se incluye cuando include=detallesProducto
     detalles_producto: Optional[Any] = None
