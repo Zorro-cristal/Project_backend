@@ -1,3 +1,5 @@
+import json
+import re
 from functools import lru_cache
 from typing import List
 
@@ -42,12 +44,47 @@ class Settings(BaseSettings):
         env_file = ".env"
         case_sensitive = True
     
+    def _parse_origins(self, raw: str) -> List[str]:
+        """Parsea ALLOWED_ORIGINS soportando CSV y JSON array.
+        
+        Soporta:
+        - CSV: "http://a.com,http://b.com"
+        - JSON array: '["http://a.com","http://b.com"]'
+        - JSON array con hash: '["http://a.com/#/path"]'
+        """
+        if not raw:
+            return ["*"]
+        
+        raw = raw.strip()
+        
+        # Intentar parsear como JSON array si empieza con [
+        if raw.startswith("["):
+            try:
+                origins = json.loads(raw)
+                if isinstance(origins, list):
+                    return self._clean_origins(origins)
+            except json.JSONDecodeError:
+                pass
+        
+        # Formato CSV: separado por comas
+        parts = [o.strip() for o in raw.split(",")]
+        return self._clean_origins(parts)
+    
+    def _clean_origins(self, origins: list) -> List[str]:
+        """Limpia y valida una lista de orígenes, eliminando fragmentos (#) y comillas."""
+        cleaned = []
+        for origin in origins:
+            origin = str(origin).strip().strip('"').strip("'")
+            # Eliminar fragmentos de URL (#...) que son inválidos para CORS
+            origin = re.sub(r'#.*$', '', origin).rstrip('/')
+            if origin:
+                cleaned.append(origin)
+        return cleaned if cleaned else ["*"]
+    
     @property
     def ALLOWED_ORIGINS_LIST(self) -> List[str]:
-        """Convierte la cadena de orígenes separados por coma en lista"""
-        if not self.ALLOWED_ORIGINS:
-            return ["*"]
-        return [origin.strip() for origin in self.ALLOWED_ORIGINS.split(",")]
+        """Convierte ALLOWED_ORIGINS a lista, soportando CSV y JSON array"""
+        return self._parse_origins(self.ALLOWED_ORIGINS)
 
 @lru_cache()
 def get_settings() -> Settings:

@@ -1,6 +1,10 @@
 import logging
+import traceback
 
 from fastapi import FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
+from starlette.exceptions import HTTPException as StarletteHTTPException
+from starlette.responses import JSONResponse
 
 from src.configs.settings import get_settings
 from src.infraestructura.api.router import router as api_router
@@ -41,6 +45,97 @@ logger.info(f"Final CORS origins: {origins}")
 # middleware HTTP que maneja correctamente los preflight OPTIONS y asegura
 # que TODAS las respuestas tengan las cabeceras CORS correctas.
 
+# =============================================================================
+# FUNCIÓN AUXILIAR PARA CONSTRUIR CABECERAS CORS
+# =============================================================================
+# Extraemos esta lógica para reutilizarla tanto en el middleware como en los
+# exception handlers. Esto asegura que incluso las respuestas de error (422,
+# 405, 401, 403, 404, 500) tengan las cabeceras CORS necesarias.
+# =============================================================================
+
+ORIGINS_SET = set(origins)
+
+
+def get_allow_origin(request: Request) -> str:
+    """Determina el origen permitido basado en el origen de la solicitud."""
+    request_origin = request.headers.get("origin", "")
+    if request_origin in ORIGINS_SET or "*" in ORIGINS_SET:
+        return request_origin
+    return origins[0] if origins else "*"
+
+
+def build_cors_headers(request: Request) -> dict:
+    """Construye las cabeceras CORS para una respuesta."""
+    allow_origin = get_allow_origin(request)
+    return {
+        "Access-Control-Allow-Origin": allow_origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Requested-With, Accept, Origin",
+    }
+
+
+def add_cors_headers(response: Response, request: Request) -> None:
+    """Agrega cabeceras CORS a una respuesta existente."""
+    headers = build_cors_headers(request)
+    for key, value in headers.items():
+        response.headers[key] = value
+
+
+# =============================================================================
+# EXCEPTION HANDLERS GLOBALES PARA ASEGURAR CORS EN RESPUESTAS DE ERROR
+# =============================================================================
+# Los middlewares HTTP de FastAPI NO capturan excepciones lanzadas durante la
+# validación de requests (422), métodos no permitidos (405), o errores internos
+# del servidor (500). Estas excepciones son manejadas por FastAPI/Starlette
+# directamente, generando respuestas SIN cabeceras CORS.
+#
+# Estos handlers capturan TODAS las excepciones y construyen respuestas JSON
+# con las cabeceras CORS correctas, resolviendo el problema de CORS en errores.
+# =============================================================================
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, exc: RequestValidationError):
+    """Maneja errores de validación (422) y asegura que tengan cabeceras CORS."""
+    logger.warning(f"Validation error for {request.method} {request.url.path}: {exc.errors()}")
+    return JSONResponse(
+        status_code=422,
+        content={
+            "detail": exc.errors(),
+            "body": exc.body,
+            "message": "Error de validación en los datos enviados"
+        },
+        headers=build_cors_headers(request),
+    )
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_handler(request: Request, exc: StarletteHTTPException):
+    """Maneja HTTPExceptions (401, 403, 404, 405, 500, etc.) y asegura cabeceras CORS."""
+    logger.warning(f"HTTP {exc.status_code} error for {request.method} {request.url.path}: {exc.detail}")
+    return JSONResponse(
+        status_code=exc.status_code,
+        content={"detail": exc.detail},
+        headers=build_cors_headers(request),
+    )
+
+
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    """Maneja cualquier excepción no capturada y asegura cabeceras CORS."""
+    logger.error(f"Unhandled exception for {request.method} {request.url.path}: {str(exc)}")
+    logger.error(traceback.format_exc())
+    return JSONResponse(
+        status_code=500,
+        content={
+            "detail": "Error interno del servidor",
+            "message": "Ocurrió un error inesperado. Por favor, intente nuevamente."
+        },
+        headers=build_cors_headers(request),
+    )
+
+
 # Middleware para logging de requests
 @app.middleware("http")
 async def log_requests(request: Request, call_next):
@@ -58,10 +153,6 @@ async def log_requests(request: Request, call_next):
 # 1. Captura solicitudes OPTIONS y responde inmediatamente con cabeceras CORS
 # 2. Asegura que TODAS las respuestas incluyan las cabeceras CORS necesarias
 # =============================================================================
-
-# Diccionario de orígenes permitidos formateados como cadena separada por comas
-ORIGINS_SET = set(origins)
-ALLOWED_ORIGINS_STR = ", ".join(origins)
 
 
 @app.middleware("http")
