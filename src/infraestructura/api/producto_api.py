@@ -95,12 +95,15 @@ async def obtenerProductosApi(
     if mostrar_inactivo != 1 and "estado" not in filtros:
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
-    # Siempre incluir detalles_producto.
-    # Optimización: NO traer precios salvo que include=detallesProducto.
+    # Incluir detalles_producto solo si include=detallesProducto.
     if include == "detallesProducto":
-        result = await obtener_productos_con_detalles(filtros, incluir_precios=True)
+        result = await obtener_productos_con_detalles(
+            filtros, incluir_precios=True, incluir_detalles=True
+        )
     else:
-        result = await obtener_productos_con_detalles(filtros, incluir_precios=False)
+        result = await obtener_productos_con_detalles(
+            filtros, incluir_precios=False, incluir_detalles=False
+        )
 
     return {"message": result}
 
