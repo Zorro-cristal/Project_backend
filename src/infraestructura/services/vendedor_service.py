@@ -1,4 +1,4 @@
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, filtrar_por_nombre_completo
 
 from ..models.vendedor import Vendedor
 from ..repositories.vendedor_repository import (actualizarVendedor,
@@ -15,12 +15,17 @@ def build_vendedor_entity(payload: dict) -> Vendedor:
 
 
 async def obtener_vendedores(filtros: dict = None, columnas: str = '*'):
+    filtros = dict(filtros or {})
+    nombre_completo = filtros.pop("nombre_completo", None)
     vendedores = await obtenerVendedor(filtros=filtros, columnas=columnas)
     if not vendedores:
         return vendedores
     # Vincula el vendedor con su usuario por id_usuariofk (tabla `vendedores`)
     # pero sin adjuntar `usuario.rol`
-    return await attach_related(vendedores, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
+    vendedores = await attach_related(vendedores, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
+    if nombre_completo:
+        vendedores = filtrar_por_nombre_completo(vendedores, nombre_completo, path=['usuario', 'persona'])
+    return vendedores
 
 
 async def crear_vendedor(payload: dict):

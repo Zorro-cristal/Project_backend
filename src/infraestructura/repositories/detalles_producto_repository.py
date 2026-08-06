@@ -20,47 +20,7 @@ async def obtenerDetalleProducto(
     relaciones = []
     
     if include_producto:
-        # Construir filtros para producto si se proporcionan
         producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida,marcas(id,nombre)"
-        
-        # Inicializar como lista vacía por defecto
-        productos_data = []
-        
-        # Aplicar filtros a producto si existen
-        if filtros_producto:
-            q = filtros_producto.get("q")
-            es_comida = filtros_producto.get("es_comida")
-            
-            # Si hay filtros, necesitamos hacer una consulta más compleja
-            # Supabase no permite filtrar relaciones directamente, así que primero obtenemos los IDs de productos
-            if q or es_comida is not None:
-                filtros_prod = {}
-                # Para búsqueda con "q", necesitamos usar ikw::ilike.%valor% en PostgREST
-                # Pero como generic_crud no soporta ilike directamente, hacemos la query sin filtro de nombre primero
-                # y luego filtramos en memoria si hay resultados
-                if es_comida is not None:
-                    filtros_prod["es_comida"] = es_comida
-                
-                # Obtener IDs de productos que coinciden con los filtros
-                from src.shell.adapters.database.generic_crud import \
-                    get as db_get
-                productos_data = await db_get('productos', filtros_prod, limit=limite, offset=offset)
-                
-                # Filtrar por nombre en memoria si hay query de búsqueda
-                if q and productos_data:
-                    q_lower = q.lower()
-                    productos_data = [p for p in productos_data if q_lower in (p.get('nombre') or '').lower()]
-        
-        # Siempre procesamos el resultado (ahora productos_data está definido)
-        if productos_data:
-            producto_ids = [p['id'] for p in productos_data]
-            # Agregar filtro para detalles_producto
-            if filtros is None:
-                filtros = {}
-            filtros["id_productofk"] = producto_ids
-        # Si no hay productos que coincidan, continuamos sin filtro
-        # Esto permitirá que la consulta retorne vacío naturalmente
-        
         relaciones.append(f"id_productofk:productos({producto_select})")
     
     if include_precios:
@@ -73,6 +33,49 @@ async def obtenerDetalleProducto(
         columnas = f"*, {', '.join(relaciones)}"
     
     result = await get('detalles_producto', filtros, limite, offset, columns=columnas)
+    
+    # Aplicar filtros en memoria (q, es_comida) con semántica de unión
+    if filtros_producto:
+        q = filtros_producto.get("q")
+        es_comida = filtros_producto.get("es_comida")
+        
+        if result and (q or es_comida is not None):
+            filtered = []
+            for item in result:
+                # Determinar si el ítem coincide con q (búsqueda en cod_barra y/o nombre de producto)
+                match_q = True
+                if q:
+                    q_lower = q.lower()
+                    
+                    # Buscar en cod_barra (siempre, como string para búsqueda por contenido)
+                    cod_barra = item.get('cod_barra')
+                    cod_barra_str = str(cod_barra) if cod_barra is not None else ''
+                    match_cod_barra = q_lower in cod_barra_str.lower()
+                    
+                    # Buscar en nombre de producto (solo si include_producto)
+                    match_nombre = False
+                    if include_producto:
+                        producto = item.get('id_productofk') or item.get('producto')
+                        if isinstance(producto, dict):
+                            nombre = producto.get('nombre') or ''
+                            match_nombre = q_lower in nombre.lower()
+                    
+                    # Unión (OR): coincide si el q aparece en cod_barra o en el nombre del producto
+                    match_q = match_cod_barra or match_nombre
+                
+                # Aplicar filtro es_comida en memoria sobre el producto unido (solo si include_producto)
+                match_es_comida = True
+                if es_comida is not None and include_producto:
+                    producto = item.get('id_productofk') or item.get('producto')
+                    if isinstance(producto, dict):
+                        prod_es_comida = producto.get('es_comida')
+                        match_es_comida = str(prod_es_comida).lower() == str(es_comida).lower()
+                    else:
+                        match_es_comida = False
+                
+                if match_q and match_es_comida:
+                    filtered.append(item)
+            result = filtered
     
     # Normalizar campos para mejor experiencia de API
     if result:

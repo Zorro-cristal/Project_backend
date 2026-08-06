@@ -33,6 +33,7 @@ async def agregarProveedorApi(requestBody: ProveedorRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
 async def obtenerProveedoresApi(
+    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar proveedores por ID"),
     razon_social: Optional[str] = Query(None, description="Filtrar proveedores por razón social parcial"),
     ruc: Optional[int] = Query(None, description="Filtrar proveedores por RUC"),
@@ -42,6 +43,8 @@ async def obtenerProveedoresApi(
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
+    if nombre_completo is not None:
+        filtros["nombre_completo"] = nombre_completo
     if id is not None:
         filtros["id"] = id
     if razon_social is not None:

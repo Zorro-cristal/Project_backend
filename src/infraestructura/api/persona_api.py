@@ -16,6 +16,7 @@ async def obtenerPersonaPorCedulaApi(cedula: int):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('persona', 'leer'))], summary="Obtener personas", description="Obtiene una lista de personas con filtros opcionales.")
 async def obtenerPersonasApi(
+    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo (nombre o apellido, contiene)"),
     cedula: Optional[int] = Query(None, description="Filtrar personas por cédula"),
     nombres: Optional[str] = Query(None, description="Filtrar personas por nombre parcial"),
     apellidos: Optional[str] = Query(None, description="Filtrar personas por apellido parcial"),
@@ -24,6 +25,8 @@ async def obtenerPersonasApi(
     nacionalidad: Optional[str] = Query(None, description="Filtrar personas por nacionalidad"),
 ):
     filtros = {}
+    if nombre_completo is not None:
+        filtros["nombre_completo"] = nombre_completo
     if cedula is not None:
         filtros["cedula"] = cedula
     if nombres is not None:

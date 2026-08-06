@@ -40,7 +40,7 @@ async def obtenerDetalleProductoPorCodBarraApi(cod_barra: str):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('detallesproducto', 'leer'))], summary="Obtener detalles de productos", description="Obtiene una lista de detalles de productos con filtros opcionales.")
 async def obtenerDetallesProductosApi(
-    q: Optional[str] = Query(None, description="Buscar en nombre de producto (contiene)"),
+    q: Optional[str] = Query(None, description="Buscar en cod_barra (siempre) y en nombre de producto (solo si include=producto). Coincidencia por contenido (contiene)."),
     es_comida: Optional[bool] = Query(None, description="Filtrar productos por es_comida=true/false"),
     id: Optional[str] = Query(None, description="Filtrar detalles de productos por ID"),
     color: Optional[str] = Query(None, description="Filtrar detalles de productos por color"),

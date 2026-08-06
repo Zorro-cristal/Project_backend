@@ -33,6 +33,7 @@ async def agregarClienteApi(requestBody: ClienteRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('cliente', 'leer'))], summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")
 async def obtenerClientesApi(
+    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar clientes por ID"),
     ruc: Optional[int] = Query(None, description="Filtrar clientes por RUC"),
     razon_social: Optional[str] = Query(None, description="Filtrar clientes por razón social parcial"),
@@ -42,6 +43,8 @@ async def obtenerClientesApi(
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
+    if nombre_completo is not None:
+        filtros["nombre_completo"] = nombre_completo
     if id is not None:
         filtros["id"] = id
     if ruc is not None:

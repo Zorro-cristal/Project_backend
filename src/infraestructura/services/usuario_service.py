@@ -1,5 +1,5 @@
 from src.shared.security.password_hasher import hash_password
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, filtrar_por_nombre_completo
 
 from ..models.usuario import Usuario
 from ..repositories.usuario_repository import (actualizarUsuario,
@@ -49,6 +49,8 @@ def _hash_if_needed(payload: dict) -> dict:
 
 
 async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
+    filtros = dict(filtros or {})
+    nombre_completo = filtros.pop("nombre_completo", None)
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
@@ -60,6 +62,9 @@ async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     for u in usuarios:
         u.pop('contra', None)
 
+    if nombre_completo:
+        usuarios = filtrar_por_nombre_completo(usuarios, nombre_completo, path=['persona'])
+
     return usuarios
 
 
@@ -69,6 +74,8 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
     Útil para endpoints GET donde se incluye `usuario` anidado
     pero no se quiere exponer `usuario.rol`.
     """
+    filtros = dict(filtros or {})
+    nombre_completo = filtros.pop("nombre_completo", None)
     usuarios = await obtenerUsuarios(filtros, 100, 0)
     if not usuarios:
         return usuarios
@@ -78,6 +85,9 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
     # Sanitizar para no exponer la contraseña (cubre /vendedor que adjunta usuario)
     for u in usuarios:
         u.pop('contra', None)
+
+    if nombre_completo:
+        usuarios = filtrar_por_nombre_completo(usuarios, nombre_completo, path=['persona'])
 
     return usuarios
 

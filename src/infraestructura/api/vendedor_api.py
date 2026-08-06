@@ -32,6 +32,7 @@ async def agregarVendedorApi(requestBody: VendedorRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
 async def obtenerVendedoresApi(
+    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada al usuario (nombre o apellido, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar vendedores por ID"),
     salario: Optional[float] = Query(None, description="Filtrar vendedores por salario mínimo"),
     comision: Optional[float] = Query(None, description="Filtrar vendedores por comisión"),
@@ -40,6 +41,8 @@ async def obtenerVendedoresApi(
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
+    if nombre_completo is not None:
+        filtros["nombre_completo"] = nombre_completo
     if id is not None:
         filtros["id"] = id
     if salario is not None:

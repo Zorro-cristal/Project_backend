@@ -164,6 +164,76 @@ async def attach_grouped(
     return items
 
 
+def filtrar_por_nombre_completo(
+    items: list[dict],
+    nombre_completo: str,
+    path: list[str] | None = None,
+) -> list[dict]:
+    """Filtra una lista de registros por nombre completo de la persona asociada.
+
+    - `items`: lista de dicts que representan los registros (ej. clientes, usuarios).
+    - `nombre_completo`: texto con el que se compara (búsqueda por contenido, sin
+      distinguir mayúsculas/minúsculas ni acentos).
+    - `path`: ruta (lista de claves) hacia el objeto persona dentro de cada item.
+      Ejemplos:
+        - `['persona']` para un item que tiene `item['persona']`.
+        - `['usuario', 'persona']` para un item con `item['usuario']['persona']`.
+Si es None o vacío, se busca directamente en `item['nombres']` y `item['apellidos']`.
+
+    Coincide si el texto (o cada palabra del texto) aparece dentro de
+    "nombres apellidos" o "apellidos nombres". Si el texto tiene varias
+    palabras (ej. "Juan Perez"), todas deben estar presentes en el nombre
+    completo, sin importar el orden.
+    """
+    if not items or not nombre_completo:
+        return items
+
+    q = _normalizar_texto(nombre_completo)
+    # Si trae varias palabras, usamos coincidencia por tokens (todas presentes).
+    tokens = [t for t in q.split() if t]
+
+    def _get_persona(item: dict) -> dict | None:
+        cur = item
+        for key in (path or []):
+            if isinstance(cur, dict):
+                cur = cur.get(key)
+            else:
+                return None
+        return cur if isinstance(cur, dict) else None
+
+    filtrados = []
+    for item in items:
+        persona = _get_persona(item) if path else item
+        if not isinstance(persona, dict):
+            continue
+
+        nombres = _normalizar_texto(persona.get('nombres') or '')
+        apellidos = _normalizar_texto(persona.get('apellidos') or '')
+
+        combinado = f"{nombres} {apellidos}".strip()
+
+        if len(tokens) > 1:
+            # Todas las palabras del texto deben aparecer (en cualquier orden).
+            if all(tok in combinado for tok in tokens):
+                filtrados.append(item)
+        else:
+            # Búsqueda simple por contenido.
+            if tokens and tokens[0] in combinado:
+                filtrados.append(item)
+
+    return filtrados
+
+
+def _normalizar_texto(value: str) -> str:
+    """Normaliza un texto para búsqueda: minúsculas y sin acentos."""
+    import unicodedata
+
+    texto = value.lower()
+    texto = unicodedata.normalize('NFD', texto)
+    texto = ''.join(c for c in texto if unicodedata.category(c) != 'Mn')
+    return texto
+
+
 async def validar_fk_existente(
     fk_value: Any,
     fetch_func,

@@ -1,4 +1,4 @@
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, filtrar_por_nombre_completo
 
 from ..models.cliente import Cliente
 from ..repositories.cliente_repository import actualizarCliente, obtenerCliente
@@ -15,10 +15,15 @@ def build_cliente_entity(payload: dict) -> Cliente:
 
 
 async def obtener_clientes(filtros: dict= None, columnas: str = '*'):
+    filtros = dict(filtros or {})
+    nombre_completo = filtros.pop("nombre_completo", None)
     clientes = await obtenerCliente(filtros=filtros, columnas=columnas)
     if not clientes:
         return clientes
-    return await attach_related(clientes, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    clientes = await attach_related(clientes, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    if nombre_completo:
+        clientes = filtrar_por_nombre_completo(clientes, nombre_completo, path=['persona'])
+    return clientes
 
 
 async def crear_cliente(payload: dict):

@@ -69,13 +69,16 @@ async def agregarUsuarioApi(requestBody: UsuarioRequest):
     response_model=UsuarioListResponse,
 )
 async def obtenerUsuariosApi(
+    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
     id: Optional[str] = None,
     alias: Optional[str] = None,
     estado: Optional[int] = None,
     id_personafk: Optional[int] = None,
-mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
 ):
     filtros = {}
+    if nombre_completo is not None:
+        filtros["nombre_completo"] = nombre_completo
     if id is not None:
         filtros["id"] = id
     if alias is not None:

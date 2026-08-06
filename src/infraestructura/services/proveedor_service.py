@@ -1,4 +1,4 @@
-from src.shell.utils import attach_related
+from src.shell.utils import attach_related, filtrar_por_nombre_completo
 
 from ..models.proveedor import Proveedor
 from ..repositories.proveedor_repository import (actualizarProveedor,
@@ -16,10 +16,15 @@ def build_proveedor_entity(payload: dict) -> Proveedor:
 
 
 async def obtener_proveedores(filtros: dict = None, columnas: str = '*'):
+    filtros = dict(filtros or {})
+    nombre_completo = filtros.pop("nombre_completo", None)
     proveedores = await obtenerProveedor(filtros=filtros, columnas=columnas)
     if not proveedores:
         return proveedores
-    return await attach_related(proveedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    proveedores = await attach_related(proveedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
+    if nombre_completo:
+        proveedores = filtrar_por_nombre_completo(proveedores, nombre_completo, path=['persona'])
+    return proveedores
 
 
 async def crear_proveedor(payload: dict):
