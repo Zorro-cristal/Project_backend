@@ -6,6 +6,7 @@ from .mesa import Mesa
 from .precio import Precio
 from .usuario import Usuario
 
+
 @dataclass(frozen=True)
 class Orden:
     estado: int = 1
@@ -15,6 +16,10 @@ class Orden:
     id_detalleproductofk: Optional[str]= None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
+    print_status: Optional[str] = "PENDING"  # PENDING | PRINTED | FAILED
+    print_attempts: Optional[int] = 0
+    printed_at: Optional[str] = None
+    last_print_error: Optional[str] = None
     mesa: Optional[Mesa]= None
     precio: Optional[Precio]= None
     usuario: Optional[Usuario]= None

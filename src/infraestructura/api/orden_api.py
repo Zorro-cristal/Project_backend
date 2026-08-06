@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, BackgroundTasks, Depends, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.orden_request import (OrdenRequest,
@@ -25,9 +25,10 @@ async def patchOrdenApi(id: int, requestBody: OrdenUpdateRequest):
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('orden', 'crear'))], summary="Crear orden", description="Crea una nueva orden.")
-async def agregarOrdenApi(requestBody: OrdenRequest):
+async def agregarOrdenApi(requestBody: OrdenRequest,
+                          background_tasks: BackgroundTasks):
     payload = requestBody.model_dump()
-    result = await crear_orden(payload)
+    result = await crear_orden(payload, background_tasks=background_tasks)
     return {"message": result}
 
 

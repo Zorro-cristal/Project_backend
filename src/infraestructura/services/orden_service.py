@@ -1,11 +1,14 @@
 from typing import Optional
 
+from fastapi import BackgroundTasks
+
 from ..models.orden import Orden
 from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
 from ..repositories.precio_repository import obtenerPrecio
 from .detalles_producto_service import obtener_detalles_productos
 from .orden_stock import (consumir_ingredientes_para_producto_comida,
                           consumir_stock_para_orden)
+from .print_service import dispatch_print_job
 
 
 def build_orden_entity(payload: dict) -> Orden:
@@ -85,7 +88,7 @@ async def attach_related_data(ordenes: list[dict]) -> list[dict]:
     return ordenes
 
 
-async def crear_orden(payload: dict):
+async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks] = None):
     # 1) Validar y (si es comida) consumir ingredientes ANTES de insertar la orden.
     cantidad = payload.get("cantidad")
     id_detalleproductofk = payload.get("id_detalleproductofk")
@@ -93,7 +96,9 @@ async def crear_orden(payload: dict):
     if id_detalleproductofk is None or cantidad is None:
         # Si faltan datos para stock, se inserta (o puedes levantar error según tu regla de negocio)
         orden = build_orden_entity(payload)
-        return await actualizarOrden(orden)
+        creada = await actualizarOrden(orden)
+        _agendar_impresion(background_tasks, creada)
+        return creada
 
     # Obtener detalle_producto + producto para saber si el producto es comida.
     # detalle_producto viene por el id_detalleproductofk (en esta BD suele ser cod_barra).
@@ -136,7 +141,26 @@ async def crear_orden(payload: dict):
 
     # 2) Insertar orden
     orden = build_orden_entity(payload)
-    return await actualizarOrden(orden)
+    creada = await actualizarOrden(orden)
+    _agendar_impresion(background_tasks, creada)
+    return creada
+
+
+def _agendar_impresion(background_tasks: Optional[BackgroundTasks], orden: dict) -> None:
+    """Agenda la tarea de despacho de impresión en segundo plano.
+
+    La respuesta HTTP al cliente nunca se bloquea ni espera la impresión.
+    Si no se provee `background_tasks`, se programa la tarea con asyncio.
+    """
+    if not orden:
+        return
+
+    if background_tasks is not None:
+        background_tasks.add_task(dispatch_print_job, orden)
+    else:
+        import asyncio
+
+        asyncio.create_task(dispatch_print_job(orden))
 
 
 async def actualizar_orden_por_id(id: int, payload: dict):

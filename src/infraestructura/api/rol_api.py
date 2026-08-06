@@ -1,13 +1,14 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.rol_request import (RolRequest,
                                                      RolUpdateRequest)
 
-from ..services.rol_service import actualizar_rol, crear_rol, obtener_roles
-from .schemas.relational_sanitizers import RolListResponse
+from ..services.rol_service import (actualizar_rol, crear_rol,
+                                    obtener_rol_por_id, obtener_roles)
+from .schemas.relational_sanitizers import RolListResponse, RolSingleResponse
 
 router = APIRouter()
 
@@ -73,4 +74,18 @@ async def obtenerRolesApi(
         filtros["estado"] = 1
 
     result = await obtener_roles(filtros)
+    return {"message": result}
+
+
+@router.get(
+    "/{id_rol}",
+    dependencies=[Depends(permiso_requerido("rol", "leer"))],
+    summary="Obtener rol por ID",
+    description="Obtiene la información de un rol junto con sus permisos activos (permiso.estado == 1).",
+    response_model=RolSingleResponse,
+)
+async def obtenerRolPorIdApi(id_rol: int):
+    result = await obtener_rol_por_id(id_rol)
+    if result is None:
+        raise HTTPException(status_code=404, detail=f"Rol con id {id_rol} no encontrado")
     return {"message": result}

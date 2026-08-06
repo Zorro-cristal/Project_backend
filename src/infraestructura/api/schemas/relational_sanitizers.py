@@ -25,9 +25,14 @@ class RolFull(ExtraIgnoredModel):
     id: Optional[int] = None
     nombre: Optional[str] = None
     estado: Optional[int] = None
+    # Permisos activos (solo permiso.estado == 1) asociados al rol
+    permisos: Optional[List[Any]] = None
 
 
 class RolListResponse(MessageEnvelope[List[RolFull]]):
+    pass
+
+class RolSingleResponse(MessageEnvelope[RolFull]):
     pass
 
 

@@ -3,14 +3,14 @@ from fastapi import APIRouter
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
 
-from . import (caja_api, categoria_api, cliente_api, compra_api,
+from . import (auth_api, caja_api, categoria_api, cliente_api, compra_api,
                cuota_compra_api, cuota_venta_api, detalle_compra_api,
                detalle_venta_api, detalles_producto_api, egreso_api,
                ingrediente_api, local_api, marca_api, mesa_api, orden_api,
                pago_compra_api, pago_venta_api, permiso_api, permiso_rol_api,
-               persona_api, precio_api, prediccion_mesas_api, producto_api,
-               proveedor_api, reserva_api, rol_api, stock_api, timbrado_api,
-               usuario_api, vendedor_api, venta_api)
+               persona_api, precio_api, prediccion_mesas_api, printer_api,
+               producto_api, proveedor_api, reserva_api, rol_api, stock_api,
+               timbrado_api, usuario_api, vendedor_api, venta_api)
 
 router = APIRouter()
 
@@ -28,6 +28,7 @@ async def pruebaClima():
     return {"message": result} 
 
 router.include_router(usuario_api.router, prefix="/usuario", tags=["Usuario"])
+router.include_router(auth_api.router, prefix="/auth", tags=["Auth"])
 router.include_router(producto_api.router, prefix="/producto", tags=["Producto"])
 router.include_router(categoria_api.router, prefix="/categoria", tags=["Categoria"])
 router.include_router(marca_api.router, prefix="/marca", tags=["Marca"])
@@ -56,6 +57,9 @@ router.include_router(compra_api.router, prefix="/compra", tags=["Compra"])
 router.include_router(detalle_compra_api.router, prefix="/detalle_compra", tags=["Detalle Compra"])
 router.include_router(orden_api.router, prefix="/orden", tags=["Orden"])
 router.include_router(reserva_api.router, prefix="/reserva", tags=["Reserva"])
+
+# Router de impresión remota por WebSockets
+router.include_router(printer_api.router, tags=["Printer"])
 
 # Nuevos routers para ventas con crédito
 router.include_router(cuota_venta_api.router, prefix="/cuota_venta", tags=["Cuota Venta"])

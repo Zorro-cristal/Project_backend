@@ -1,8 +1,9 @@
 from typing import Optional, Union
 
-from ..models.permiso_rol import PermisoRol
 from src.shell.adapters.database.generic_crud import get, insert, update
-from src.shell.utils import prepararPayloadDb, normalizar_booleanos
+from src.shell.utils import normalizar_booleanos, prepararPayloadDb
+
+from ..models.permiso_rol import PermisoRol
 
 
 async def obtenerPermisoRol(filtros: Optional[dict] = None, limite: int = 100, offset: int = 0, columnas: str = "*"):
@@ -26,9 +27,9 @@ async def actualizarPermisoRol(datos: Union[PermisoRol, dict], id: Optional[int]
 
 async def obtenerPermisosPorRol(id_rol: int):
     """Obtiene todos los permisos asignados a un rol específico."""
-    return await get('permisos_roles', {'id_rolfk': id_rol}, limit=1000, columns="*, permisos(nombre)")
+    return await get('permisos_roles', {'id_rolfk': id_rol}, limit=1000, columns="*, permisos(nombre, estado)")
 
 
 async def obtenerRolesPorPermiso(id_permiso: int):
     """Obtiene todos los roles que tienen asignado un permiso específico."""
-    return await get('permisos_roles', {'id_permisofk': id_permiso}, limit=1000, columns="*, roles(nombre)")
+    return await get('permisos_roles', {'id_permisofk': id_permiso}, limit=1000, columns="*, roles(nombre), permisos(estado)")
