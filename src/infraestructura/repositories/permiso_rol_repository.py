@@ -7,6 +7,10 @@ from ..models.permiso_rol import PermisoRol
 
 
 async def obtenerPermisoRol(filtros: Optional[dict] = None, limite: int = 100, offset: int = 0, columnas: str = "*"):
+    # Se usa '*' en lugar de un embed relacional ('permisos(estado)') porque
+    # si la FK no está definida como constraint en la BD, PostgREST devuelve
+    # el objeto anidado como None en todas las filas, lo que hacía que el
+    # filtrado en la capa service descartara todos los registros.
     return await get('permisos_roles', filtros, limite, offset, columns=columnas)
 
 
