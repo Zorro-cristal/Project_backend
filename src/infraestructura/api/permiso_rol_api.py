@@ -30,7 +30,7 @@ async def agregarPermisoRolApi(requestBody: PermisoRolRequest):
     result = await crear_permiso_rol(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('permiso_rol', 'leer'))], summary="Obtener asignaciones de permisos a roles", description="Obtiene una lista de asignaciones con filtros opcionales.")
+@router.get("/", summary="Obtener asignaciones de permisos a roles", description="Obtiene una lista de asignaciones con filtros opcionales.")
 async def obtenerPermisosRolesApi(
     id: Optional[int] = Query(None, description="Filtrar por ID de asignación"),
     id_permisofk: Optional[int] = Query(None, description="Filtrar por permiso"),
