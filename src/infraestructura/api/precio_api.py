@@ -32,7 +32,9 @@ async def obtenerPreciosApi(
     id: Optional[str] = Query(None, description="Filtrar precios por ID"),
     producto_id: Optional[int] = Query(None, description="Filtrar precios por ID de producto"),
     valido_desde: Optional[str] = Query(None, description="Filtrar precios válidos desde una fecha de inicio"),
-    valido_hasta: Optional[str] = Query(None, description="Filtrar precios válidos hasta una fecha de fin")
+    valido_hasta: Optional[str] = Query(None, description="Filtrar precios válidos hasta una fecha de fin"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -51,6 +53,8 @@ async def obtenerPreciosApi(
     # Este select intenta traer el producto a través de los datos del detalle.
     result = await obtener_precios(
         filtros=filtros,
-        columnas='*, detalles_precio(*, detalles_producto(*, productos(*)))'
+        columnas='*, detalles_precio(*, detalles_producto(*, productos(*)))',
+        limite=limit,
+        offset=offset,
     )
     return {"message": result}

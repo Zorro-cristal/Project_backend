@@ -14,10 +14,10 @@ def build_vendedor_entity(payload: dict) -> Vendedor:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_vendedores(filtros: dict = None, columnas: str = '*'):
+async def obtener_vendedores(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    vendedores = await obtenerVendedor(filtros=filtros, columnas=columnas)
+    vendedores = await obtenerVendedor(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not vendedores:
         return vendedores
     # Vincula el vendedor con su usuario por id_usuariofk (tabla `vendedores`)

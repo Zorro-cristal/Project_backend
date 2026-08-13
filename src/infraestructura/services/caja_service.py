@@ -19,8 +19,8 @@ def build_caja_entity(payload: dict) -> Caja:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_cajas(filtros: dict = None, columnas: str = '*'):
-    cajas = await obtenerCaja(filtros=filtros, columnas=columnas)
+async def obtener_cajas(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    cajas = await obtenerCaja(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not cajas:
         return cajas
     # En endpoints GET adjuntamos `usuario` sin `rol`

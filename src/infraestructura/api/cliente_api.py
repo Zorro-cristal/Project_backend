@@ -41,6 +41,8 @@ async def obtenerClientesApi(
     id_personafk: Optional[int] = Query(None, description="Filtrar clientes por ID de persona asociada"),
     estado: Optional[int] = Query(None, description="Filtrar clientes por estado (1 para activo, 0 para inactivo)"),
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if nombre_completo is not None:
@@ -58,5 +60,5 @@ async def obtenerClientesApi(
     if estado is not None:
         filtros["estado"] = estado
 
-    result = await obtener_clientes(filtros)
+    result = await obtener_clientes(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}

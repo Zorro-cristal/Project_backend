@@ -41,6 +41,8 @@ async def obtenerProveedoresApi(
     correo: Optional[str] = Query(None, description="Filtrar proveedores por correo"),
     id_personafk: Optional[int] = Query(None, description="Filtrar proveedores por ID de persona asociada"),
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if nombre_completo is not None:
@@ -60,7 +62,7 @@ async def obtenerProveedoresApi(
     if mostrar_inactivo != 1 and "estado" not in filtros:
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
-    result = await obtener_proveedores(filtros)
+    result = await obtener_proveedores(filtros=filtros, columnas='*', limite=limit, offset=offset)
 
     # Si se filtra por id, devolvemos un array con el único proveedor (misma forma que /proveedor con id).
     if id is not None:

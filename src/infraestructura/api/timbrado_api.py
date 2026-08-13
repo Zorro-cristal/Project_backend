@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.timbrado_request import (EmitirCodNumRequest,
@@ -23,6 +23,8 @@ async def listar_timbrados(
     id: Optional[int] = None,
     fin_vigencia_inicio: Optional[str] = None,
     fin_vigencia_fin: Optional[str] = None,
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     try:
         filtros = {}
@@ -33,7 +35,7 @@ async def listar_timbrados(
         if fin_vigencia_fin is not None:
             filtros["fin_vigencia_fin"] = fin_vigencia_fin
 
-        return {"message": await obtener_timbrados(filtros)}
+        return {"message": await obtener_timbrados(filtros=filtros, limite=limit, offset=offset)}
     except Exception as exc:
         raise HTTPException(status_code=400, detail=str(exc))
 

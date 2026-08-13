@@ -43,7 +43,7 @@ def build_compra_entity(payload: dict) -> Compra:
     return Compra(**valid_fields)
 
 
-async def obtener_compras(filtros: dict = None, columnas: str = '*', joins: list = None):
+async def obtener_compras(filtros: dict = None, columnas: str = '*', joins: list = None, limite: int = 100, offset: int = 0):
     """Retorna compras con filtros opcionales.
     
     Args:
@@ -52,7 +52,7 @@ async def obtener_compras(filtros: dict = None, columnas: str = '*', joins: list
         joins: Lista de configuraciones de JOIN para filtrar por campos relacionados.
                Ejemplo: [{'table': 'usuarios', 'foreign_key': 'id_usuariofk', 'primary_key': 'id', 'name_field': 'alias', 'nombre_usuario': 'juan'}]
     """
-    return await obtenerCompra(filtros=filtros, columnas=columnas, joins=joins)
+    return await obtenerCompra(filtros=filtros, columnas=columnas, joins=joins, limite=limite, offset=offset)
 
 
 async def obtener_compra_solo(id: int, columnas: str = '*'):
@@ -228,7 +228,8 @@ async def crear_compra_con_pago(payload: dict) -> dict:
     # Importante: usamos helper "light" para traer solo id_usuariofk y evitar fallos
     # de adjuntos/join que disparan errores de "Usuario no encontrado".
     if id_usuariofk is None:
-        from .caja_service import obtener_caja_id_usuario  # para evitar import circular
+        from .caja_service import \
+            obtener_caja_id_usuario  # para evitar import circular
         id_usuariofk = await obtener_caja_id_usuario(id_cajafk=id_cajafk)
         if not id_usuariofk:
             raise ValueError(f"Caja con ID {id_cajafk} no existe o no tiene id_usuariofk")

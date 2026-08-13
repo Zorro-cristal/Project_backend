@@ -16,8 +16,8 @@ def build_orden_entity(payload: dict) -> Orden:
     return Orden(**valid_fields)
 
 
-async def obtener_ordenes(filtros: dict = None, columnas: str = '*'):
-    ordenes = await obtenerOrdenes(filtros=filtros, columnas=columnas)
+async def obtener_ordenes(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    ordenes = await obtenerOrdenes(filtros=filtros, columnas=columnas, limite=limite, offset=offset)
     if not ordenes:
         return ordenes
     return await attach_related_data(ordenes)

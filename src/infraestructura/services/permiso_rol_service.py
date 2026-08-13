@@ -23,8 +23,8 @@ async def _ids_permisos_activos(ids_permiso) -> set:
     }
 
 
-async def obtener_permisos_roles(filtros: dict = None, columnas: str = '*'):
-    registros = await obtenerPermisoRol(filtros=filtros)
+async def obtener_permisos_roles(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    registros = await obtenerPermisoRol(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not registros:
         return registros
 

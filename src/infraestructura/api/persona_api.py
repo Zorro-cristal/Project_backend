@@ -23,6 +23,8 @@ async def obtenerPersonasApi(
     telefono: Optional[int] = Query(None, description="Filtrar personas por teléfono"),
     direccion: Optional[str] = Query(None, description="Filtrar personas por dirección parcial"),
     nacionalidad: Optional[str] = Query(None, description="Filtrar personas por nacionalidad"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if nombre_completo is not None:
@@ -40,5 +42,5 @@ async def obtenerPersonasApi(
     if nacionalidad is not None:
         filtros["nacionalidad"] = nacionalidad
 
-    result = await obtener_personas(filtros)
+    result = await obtener_personas(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}

@@ -36,7 +36,7 @@ async def attach_related_data(stocks: list[dict]) -> list[dict]:
     return stocks
 
 
-async def obtener_stocks(filtros: dict = None, columnas: str = '*'):
+async def obtener_stocks(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = filtros or {}
 
     # Filtro especial: con_stock => (cant_mostrador > 0 OR cant_deposito > 0)
@@ -76,8 +76,13 @@ async def obtener_stocks(filtros: dict = None, columnas: str = '*'):
                 por_id[id(s)] = s
 
         stocks = list(por_id.values())
+        # Aplicar paginación si fue solicitada
+        if offset:
+            stocks = stocks[offset:]
+        if limite is not None:
+            stocks = stocks[:limite]
     else:
-        stocks = await obtenerStock(filtros=filtros, columnas=columnas)
+        stocks = await obtenerStock(filtros=filtros, columnas=columnas, limite=limite, offset=offset)
 
     if not stocks:
         return stocks

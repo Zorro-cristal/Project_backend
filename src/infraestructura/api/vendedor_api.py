@@ -39,6 +39,8 @@ async def obtenerVendedoresApi(
     estado: Optional[int] = Query(None, description="Filtrar vendedores por estado (1 activo, 0 inactivo)"),
     id_usuariofk: Optional[int] = Query(None, description="Filtrar vendedores por ID de usuario asociado"),
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if nombre_completo is not None:
@@ -56,7 +58,7 @@ async def obtenerVendedoresApi(
     if mostrar_inactivo != 1 and "estado" not in filtros:
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
-    result = await obtener_vendedores(filtros)
+    result = await obtener_vendedores(filtros=filtros, columnas='*', limite=limit, offset=offset)
 
     # Si se filtra por id, se busca un vendedor específico.
     # Se mantiene el "contrato" del endpoint: devolver un array (con un solo vendedor).

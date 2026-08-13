@@ -145,8 +145,10 @@ async def get(
                     query = query.in_(foreign_key, related_ids)
     
     # Ordenamiento
-    if (order_by):     
+    if (order_by):
         query = query.order(order_by, desc=order_desc)
+    if 'id' not in order_by and (table != 'detalles_producto' and table != 'personas'):
+        query = query.order('id', desc=order_desc)
     
     # Paginación
     response = query.range(offset, offset + limit - 1).execute()

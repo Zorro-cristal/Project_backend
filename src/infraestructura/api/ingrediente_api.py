@@ -38,6 +38,8 @@ async def obtenerIngredientesApi(
     unidad_medida: Optional[str] = Query(None, description="Filtrar ingredientes por unidad de medida"),
     id_producto_ingredientefk: Optional[int] = Query(None, description="Filtrar por producto ingrediente"),
     id_producto_finalfk: Optional[int] = Query(None, description="Filtrar por producto final"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -51,5 +53,5 @@ async def obtenerIngredientesApi(
     if id_producto_finalfk is not None:
         filtros["id_producto_finalfk"] = id_producto_finalfk
 
-    result = await obtener_ingredientes(filtros)
+    result = await obtener_ingredientes(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}

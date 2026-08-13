@@ -1,6 +1,6 @@
 from ..models.ingrediente import Ingrediente
-from ..repositories.ingrediente_repository import (
-    actualizarIngrediente, obtenerIngrediente)
+from ..repositories.ingrediente_repository import (actualizarIngrediente,
+                                                   obtenerIngrediente)
 
 
 def build_ingrediente_entity(payload: dict) -> Ingrediente:
@@ -8,8 +8,8 @@ def build_ingrediente_entity(payload: dict) -> Ingrediente:
     return Ingrediente(**valid_fields)
 
 
-async def obtener_ingredientes(filtros: dict = None, columnas: str = '*'):
-    return await obtenerIngrediente(filtros=filtros, columnas=columnas)
+async def obtener_ingredientes(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    return await obtenerIngrediente(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
 
 
 async def crear_ingrediente(payload: dict):

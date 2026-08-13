@@ -1,14 +1,15 @@
 
-from ..repositories.categoria_repository import actualizarCategoria, obtenerCategoria
 from ..models.categoria import Categoria
+from ..repositories.categoria_repository import (actualizarCategoria,
+                                                 obtenerCategoria)
 
 
 def build_categoria_entity(payload: dict) -> Categoria:
     valid_fields = {key: value for key, value in payload.items() if key in Categoria.__annotations__}
     return Categoria(**valid_fields)
 
-async def obtener_categorias(filtros: dict = None, columnas: str= "*"):
-    return await obtenerCategoria(filtros=filtros, columnas=columnas)
+async def obtener_categorias(filtros: dict = None, columnas: str= "*", limite: int = 100, offset: int = 0):
+    return await obtenerCategoria(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
 
 
 async def crear_categoria(payload: dict):

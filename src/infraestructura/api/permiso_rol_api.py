@@ -39,6 +39,8 @@ async def obtenerPermisosRolesApi(
     editar: Optional[bool] = Query(None, description="Filtrar por permiso de editar"),
     eliminar: Optional[bool] = Query(None, description="Filtrar por permiso de eliminar"),
     leer: Optional[bool] = Query(None, description="Filtrar por permiso de lectura"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -56,7 +58,7 @@ async def obtenerPermisosRolesApi(
     if leer is not None:
         filtros["leer"] = leer
 
-    result = await obtener_permisos_roles(filtros=filtros)
+    result = await obtener_permisos_roles(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 @router.get("/rol/{id_rol}", dependencies=[Depends(permiso_requerido('permiso_rol', 'leer'))], summary="Obtener permisos de un rol", description="Obtiene todos los permisos asignados a un rol específico.")

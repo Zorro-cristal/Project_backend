@@ -35,7 +35,9 @@ async def agregarDetalleVentaApi(requestBody: DetalleVentaRequest):
 async def obtenerDetalleVentasApi(
     id: Optional[int] = Query(None, description="Filtrar detalles de venta por ID"),
     id_productofk: Optional[int] = Query(None, description="Filtrar detalles por ID de producto"),
-    id_ventafk: Optional[int] = Query(None, description="Filtrar detalles por ID de venta")
+    id_ventafk: Optional[int] = Query(None, description="Filtrar detalles por ID de venta"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -45,7 +47,7 @@ async def obtenerDetalleVentasApi(
     if id_ventafk is not None:
         filtros["id_ventafk"] = id_ventafk
 
-    result = await obtener_detalle_ventas(filtros)
+    result = await obtener_detalle_ventas(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 

@@ -1,19 +1,14 @@
-from typing import Optional
+from typing import Any, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
-
-from typing import Any
-
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.mesa_request import (MesaRequest,
                                                       MesaUpdateRequest)
 
 from ..services.mesa_service import actualizar_mesa, crear_mesa, obtener_mesas
-from ..services.prediccion_mesas_service import (
-    entrenar_modelo,
-    predecir_tiempo_ocupacion,
-)
+from ..services.prediccion_mesas_service import (entrenar_modelo,
+                                                 predecir_tiempo_ocupacion)
 
 router = APIRouter()
 
@@ -50,6 +45,8 @@ async def obtenerMesasApi(
 	estado: Optional[int] = Query(None, description="Filtrar mesas por estado (1 activo, 0 inactivo)"),
 	id_localfk: Optional[int] = Query(None, description="Filtrar mesas por ID de local asociada"),
 	mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+	limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+	offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
 	filtros = {}
 	if id is not None:
@@ -65,7 +62,7 @@ async def obtenerMesasApi(
 	if mostrar_inactivo != 1 and "estado" not in filtros:
 		filtros["mostrar_inactivo"] = 0  # estado != 0
 
-	result = await obtener_mesas(filtros)
+	result = await obtener_mesas(filtros=filtros, columnas='*', limite=limit, offset=offset)
 	return {"message": result}
 
 

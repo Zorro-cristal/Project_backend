@@ -12,8 +12,8 @@ def build_reserva_entity(payload: dict) -> Reserva:
     return Reserva(**valid_fields)
 
 
-async def obtener_reservas(filtros: Optional[dict] = None, columnas: str = '*'):
-    reservas = await obtenerReserva(filtros=filtros, columnas=columnas)
+async def obtener_reservas(filtros: Optional[dict] = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    reservas = await obtenerReserva(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not reservas:
         return reservas
 

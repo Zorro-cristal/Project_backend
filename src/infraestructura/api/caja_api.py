@@ -43,7 +43,9 @@ async def obtenerCajasApi(
     id: Optional[str] = Query(None, description="Filtrar cajas por ID"),
     id_usuariofk: Optional[int] = Query(None, description="Filtrar cajas por ID de usuario asociado"),
     fecha_creado: Optional[str] = Query(None, description="Filtrar cajas por fecha de creación"),
-    fecha_cierre: Optional[str] = Query(None, description="Filtrar cajas por fecha de cierre")
+    fecha_cierre: Optional[str] = Query(None, description="Filtrar cajas por fecha de cierre"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -55,7 +57,7 @@ async def obtenerCajasApi(
     if fecha_cierre is not None:
         filtros["fecha_cierre"] = fecha_cierre
 
-    result = await obtener_cajas(filtros)
+    result = await obtener_cajas(filtros=filtros, limite=limit, offset=offset)
     return {"message": result}
 
 

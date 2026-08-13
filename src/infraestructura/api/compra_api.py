@@ -7,12 +7,9 @@ from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
 
-from ..services.compra_service import (
-    actualizar_compra,
-    crear_compra_con_pago,
-    crear_compra_a_credito,
-    obtener_compras,
-)
+from ..services.compra_service import (actualizar_compra,
+                                       crear_compra_a_credito,
+                                       crear_compra_con_pago, obtener_compras)
 
 router = APIRouter()
 
@@ -58,7 +55,9 @@ async def obtenerComprasApi(
     id_proveedorfk: Optional[int] = Query(None, description="Filtrar compras por ID de proveedor"),
     estado: Optional[int] = Query(None, description="Filtrar compras por estado"),
     nombre_usuario: Optional[str] = Query(None, description="Filtrar compras por nombre de usuario (alias del usuario que creó la caja)"),
-    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesCompra")
+    include: Optional[str] = Query(None, description="Incluye datos adicionales. Soporta: detallesCompra"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     from src.infraestructura.config.supabase import get_supabase_client
     
@@ -99,7 +98,7 @@ async def obtenerComprasApi(
                 # No hay cajas para esos usuarios, retornar vacío
                 return {"message": []}
 
-    result = await obtener_compras(filtros)
+    result = await obtener_compras(filtros=filtros, joins=None, limite=limit, offset=offset)
     
     # Adjuntar detalles si se solicita
     if include == "detallesCompra":

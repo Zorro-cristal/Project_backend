@@ -16,8 +16,8 @@ def build_mesa_entity(payload: dict) -> Mesa:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_mesas(filtros: dict = None, columnas: str = '*'):
-    mesas = await obtenerMesa(filtros=filtros, columnas=columnas)
+async def obtener_mesas(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    mesas = await obtenerMesa(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not mesas:
         return mesas
 

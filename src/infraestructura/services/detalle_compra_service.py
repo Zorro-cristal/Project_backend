@@ -15,8 +15,8 @@ async def attach_related_data(detalles: list[dict]) -> list[dict]:
     return await attach_related(detalles, 'id_stockfk', obtener_stocks, 'id', 'id', 'stock')
 
 
-async def obtener_detalle_compras(filtros: dict = None, columnas: str = '*'):
-    detalles = await obtenerDetalleCompra(filtros=filtros, columnas=columnas)
+async def obtener_detalle_compras(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    detalles = await obtenerDetalleCompra(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not detalles:
         return detalles
     return await attach_related_data(detalles)

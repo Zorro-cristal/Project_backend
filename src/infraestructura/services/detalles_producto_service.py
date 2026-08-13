@@ -16,14 +16,18 @@ async def obtener_detalles_productos(
     columnas: str = '*', 
     include_producto: bool = False,
     include_precios: bool = False,
-    filtros_producto: Optional[dict] = None
+    filtros_producto: Optional[dict] = None,
+    limite: int = 100,
+    offset: int = 0,
 ):
     return await obtenerDetalleProducto(
         columnas=columnas, 
         filtros=filtros, 
         include_producto=include_producto,
         include_precios=include_precios,
-        filtros_producto=filtros_producto
+        filtros_producto=filtros_producto,
+        limite=limite,
+        offset=offset,
     )
 
 

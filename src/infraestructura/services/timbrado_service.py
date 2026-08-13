@@ -8,8 +8,8 @@ from src.infraestructura.models.timbrado import Timbrado
 from src.shell.adapters.database.generic_crud import get, insert, update
 
 
-async def obtener_timbrados(filtros: dict | None = None):
-    return await get("timbrados", filtros or {}, limit=100, offset=0, columns="*")
+async def obtener_timbrados(filtros: dict | None = None, limite: int = 100, offset: int = 0):
+    return await get("timbrados", filtros or {}, limit=limite, offset=offset, columns="*")
 
 
 async def obtener_timbrado_por_id(id: int):

@@ -42,6 +42,8 @@ async def obtenerReservasApi(
     estado: Optional[int] = Query(None, description="Filtrar por estado"),
     id_clientefk: Optional[int] = Query(None, description="Filtrar por ID de cliente"),
     fecha_reserva: Optional[str] = Query(None, description="Filtrar por fecha de reserva (string)"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -62,7 +64,7 @@ async def obtenerReservasApi(
             filtros['fecha_reserva'] = fecha_reserva
 
 
-    result = await obtener_reservas(filtros)
+    result = await obtener_reservas(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 

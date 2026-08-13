@@ -9,10 +9,10 @@ def build_persona_entity(payload: dict) -> Persona:
     return Persona(**valid_fields)
 
 
-async def obtener_personas(filtros: dict= None, columnas: str = '*'):
+async def obtener_personas(filtros: dict= None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    result = await obtenerPersona(filtros=filtros, columnas=columnas)
+    result = await obtenerPersona(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if nombre_completo:
         result = filtrar_por_nombre_completo(result, nombre_completo)
     return result

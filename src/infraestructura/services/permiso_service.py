@@ -10,8 +10,8 @@ def build_permiso_entity(payload: dict) -> Permiso:
     return Permiso(**valid_fields)
 
 
-async def obtener_permisos(filtros: dict = None, columnas: str = '*'):
-    return await obtenerPermiso(filtros=filtros, columnas=columnas)
+async def obtener_permisos(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
+    return await obtenerPermiso(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
 
 
 async def crear_permiso(payload: dict):

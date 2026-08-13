@@ -36,6 +36,8 @@ async def agregarPermisoApi(requestBody: PermisoRequest):
 async def obtenerPermisosApi(
     id: Optional[int] = Query(None, description="Filtrar permisos por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar permisos por nombre"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -43,7 +45,7 @@ async def obtenerPermisosApi(
     if nombre is not None:
         filtros["nombre"] = nombre
 
-    result = await obtener_permisos(filtros=filtros)
+    result = await obtener_permisos(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 

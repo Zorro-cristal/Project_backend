@@ -15,10 +15,10 @@ def build_proveedor_entity(payload: dict) -> Proveedor:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_proveedores(filtros: dict = None, columnas: str = '*'):
+async def obtener_proveedores(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    proveedores = await obtenerProveedor(filtros=filtros, columnas=columnas)
+    proveedores = await obtenerProveedor(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not proveedores:
         return proveedores
     proveedores = await attach_related(proveedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')

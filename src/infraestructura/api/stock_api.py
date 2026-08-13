@@ -37,7 +37,9 @@ async def obtenerStocksApi(
     id_localfk: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
     id_detalleproductofk: Optional[int] = Query(None, description="Filtrar stocks por ID de detalle de producto"),
     lote: Optional[str] = Query(None, description="Filtrar stocks por lote"),
-    fecha_vencimiento: Optional[str] = Query(None, description="Filtrar stocks por fecha de vencimiento")
+    fecha_vencimiento: Optional[str] = Query(None, description="Filtrar stocks por fecha de vencimiento"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
     if id is not None:
@@ -51,7 +53,7 @@ async def obtenerStocksApi(
     if fecha_vencimiento is not None:
         filtros["fecha_vencimiento"] = fecha_vencimiento
 
-    result = await obtener_stocks(filtros)
+    result = await obtener_stocks(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 

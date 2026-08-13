@@ -14,10 +14,10 @@ def build_cliente_entity(payload: dict) -> Cliente:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_clientes(filtros: dict= None, columnas: str = '*'):
+async def obtener_clientes(filtros: dict= None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    clientes = await obtenerCliente(filtros=filtros, columnas=columnas)
+    clientes = await obtenerCliente(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     if not clientes:
         return clientes
     clientes = await attach_related(clientes, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
