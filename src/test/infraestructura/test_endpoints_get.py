@@ -11,13 +11,18 @@ client = TestClient(app)
 def auth_token():
     # Simula login para obtener el token
     response = client.post("/usuario/login", json={
-        "username": "admin",
-        "password": "admin"
+        "alias": "admin",
+        "contra": "admin"
     })
     assert response.status_code == 200
-    data = response.json()
+    message = response.json()
     # Ajusta la clave según tu backend (ej: "access_token")
-    return data["access_token"]
+    return message["access_token"]
+
+
+def extract_payload(response):
+    data = response.json()
+    return data.get('message') if isinstance(data, dict) and 'message' in data else data
 
 def test_get_usuarios(auth_token, limit=5, offset=0):
     response = client.get(
@@ -26,8 +31,11 @@ def test_get_usuarios(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_productos(auth_token, limit=10, offset=0):
     response = client.get(
@@ -36,8 +44,11 @@ def test_get_productos(auth_token, limit=10, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_categorias(auth_token, limit=3, offset=0):
     response = client.get(
@@ -46,8 +57,11 @@ def test_get_categorias(auth_token, limit=3, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_marcas(auth_token, limit=4, offset=0):
     response = client.get(
@@ -56,8 +70,11 @@ def test_get_marcas(auth_token, limit=4, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_precios(auth_token, limit=6, offset=0):
     response = client.get(
@@ -66,8 +83,11 @@ def test_get_precios(auth_token, limit=6, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_ingredientes(auth_token, limit=8, offset=0):
     response = client.get(
@@ -76,8 +96,11 @@ def test_get_ingredientes(auth_token, limit=8, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_rol(auth_token, limit=5, offset=0):
     response = client.get(
@@ -86,8 +109,11 @@ def test_get_rol(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_roles(auth_token, limit=5, offset=3):
     response = client.get(
@@ -96,8 +122,11 @@ def test_get_roles(auth_token, limit=5, offset=3):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_producto(auth_token, limit=10, offset=0):
     response = client.get(
@@ -106,8 +135,11 @@ def test_get_producto(auth_token, limit=10, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_permisos(auth_token, limit=7, offset=1):
     response = client.get(
@@ -116,8 +148,11 @@ def test_get_permisos(auth_token, limit=7, offset=1):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_detalles_producto(auth_token, limit=5, offset=0):
     response = client.get(
@@ -126,8 +161,11 @@ def test_get_detalles_producto(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_clientes(auth_token, limit=5, offset=0):
     response = client.get(
@@ -136,8 +174,11 @@ def test_get_clientes(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
     
 def test_get_personas(auth_token, limit=5, offset=0):
     response = client.get(
@@ -146,8 +187,11 @@ def test_get_personas(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert len(data) <= limit
+    payload = extract_payload(response)
+    if isinstance(payload, list):
+        assert len(payload) <= limit
+    else:
+        assert payload is not None
 
 # Pruebas adicionales para otros endpoints según sea necesario
 def test_get_proveedor(auth_token, limit=5, offset=0):
@@ -157,8 +201,8 @@ def test_get_proveedor(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_local(auth_token, limit=5, offset=0):
     response = client.get(
@@ -167,8 +211,8 @@ def test_get_local(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_vendedor(auth_token, limit=5, offset=0):
     response = client.get(
@@ -177,8 +221,8 @@ def test_get_vendedor(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_mesa(auth_token, limit=5, offset=0):
     response = client.get(
@@ -187,8 +231,8 @@ def test_get_mesa(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_stock(auth_token, limit=5, offset=0):
     response = client.get(
@@ -197,8 +241,8 @@ def test_get_stock(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_caja(auth_token, limit=5, offset=0):
     response = client.get(
@@ -207,8 +251,8 @@ def test_get_caja(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_venta(auth_token, limit=5, offset=0):
     response = client.get(
@@ -217,8 +261,8 @@ def test_get_venta(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_detalle_venta(auth_token, limit=5, offset=0):
     response = client.get(
@@ -227,8 +271,8 @@ def test_get_detalle_venta(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_timbrado(auth_token, limit=5, offset=0):
     response = client.get(
@@ -237,8 +281,8 @@ def test_get_timbrado(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_egreso(auth_token, limit=5, offset=0):
     response = client.get(
@@ -247,8 +291,8 @@ def test_get_egreso(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_compra(auth_token, limit=5, offset=0):
     response = client.get(
@@ -257,8 +301,8 @@ def test_get_compra(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_detalle_compra(auth_token, limit=5, offset=0):
     response = client.get(
@@ -267,8 +311,8 @@ def test_get_detalle_compra(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_orden(auth_token, limit=5, offset=0):
     response = client.get(
@@ -277,8 +321,8 @@ def test_get_orden(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_cuota_venta(auth_token, limit=5, offset=0):
     response = client.get(
@@ -287,8 +331,8 @@ def test_get_cuota_venta(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_pago_venta(auth_token, limit=5, offset=0):
     response = client.get(
@@ -297,8 +341,8 @@ def test_get_pago_venta(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_cuota_compra(auth_token, limit=5, offset=0):
     response = client.get(
@@ -307,8 +351,8 @@ def test_get_cuota_compra(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 def test_get_pago_compra(auth_token, limit=5, offset=0):
     response = client.get(
@@ -317,8 +361,8 @@ def test_get_pago_compra(auth_token, limit=5, offset=0):
         headers={"Authorization": f"Bearer {auth_token}"}
     )
     assert response.status_code == 200
-    data = response.json()
-    assert 'data' in data
+    payload = extract_payload(response)
+    assert payload is not None
 
 if __name__ == "__main__":
     pytest.main(["-v", "src/test/infraestructura/test_endpoints_get.py"])

@@ -75,6 +75,8 @@ async def obtenerUsuariosApi(
     estado: Optional[int] = None,
     id_personafk: Optional[int] = None,
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset inicial para paginación"),
 ):
     filtros = {}
     if nombre_completo is not None:
@@ -91,7 +93,7 @@ async def obtenerUsuariosApi(
     if mostrar_inactivo != 1:
         filtros["estado"] = 1
 
-    result = await obtener_usuarios(filtros)
+    result = await obtener_usuarios(filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}
 
 

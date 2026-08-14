@@ -64,6 +64,8 @@ async def obtenerLocalesApi(
         None,
         description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos",
     ),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset inicial para paginación"),
 ):
     filtros = {}
     if id is not None:
@@ -80,4 +82,8 @@ async def obtenerLocalesApi(
         filtros["mostrar_inactivo"] = 0  # estado != 0
 
     result = await obtener_locales(filtros)
+    if isinstance(result, list):
+        start = int(offset or 0)
+        end = start + int(limit) if limit is not None else None
+        result = result[start:end]
     return {"message": result}

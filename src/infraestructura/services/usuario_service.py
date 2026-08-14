@@ -48,10 +48,10 @@ def _hash_if_needed(payload: dict) -> dict:
 # Reemplazado por helper genérico `attach_related` en `src/shell/utils.py`
 
 
-async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
+async def obtener_usuarios(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    usuarios = await obtenerUsuarios(filtros, 100, 0)
+    usuarios = await obtenerUsuarios(filtros, limite, offset)
     if not usuarios:
         return usuarios
 
@@ -68,7 +68,7 @@ async def obtener_usuarios(filtros: dict = None, columnas: str = '*'):
     return usuarios
 
 
-async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
+async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     """
     Igual que `obtener_usuarios` pero NO adjunta el rol completo.
     Útil para endpoints GET donde se incluye `usuario` anidado
@@ -76,7 +76,7 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*'):
     """
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
-    usuarios = await obtenerUsuarios(filtros, 100, 0)
+    usuarios = await obtenerUsuarios(filtros, limite, offset)
     if not usuarios:
         return usuarios
 

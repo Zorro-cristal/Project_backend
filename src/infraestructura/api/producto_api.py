@@ -75,6 +75,8 @@ async def obtenerProductosApi(
     mostrar_inactivo: Optional[int] = Query(
         None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"
     ),
+    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
+    offset: int = Query(0, ge=0, description="Offset inicial para paginación"),
 ):
     filtros = {}
     if id is not None:
@@ -104,6 +106,12 @@ async def obtenerProductosApi(
         result = await obtener_productos_con_detalles(
             filtros, incluir_precios=False, incluir_detalles=False
         )
+
+    # Aplicar paginación en memoria si el resultado ya está ensamblado en Python
+    if isinstance(result, list):
+        start = int(offset or 0)
+        end = start + int(limit) if limit is not None else None
+        result = result[start:end]
 
     return {"message": result}
 

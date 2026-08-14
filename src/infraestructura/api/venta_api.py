@@ -109,6 +109,8 @@ async def obtenerVentasApi(
     id_cajafk: Optional[int] = Query(None, description="Filtrar ventas por ID de caja"),
     nombre_usuario: Optional[str] = Query(None, description="Filtrar ventas por nombre de usuario (alias del usuario que creó la caja)"),
     mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")
+    , limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver")
+    , offset: int = Query(0, ge=0, description="Offset inicial para paginación")
 ):
     from src.infraestructura.config.supabase import get_supabase_client
     
@@ -152,7 +154,7 @@ async def obtenerVentasApi(
                 # No hay cajas para esos usuarios, retornar vacío
                 return {"message": []}
     
-    result = await obtener_ventas(filtros)
+    result = await obtener_ventas(filtros, limite=limit, offset=offset)
 
     return {"message": result}
 
