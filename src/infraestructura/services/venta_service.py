@@ -101,7 +101,7 @@ async def obtener_ventas(filtros: dict = None, columnas: str = '*', joins: list 
         joins: Lista de configuraciones de JOIN para filtrar por campos relacionados.
                Ejemplo: [{'table': 'usuarios', 'foreign_key': 'id_usuariofk', 'primary_key': 'id', 'name_field': 'alias', 'nombre_usuario': 'juan'}]
     """
-    ventas = await obtenerVenta(filtros=filtros, columnas=columnas, joins=joins, limit=limite, offset=offset)
+    ventas = await obtenerVenta(filtros=filtros, columnas=columnas, joins=joins, limite=limite, offset=offset)
     if not ventas:
         return ventas
     return await attach_related_data(ventas)
