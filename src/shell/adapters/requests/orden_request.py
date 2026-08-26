@@ -2,7 +2,6 @@ from typing import Optional
 
 from pydantic import BaseModel
 
-
 # Estados válidos para orden
 # 0: 'inactivo', 1: 'pendiente', 2: 'en_proceso', 3: 'listo', 4: 'entregado'
 ESTADO_ORDEN = {
@@ -24,6 +23,10 @@ class OrdenRequest(BaseModel):
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
 
+    estado_impresion: Optional[str] = "PENDIENTE"
+    IMPRESO_at: Optional[str] = None
+    last_print_error: Optional[str] = None
+
     class Config:
         validate_by_name = True
 
@@ -37,6 +40,10 @@ class OrdenUpdateRequest(BaseModel):
     id_detalleproductofk: Optional[str] = None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
+
+    estado_impresion: Optional[str] = None
+    IMPRESO_at: Optional[str] = None
+    last_print_error: Optional[str] = None
 
     class Config:
         validate_by_name = True

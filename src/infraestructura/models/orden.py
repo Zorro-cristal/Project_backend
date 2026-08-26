@@ -1,10 +1,17 @@
 
 from dataclasses import dataclass
+from enum import Enum
 from typing import Optional
 
 from .mesa import Mesa
 from .precio import Precio
 from .usuario import Usuario
+
+
+class PrintStatus(str, Enum):
+    PENDIENTE = "PENDIENTE"
+    IMPRESO = "IMPRESO"
+    FALLO = "FALLO"
 
 
 @dataclass(frozen=True)
@@ -16,9 +23,8 @@ class Orden:
     id_detalleproductofk: Optional[str]= None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
-    print_status: Optional[str] = "PENDING"  # PENDING | PRINTED | FAILED
-    print_attempts: Optional[int] = 0
-    printed_at: Optional[str] = None
+    estado_impresion: PrintStatus = PrintStatus.PENDIENTE
+    IMPRESO_at: Optional[str] = None
     last_print_error: Optional[str] = None
     mesa: Optional[Mesa]= None
     precio: Optional[Precio]= None

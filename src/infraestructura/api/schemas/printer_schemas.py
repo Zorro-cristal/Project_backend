@@ -8,7 +8,7 @@ class PrintAck(BaseModel):
 
     event: Literal["print_ack"] = "print_ack"
     job_id: str = Field(..., description="Id de la orden (job de impresión)")
-    status: Literal["SUCCESS", "FAILED"] = Field(
+    status: Literal["SUCCESS", "FALLO"] = Field(
         ..., description="Resultado de la impresión"
     )
     error_message: Optional[str] = Field(

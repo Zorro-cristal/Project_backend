@@ -9,9 +9,9 @@ from ..websockets.connection_manager import connection_manager
 logger = logging.getLogger(__name__)
 
 # Estados de impresión soportados
-PRINT_STATUS_PENDING = "PENDING"
-PRINT_STATUS_PRINTED = "PRINTED"
-PRINT_STATUS_FAILED = "FAILED"
+ESTADO_IMPRESION_PENDIENTE = "PENDIENTE"
+ESTADO_IMPRESION_IMPRESO = "IMPRESO"
+ESTADO_IMPRESION_FALLO = "FALLO"
 
 # Mensajes de error estandarizados
 ERROR_LOCAL_OFFLINE = "Local sin conexión activa"
@@ -89,14 +89,35 @@ async def resolve_id_local(orden: dict) -> Optional[int]:
     return mesa.get("id_localfk")
 
 
+async def get_pending_print_orders(id_local: str) -> list[dict]:
+    """Obtiene las órdenes pendientes de impresión de un local."""
+    from ..repositories.orden_repository import obtenerOrdenes
+    from .orden_service import attach_related_data
+
+    pending_orders = await obtenerOrdenes(
+        filtros={"estado_impresion": ESTADO_IMPRESION_PENDIENTE},
+        limite=100,
+        offset=0,
+    )
+    if not pending_orders:
+        return []
+
+    pending_orders = await attach_related_data(pending_orders)
+    local_id = int(id_local)
+    matching_orders = []
+    for order in pending_orders:
+        if await resolve_id_local(order) == local_id:
+            matching_orders.append(order)
+    return matching_orders
+
+
 async def dispatch_print_job(orden: dict) -> None:
     """Tarea en segundo plano que despacha el trabajo de impresión.
 
     - Obtiene el payload del ticket formateado a partir de la orden creada.
     - Intenta enviar el payload por el `ConnectionManager` al local de la orden.
-    - Incrementa `print_attempts += 1`.
     - Si el local no está conectado (o no se puede resolver), actualiza la
-      orden con `last_print_error` y `print_status = FAILED`.
+      orden con `last_print_error` y `estado_impresion = FALLO`.
     """
     orden_id = orden.get("id")
     try:
@@ -112,15 +133,12 @@ async def dispatch_print_job(orden: dict) -> None:
         # 3) Intentar el envío
         enviado = await connection_manager.send_print_job(str(id_local), payload)
 
-        # 4) Incrementar intentos
-        attempts = int(orden.get("print_attempts") or 0) + 1
         if enviado:
             await actualizarOrden({
-                "print_status": PRINT_STATUS_PENDING,
-                "print_attempts": attempts,
+                "estado_impresion": ESTADO_IMPRESION_PENDIENTE,
             }, orden_id)
         else:
-            await _marcar_error(orden_id, ERROR_LOCAL_OFFLINE, attempts=attempts)
+            await _marcar_error(orden_id, ERROR_LOCAL_OFFLINE)
     except Exception as exc:
         logger.exception(f"Error en dispatch_print_job para orden {orden_id}: {exc}")
         await _marcar_error(orden_id, f"Error al despachar impresión: {exc}")
@@ -129,18 +147,15 @@ async def dispatch_print_job(orden: dict) -> None:
 async def _marcar_error(
     orden_id: Optional[int],
     error_message: str,
-    attempts: Optional[int] = None,
 ) -> None:
-    """Actualiza la orden marcándola como FAILED con el error correspondiente."""
+    """Actualiza la orden marcándola como FALLO con el error correspondiente."""
     if orden_id is None:
         logger.error(f"No se pudo actualizar estado de impresión: {error_message}")
         return
     updates = {
-        "print_status": PRINT_STATUS_FAILED,
+        "estado_impresion": ESTADO_IMPRESION_FALLO,
         "last_print_error": error_message,
     }
-    if attempts is not None:
-        updates["print_attempts"] = attempts
     try:
         await actualizarOrden(updates, orden_id)
     except Exception as exc:
@@ -155,7 +170,7 @@ async def process_print_ack(message: dict) -> None:
     {
       "event": "print_ack",
       "job_id": "uuid-de-la-orden",
-      "status": "SUCCESS",  // o "FAILED"
+      "status": "SUCCESS",  // o "FALLO"
       "error_message": null
     }
     ```
@@ -168,20 +183,20 @@ async def process_print_ack(message: dict) -> None:
         logger.warning("ACK de impresión sin job_id")
         return
 
-    status = message.get("status", "FAILED")
+    status = message.get("status", "FALLO")
     error_message = message.get("error_message")
 
     if status == "SUCCESS":
         updates = {
-            "print_status": PRINT_STATUS_PRINTED,
-            "printed_at": datetime.now(timezone.utc).isoformat(),
+            "estado_impresion": ESTADO_IMPRESION_IMPRESO,
+            "IMPRESO_at": datetime.now(timezone.utc).isoformat(),
             "last_print_error": None,
         }
         logger.info(f"Impresión confirmada para orden {job_id}")
     else:
         updates = {
-            "print_status": PRINT_STATUS_FAILED,
-            "printed_at": None,
+            "estado_impresion": ESTADO_IMPRESION_FALLO,
+            "IMPRESO_at": None,
             "last_print_error": error_message or "Fallo reportado por el cliente",
         }
         logger.warning(f"Impresión fallida para orden {job_id}: {error_message}")

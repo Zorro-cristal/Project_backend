@@ -449,15 +449,14 @@ CREATE TABLE ordenes (
     id_usuariofk          INTEGER,
     id_detalleproductofk  VARCHAR(15),
     id_preciofk           INTEGER,
-    print_status          VARCHAR(15) NOT NULL DEFAULT 'PENDING', -- PENDING | PRINTED | FAILED
-    print_attempts        INTEGER NOT NULL DEFAULT 0,
-    printed_at            TIMESTAMP WITH TIME ZONE,
+    estado_impresion          VARCHAR(15) NOT NULL DEFAULT 'PENDIENTE', -- PENDIENTE | IMPRESO | FALLO
+    IMPRESO_at            TIMESTAMP WITH TIME ZONE,
     last_print_error      TEXT,
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ordenes_mesa FOREIGN KEY (id_mesafk) REFERENCES mesas (id),
     CONSTRAINT fk_ordenes_precio FOREIGN KEY (id_preciofk) REFERENCES precios (id),
     CONSTRAINT fk_ordenes_detalles_producto FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra),
-    CONSTRAINT chk_ordenes_print_status CHECK (print_status IN ('PENDING', 'PRINTED', 'FAILED'))
+    CONSTRAINT chk_ordenes_estado_impresion CHECK (estado_impresion IN ('PENDIENTE', 'IMPRESO', 'FALLO'))
 );
 
 -- ----------------------------
