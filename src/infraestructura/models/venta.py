@@ -30,6 +30,7 @@ class Venta:
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
     id_secuencias_ventafk: Optional[int] = None
+    id_cobradorfk: Optional[int] = None
     cliente: Optional[Cliente] = None
     local: Optional[Local] = None
     caja: Optional[Caja] = None

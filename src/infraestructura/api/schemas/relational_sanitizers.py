@@ -112,3 +112,6 @@ class ProductoListResponse(MessageEnvelope[List[ProductoWithDetallesProducto]]):
 
 class VentaListResponse(MessageEnvelope[List[VentaFKOnly]]):
     pass
+
+class VentaSingleResponse(MessageEnvelope[VentaFKOnly]):
+    pass

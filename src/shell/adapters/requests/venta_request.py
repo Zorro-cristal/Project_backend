@@ -25,6 +25,7 @@ class VentaBase(BaseModel):
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
+    id_cobradorfk: Optional[int] = None
 
     # Para POST /venta (evitar depender de ordenes.id_mesafk)
     # Si viene desde el front, se usa para calcular ventas.ocupacion.
@@ -64,6 +65,7 @@ class VentaCreditoRequest(VentaBase):
     id_clientefk: int
     id_localfk: int
     id_cajafk: int
+    id_cobradorfk: int
     total_cuotas: int = Field(description="Total de cuotas a generar")
     monto_cuota: float = Field(description="Monto de cada cuota")
     fecha_inicio: datetime = Field(description="Fecha de la primera cuota")

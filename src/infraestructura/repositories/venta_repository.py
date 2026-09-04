@@ -90,4 +90,4 @@ async def actualizarVenta(datos: Union[Venta, dict], id: Optional[int] = None):
 
     if id is None:
         return await insert("ventas", payload)
-    return await update("ventas", id, payload, key='id_venta')
+    return await update("ventas", id, payload, key='id')

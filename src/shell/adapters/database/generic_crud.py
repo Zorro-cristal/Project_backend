@@ -25,7 +25,7 @@ TABLE_PRIMARY_KEYS = {
     'mesas': 'id',
     'stocks': 'id',
     'cajas': 'id',
-    'ventas': 'id_venta',
+    'ventas': 'id',
     'detalle_venta': 'id_detalle_venta',
     'compras': 'id_compra',
     'detalle_compra': 'id_detalle_compra',

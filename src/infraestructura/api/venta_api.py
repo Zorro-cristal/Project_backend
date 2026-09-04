@@ -12,7 +12,8 @@ from ..services.venta_service import (actualizar_venta, crear_venta,
                                       obtener_venta_por_id_con_detalles,
                                       obtener_venta_por_id_sin_detalles,
                                       obtener_ventas)
-from .schemas.relational_sanitizers import VentaFKOnly, VentaListResponse
+from .schemas.relational_sanitizers import (VentaFKOnly, VentaListResponse,
+                                            VentaSingleResponse)
 
 router = APIRouter()
 
@@ -164,7 +165,7 @@ async def obtenerVentasApi(
     dependencies=[Depends(permiso_requerido('venta', 'leer'))],
     summary="Obtener venta por ID",
     description="Obtiene una venta específica por su ID. Usa include=detalleVenta para incluir detalles.",
-    response_model=VentaFKOnly,
+    response_model=VentaSingleResponse,
 )
 async def obtenerVentaPorIdApi(
     id: int,

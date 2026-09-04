@@ -1,5 +1,6 @@
 from typing import Optional
 
+from src.infraestructura.services.usuario_service import obtener_usuarios
 from src.configs.settings import get_settings
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 from src.shell.utils import (attach_grouped, attach_related,
@@ -63,6 +64,10 @@ async def attach_related_data(ventas: list[dict]) -> list[dict]:
     )
     ventas = await attach_related(
         ventas, "id_vendedorfk", obtener_vendedores, "id", "id", "vendedor"
+    )
+    # Adjuntar cobrador (usuario)
+    ventas = await attach_related(
+        ventas, "id_cobradorfk", obtener_usuarios, "id", "id", "cobrador"
     )
 
     # One-to-many detalles
