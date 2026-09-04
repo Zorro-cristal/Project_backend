@@ -49,8 +49,8 @@ async def obtenerVendedoresApi(
         filtros["id"] = id
     if salario is not None:
         filtros["salario"] = salario
-    if comision is not None:
-        filtros["comision"] = comision
+    if comision is not None or "comision" in locals(): # This logic is tricky with Query params. 
+
     if estado is not None:
         filtros["estado"] = estado
     if id_usuariofk is not None:
