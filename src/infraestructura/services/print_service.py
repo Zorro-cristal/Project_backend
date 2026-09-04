@@ -42,6 +42,7 @@ def build_ticket_payload(orden: dict) -> dict:
         "mesa": {
             "id": mesa.get("id"),
             "nombre": mesa.get("nombre"),
+            "id_local": mesa.get("id_local") or mesa.get("id_localfk"),
         },
         "producto": {
             "id": producto.get("id"),
@@ -72,13 +73,18 @@ def _dataclass_to_dict(orden) -> dict:
 
 
 async def resolve_id_local(orden: dict) -> Optional[int]:
-    """Resuelve el `id_local` al que pertenece la orden a través de su mesa.
+    """Resuelve el `id_local` al que pertenece la orden a través de su mesa o tipo.
 
     La orden tiene `id_mesafk`; la mesa tiene `id_localfk`. Si no se puede
     resolver (orden sin mesa o mesa sin local), retorna `None`.
     """
     id_mesafk = orden.get("id_mesafk")
+    tipo = orden.get("tipo")
+
     if id_mesafk is None:
+        # Si es delivery (tipo 2), no intentamos resolver local por mesa para impresión automática
+        if tipo == 2:
+            return None
         return None
 
     mesas = await obtenerMesa(filtros={"id": id_mesafk})
@@ -129,6 +135,9 @@ async def dispatch_print_job(orden: dict) -> None:
 
         # 2) Construir payload del ticket
         payload = build_ticket_payload(orden)
+
+        # Imprimir en la terminal los datos enviados para depuración
+        logger.info(f"Despachando print_job para orden {orden_id} al local {id_local}: {payload}")
 
         # 3) Intentar el envío
         enviado = await connection_manager.send_print_job(str(id_local), payload)
@@ -189,19 +198,32 @@ async def process_print_ack(message: dict) -> None:
     if status == "SUCCESS":
         updates = {
             "estado_impresion": ESTADO_IMPRESION_IMPRESO,
-            "IMPRESO_at": datetime.now(timezone.utc).isoformat(),
             "last_print_error": None,
         }
         logger.info(f"Impresión confirmada para orden {job_id}")
     else:
         updates = {
             "estado_impresion": ESTADO_IMPRESION_FALLO,
-            "IMPRESO_at": None,
             "last_print_error": error_message or "Fallo reportado por el cliente",
         }
         logger.warning(f"Impresión fallida para orden {job_id}: {error_message}")
 
     try:
         await actualizarOrden(updates, job_id)
+        # Obtener detalles de la orden para saber a qué local notificar
+        orden = await obtener_orden_por_id({'id': int(job_id)})
+        if orden and 'mesa' in orden and orden['mesa']:
+            id_local = order['mesa'].get('id_local') or order['mesa'].get('id_localfk')
+            if id_local:
+                # Enviar notificación por WebSocket para actualización en tiempo real
+                notificacion = {
+                    "event": "order_status_changed",
+                    "orden_id": job_id,
+                    "estado_impresion": updates["estado_impresion"],
+                    "last_print_error": updates["last_print_error"]
+                }
+                connection_manager.send_notification(str(id_local), notificacion)
+                logger.info(f"Notificación de estado enviada al local {id_local} para la orden {job_id}")
+
     except Exception as exc:
         logger.error(f"No se pudo actualizar la orden {job_id} con el ACK: {exc}")

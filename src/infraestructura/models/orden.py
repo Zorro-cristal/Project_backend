@@ -1,4 +1,3 @@
-
 from dataclasses import dataclass
 from enum import Enum
 from typing import Optional
@@ -23,8 +22,8 @@ class Orden:
     id_detalleproductofk: Optional[str]= None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
+    tipo: int = 1  # 1 = mesa, 2 = delivery, 3 = retiro
     estado_impresion: PrintStatus = PrintStatus.PENDIENTE
-    IMPRESO_at: Optional[str] = None
     last_print_error: Optional[str] = None
     mesa: Optional[Mesa]= None
     precio: Optional[Precio]= None

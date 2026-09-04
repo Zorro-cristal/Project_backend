@@ -9,6 +9,8 @@ from .detalles_producto_service import obtener_detalles_productos
 from .orden_stock import (consumir_ingredientes_para_producto_comida,
                           consumir_stock_para_orden)
 from .print_service import dispatch_print_job
+from ..repositories.mesa_repository import obtenerMesa
+from ..repositories.mesa_repository import obtenerMesa
 
 
 def build_orden_entity(payload: dict) -> Orden:
@@ -40,13 +42,17 @@ async def attach_related_data(ordenes: list[dict]) -> list[dict]:
     # Importación perezosa para evitar circular import
     from .mesa_service import obtener_mesas
 
-    # Attach mesa data
+    # Attach mesa data with local info
     mesa_ids = {o.get('id_mesafk') for o in ordenes if o.get('id_mesafk')}
     if mesa_ids:
         mesas = await obtener_mesas({'id': list(mesa_ids)})
         mesa_map = {m['id']: m for m in (mesas or [])}
         for o in ordenes:
-            o['mesa'] = mesa_map.get(o.get('id_mesafk'))
+            m_data = mesa_map.get(o.get('id_mesafk'))
+            if m_data:
+                o['mesa'] = m_data
+            else:
+                o['mesa'] = None
     else:
         for o in ordenes:
             o['mesa'] = None
@@ -89,6 +95,12 @@ async def attach_related_data(ordenes: list[dict]) -> list[dict]:
 
 
 async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks] = None):
+    # Si no se provee id_localfk pero sí id_mesafk, lo resolvemos.
+    if not payload.get('id_localfk') and payload.get('id_mesafk'):
+        mesas = await obtenerMesa(filtros={"id": payload['id_mesafk']})
+        if mesas:
+            payload['id_localfk'] = mesas[0].get('id_localfk')
+
     # 1) Validar y (si es comida) consumir ingredientes ANTES de insertar la orden.
     cantidad = payload.get("cantidad")
     id_detalleproductofk = payload.get("id_detalleproductofk")
@@ -97,6 +109,7 @@ async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks]
         # Si faltan datos para stock, se inserta (o puedes levantar error según tu regla de negocio)
         orden = build_orden_entity(payload)
         creada = await actualizarOrden(orden)
+        creada = await _enriquecer_orden_creada(creada)
         _agendar_impresion(background_tasks, creada)
         return creada
 
@@ -142,8 +155,22 @@ async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks]
     # 2) Insertar orden
     orden = build_orden_entity(payload)
     creada = await actualizarOrden(orden)
+    creada = await _enriquecer_orden_creada(creada)
     _agendar_impresion(background_tasks, creada)
     return creada
+
+
+async def _enriquecer_orden_creada(orden: dict | list | None) -> dict | list | None:
+    """Enriquece la orden recién creada con sus relaciones antes de enviar el ticket de impresión."""
+    if not orden:
+        return orden
+
+    if isinstance(orden, list):
+        if not orden:
+            return orden
+        return await attach_related_data(orden)
+
+    return (await attach_related_data([orden]))[0]
 
 
 def _agendar_impresion(background_tasks: Optional[BackgroundTasks], orden: dict) -> None:

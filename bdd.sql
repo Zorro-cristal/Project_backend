@@ -139,7 +139,7 @@ CREATE TABLE detalles_precio (
     id_detalleproductofk  VARCHAR(15) NOT NULL,
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_detalles_precio_precio    FOREIGN KEY (id_preciofk)   REFERENCES precios (id),
-CONSTRAINT fk_detalles_precio_detalles_producto FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra)
+    CONSTRAINT fk_detalles_precio_detalles_producto FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra)
 );
 
 -- ----------------------------
@@ -330,6 +330,7 @@ CREATE TABLE ventas (
     cantidad_personas       INTEGER,
     ocupacion        TIME,
     id_clientefk     INTEGER NOT NULL,
+    id_cobradorfk     INTEGER,
     id_secuencias_ventafk INTEGER NOT NULL,
     fecha_creado     TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ventas_cliente FOREIGN KEY (id_clientefk) REFERENCES clientes (id)
@@ -445,12 +446,13 @@ CREATE TABLE ordenes (
     estado                INTEGER NOT NULL DEFAULT 1, -- 0 = inactivo, 1 = pendiente, 2 = en_proceso, 3 = listo, 4 = entregado, 5 = cobrado
     cantidad              INTEGER NOT NULL DEFAULT 1,
     observacion           VARCHAR(255),
-    id_mesafk             INTEGER,
+    id_mesafk             INTEGER NOT NULL,
     id_usuariofk          INTEGER,
+    id_clientefk          INTEGER,
     id_detalleproductofk  VARCHAR(15),
     id_preciofk           INTEGER,
-    estado_impresion          VARCHAR(15) NOT NULL DEFAULT 'PENDIENTE', -- PENDIENTE | IMPRESO | FALLO
-    IMPRESO_at            TIMESTAMP WITH TIME ZONE,
+    tipo                  INTEGER NOT NULL DEFAULT 1, -- 1 = mesa, 2 = delivery, 3 = retiro
+    estado_impresion      VARCHAR(15) NOT NULL DEFAULT 'PENDIENTE', -- PENDIENTE | IMPRESO | FALLO
     last_print_error      TEXT,
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
     CONSTRAINT fk_ordenes_mesa FOREIGN KEY (id_mesafk) REFERENCES mesas (id),
@@ -471,7 +473,7 @@ CREATE TABLE reservas (
     fecha_reserva         TIMESTAMP WITH TIME ZONE NOT NULL,
     tiempo_estimado       TIME,
     tiempo_ocupacion      TIME,
-    id_mesafk             INTEGER,
+    id_mesafk             INTEGER NOT NULL,
     id_usuariofk          INTEGER,
     id_clientefk          INTEGER,
     fecha_creado          TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT NOW(),
@@ -512,74 +514,23 @@ CREATE TABLE pagos_compra (
     CONSTRAINT fk_pagos_compra_compras FOREIGN KEY (id_comprafk) REFERENCES compras (id)
 );
 
-CREATE OR REPLACE FUNCTION emitir_cod_num_venta(
-    p_id_local INTEGER,
-    p_id_vendedor INTEGER
-)
-RETURNS TABLE (
-    cod_num_completo VARCHAR,
-    id_secuencia INTEGER,
-    id_timbrado INTEGER,
-    secuencia INTEGER
-)
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    v_timbrado_id INTEGER;
-    v_local_cod VARCHAR(3);
-    v_vendedor_cod VARCHAR(3);
-    v_seq_id INTEGER;
-    v_secuencia INTEGER;
-    v_updated INTEGER;
+-- ----------------------------
+-- Funciones y Triggers para automatización
+-- ----------------------------
+
+-- Función para crear una mesa por defecto cuando se crea un local
+CREATE OR REPLACE FUNCTION crear_mesa_delivery_automatica()
+RETURNS TRIGGER AS $$
 BEGIN
-    -- 1) Validar timbrado activo (no vencido), elegir el de mayor id si hay varios
-    SELECT t.id
-      INTO v_timbrado_id
-      FROM timbrados t
-     WHERE t.fin_vigencia > NOW()
-     ORDER BY t.id DESC
-     LIMIT 1;
-
-    IF v_timbrado_id IS NULL THEN
-        RAISE EXCEPTION 'No existe timbrado activo (fin_vigencia > NOW())';
-    END IF;
-
-    -- 2) Códigos de local/vendedor
-    SELECT l.cod_num INTO v_local_cod FROM locales l WHERE l.id = p_id_local;
-    IF v_local_cod IS NULL THEN v_local_cod := '000'; END IF;
-
-    SELECT v.cod_num INTO v_vendedor_cod FROM vendedores v WHERE v.id = p_id_vendedor;
-    IF v_vendedor_cod IS NULL THEN v_vendedor_cod := '000'; END IF;
-
-    -- 3) Incrementar secuencia si existe (lock implícito por UPDATE)
-    UPDATE secuencias_venta
-       SET ultimo_nro = ultimo_nro + 1
-     WHERE id_localfk = p_id_local
-       AND id_vendedorfk = p_id_vendedor
-       AND id_timbradofk = v_timbrado_id
-    RETURNING id, ultimo_nro
-      INTO v_seq_id, v_secuencia;
-
-    GET DIAGNOSTICS v_updated = ROW_COUNT;
-
-    -- Si no existía, crearla con ultimo_nro = 1
-    IF v_updated = 0 THEN
-        INSERT INTO secuencias_venta (id_localfk, id_vendedorfk, id_timbradofk, ultimo_nro)
-        VALUES (p_id_local, p_id_vendedor, v_timbrado_id, 1)
-        RETURNING id, ultimo_nro
-          INTO v_seq_id, v_secuencia;
-    END IF;
-
-    id_secuencia := v_seq_id;
-    secuencia := v_secuencia;
-    id_timbrado := v_timbrado_id;
-
-    -- 4) Armar cod_num: Local(3)-Vendedor(3)-Secuencia(6)
-    cod_num_completo :=
-        LPAD(COALESCE(v_local_cod, '000'), 3, '0') || '-' ||
-        LPAD(COALESCE(v_vendedor_cod, '000'), 3, '0') || '-' ||
-        LPAD(COALESCE(secuencia::TEXT, '0'), 6, '0');
-
-    RETURN NEXT;
+    INSERT INTO mesas (nombre, estado, capacidad, id_localfk)
+    VALUES ('Delivery/Retiro', 1, 0, NEW.id);
+    RETURN NEW;
 END;
-$$;
+$$ LANGUAGE plpgsql;
+
+-- Trigger que se dispara después de insertar un nuevo local
+DROP TRIGGER IF EXISTS trg_crear_mesa_delivery AFTER INSERT ON locales;
+CREATE TRIGGER trg_crear_mesa_delivery
+AFTER INSERT ON locales
+FOR EACH ROW
+EXECUTE FUNCTION crear_mesa_delivery_automatica();

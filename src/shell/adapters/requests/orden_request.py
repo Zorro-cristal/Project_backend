@@ -18,13 +18,12 @@ class OrdenRequest(BaseModel):
     cantidad: Optional[int] = 1
     observacion: Optional[str] = None
 
-    id_mesafk: Optional[int] = None
+    id_mesafk: int
     id_detalleproductofk: Optional[str] = None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
+    tipo: int = 1  # 1 = mesa, 2 = delivery, 3 = retiro
 
-    estado_impresion: Optional[str] = "PENDIENTE"
-    IMPRESO_at: Optional[str] = None
     last_print_error: Optional[str] = None
 
     class Config:
@@ -40,9 +39,9 @@ class OrdenUpdateRequest(BaseModel):
     id_detalleproductofk: Optional[str] = None
     id_usuariofk: Optional[int] = None
     id_preciofk: Optional[int] = None
+    tipo: int = 1  # 1 = mesa, 2 = delivery, 3 = retiro
 
     estado_impresion: Optional[str] = None
-    IMPRESO_at: Optional[str] = None
     last_print_error: Optional[str] = None
 
     class Config:
