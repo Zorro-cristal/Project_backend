@@ -3,14 +3,13 @@ from typing import Optional
 from fastapi import BackgroundTasks
 
 from ..models.orden import Orden
+from ..repositories.mesa_repository import obtenerMesa
 from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
 from ..repositories.precio_repository import obtenerPrecio
 from .detalles_producto_service import obtener_detalles_productos
 from .orden_stock import (consumir_ingredientes_para_producto_comida,
                           consumir_stock_para_orden)
 from .print_service import dispatch_print_job
-from ..repositories.mesa_repository import obtenerMesa
-from ..repositories.mesa_repository import obtenerMesa
 
 
 def build_orden_entity(payload: dict) -> Orden:
@@ -137,20 +136,26 @@ async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks]
         # Cantidad de la orden
         cantidad_orden = int(cantidad)
 
-        if es_comida:
-            # Requisito: solo descontar ingredientes (no descontar el producto final)
-            # Además: confirmar que TODOS los ingredientes estén disponibles antes de la orden.
-            # En caso de falta de stock, se lanza error y NO se inserta la orden.
-            await consumir_ingredientes_para_producto_comida(
-                id_producto_comida=int(producto["id"]),
-                cantidad_producto_comida=cantidad_orden,
-            )
-        else:
-            # No es comida => descontar el stock del producto final como antes.
-            await consumir_stock_para_orden(
-                id_detalleproductofk=str(id_detalleproductofk),
-                cantidad_a_consumir=cantidad_orden,
-            )
+        try:
+            if es_comida:
+                # Requisito: solo descontar ingredientes (no descontar el producto final)
+                # Además: confirmar que TODOS los ingredientes estén disponibles antes de la orden.
+                # En caso de falta de stock, se lanza error y NO se inserta la orden.
+                await consumir_ingredientes_para_producto_comida(
+                    id_producto_comida=int(producto["id"]),
+                    cantidad_producto_comida=cantidad_orden,
+                )
+            else:
+                # No es comida => descontar el stock del producto final como antes.
+                await consumir_stock_para_orden(
+                    id_detalleproductofk=str(id_detalleproductofk),
+                    cantidad_a_consumir=cantidad_orden,
+                )
+        except ValueError as e:
+            if "Stock insuficiente" in str(e):
+                from fastapi import HTTPException
+                raise HTTPException(status_code=400, detail=str(e))
+            raise e
 
     # 2) Insertar orden
     orden = build_orden_entity(payload)

@@ -47,6 +47,7 @@ async def obtenerDetallesProductosApi(
     tamanho: Optional[int] = Query(None, description="Filtrar detalles de productos por tamaño"),
     cod_barra: Optional[int] = Query(None, description="Filtrar detalles de productos por código de barra"),
     unidad_por_lote: Optional[int] = Query(None, description="Filtrar detalles de productos por unidades por lote"),
+    stock_minimo: Optional[int] = Query(None, ge=0, description="Filtrar detalles con stock disponible estrictamente mayor a este valor"),
     include: Optional[str] = Query(None, description="include=producto para incluir datos del producto, include=precios para incluir precios asociados"),
     limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
     offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
@@ -62,6 +63,8 @@ async def obtenerDetallesProductosApi(
         filtros["cod_barra"] = cod_barra
     if unidad_por_lote is not None:
         filtros["unidad_por_lote"] = unidad_por_lote
+    if stock_minimo is not None:
+        filtros["stock_minimo"] = stock_minimo
     
     # Nuevo: filtros por producto
     filtros_producto = {}

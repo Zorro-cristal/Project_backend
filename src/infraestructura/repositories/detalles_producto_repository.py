@@ -15,6 +15,42 @@ async def obtenerDetalleProducto(
     include_precios: bool = False,
     filtros_producto: Optional[dict] = None
 ):
+    filtros = dict(filtros or {})
+    stock_minimo = filtros.pop("stock_minimo", None)
+
+    if stock_minimo is not None:
+        from src.infraestructura.config.supabase import get_supabase_client
+
+        stock_rows = get_supabase_client().table("stocks").select(
+            "id_detalleproductofk,cant_mostrador,cant_deposito"
+        ).execute().data or []
+
+        stock_por_detalle = {}
+        for stock in stock_rows:
+            detalle_id = stock.get("id_detalleproductofk")
+            if detalle_id is None:
+                continue
+            stock_por_detalle[detalle_id] = stock_por_detalle.get(detalle_id, 0) + (
+                int(stock.get("cant_mostrador") or 0)
+                + int(stock.get("cant_deposito") or 0)
+            )
+
+        codigos_con_stock = [
+            detalle_id
+            for detalle_id, stock_total in stock_por_detalle.items()
+            if stock_total > stock_minimo
+        ]
+        if not codigos_con_stock:
+            return []
+
+        codigos_con_stock = set(codigos_con_stock)
+        cod_barra = filtros.get("cod_barra")
+        if cod_barra is not None:
+            codigos_con_stock &= {cod_barra}
+        if not codigos_con_stock:
+            return []
+        filtros["cod_barra"] = list(codigos_con_stock)
+
     # Si se solicita incluir producto, usamos la columna específica con la relación
     # pero excluyendo detalles_producto del producto para evitar ciclos
     relaciones = []
