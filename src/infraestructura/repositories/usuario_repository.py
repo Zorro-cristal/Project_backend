@@ -1,8 +1,9 @@
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 
+
 async def obtenerUsuarios(filtros, limite, offset):
-    return await get('usuarios', filtros, limite, offset)
+    return await get('usuarios', filtros, limite, offset, columns="*, persona(nombres, apellidos, telefono)")
 
 async def actualizarUsuario(datos, id= 0):
     payload = prepararPayloadDb(datos, exclude_fields=['persona','rol'])

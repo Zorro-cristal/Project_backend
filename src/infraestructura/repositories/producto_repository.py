@@ -7,7 +7,7 @@ from ..models.producto import Producto
 
 
 async def obtenerProducto(filtros: Optional[dict] = None, limite: Optional[int]= 100, offset: Optional[int]= 0, columnas: str= "*"):
-    return await get('productos', filtros, limite, offset, columns=columnas)
+    return await get('productos', filtros, limite, offset, columns="*, categorias(id_categoriofk:id, categoria_nombre:nombre, categoria_estado:estado)")
 
 async def obtenerProductoConDetallesProducto(id: int):
     # DetallesProducto = detalles_producto asociados al producto

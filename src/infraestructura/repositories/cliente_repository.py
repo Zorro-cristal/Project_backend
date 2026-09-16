@@ -5,7 +5,7 @@ from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 
 async def obtenerCliente(filtros= None, limite= 100, offset= 0, columnas= "*"):
-    return await get('clientes', filtros, limite, offset)
+    return await get('clientes', filtros, limite, offset, columns="*, persona(nombres, apellidos, telefono)")
 
 async def actualizarCliente(datos: Union[Cliente, dict], id: Optional[int] = None):
     payload = prepararPayloadDb(datos, exclude_fields=['persona'])

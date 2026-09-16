@@ -76,18 +76,6 @@ async def get(
     columns: str = "*",  # Nuevo parámetro para especificar los campos a seleccionar, incluyendo relaciones
     joins: Optional[list[dict]] = None  # Parámetro para especificar JOINs
 ) -> list[dict]:
-    """Obtiene registros de una tabla con soporte para filtros y JOINs.
-    
-    El parámetro `joins` permite filtrar por campos de tablas relacionadas.
-    Ejemplo de uso:
-        joins=[{
-            'table': 'usuarios',
-            'foreign_key': 'id_usuariofk',  # FK en la tabla principal (cajas)
-            'primary_key': 'id',
-            'name_field': 'alias',  # Campo por el cual filtrar en la tabla relacionada
-            'nombre_usuario': 'juan'  # Valor a buscar
-        }]
-    """
     client = get_supabase_client()
     
     # Construir la consulta con columnas
@@ -106,6 +94,10 @@ async def get(
                 # Convención: "<col>_fin" aplica lte contra la columna real "<col>"
                 base_field = field.removesuffix("_fin")
                 query = query.lte(base_field, value)
+            elif field.endswith("_mayor_que"):
+                # Convención: "<col>_mayor_que" aplica gt contra la columna real.
+                base_field = field.removesuffix("_mayor_que")
+                query = query.gt(base_field, value)
 
             elif ("mostrar_inactivo" in field):
                 if value == 0:
