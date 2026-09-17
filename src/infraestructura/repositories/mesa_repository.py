@@ -6,7 +6,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerMesa(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('mesas', filtros, limite, offset, columns="*, local(id, nombre, direccion)")
+    return await get('mesas', filtros, limite, offset, columns="*, locales(id, nombre, direccion)")
 
 
 async def actualizarMesa(datos: Union[Mesa, dict], id: Optional[int] = None):
