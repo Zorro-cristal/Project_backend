@@ -12,9 +12,7 @@ def build_egreso_entity(payload: dict) -> Egreso:
 
 async def obtener_egresos(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     egresos = await obtenerEgreso(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
-    if not egresos:
-        return egresos
-    return await attach_related(egresos, 'id_cajafk', obtener_cajas, 'id', 'id', 'caja')
+    return egresos
 
 
 async def obtener_egreso_por_id(filtros: dict = None, columnas: str = '*'):

@@ -20,7 +20,7 @@ class Usuario:
 
     # Nombre de columna alineado con tu esquema (Supabase)
     id_personafk: Optional[int] = None
-    persona: Optional[Persona] = None
+    personas: Optional[Persona] = None
     id: Optional[int] = None
 
 

@@ -16,15 +16,7 @@ def build_vendedor_entity(payload: dict) -> Vendedor:
 
 async def obtener_vendedores(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
-    nombre_completo = filtros.pop("nombre_completo", None)
     vendedores = await obtenerVendedor(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
-    if not vendedores:
-        return vendedores
-    # Vincula el vendedor con su usuario por id_usuariofk (tabla `vendedores`)
-    # pero sin adjuntar `usuario.rol`
-    vendedores = await attach_related(vendedores, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
-    if nombre_completo:
-        vendedores = filtrar_por_nombre_completo(vendedores, nombre_completo, path=['usuario', 'persona'])
     return vendedores
 
 

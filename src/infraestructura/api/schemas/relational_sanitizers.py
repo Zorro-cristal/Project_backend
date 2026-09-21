@@ -42,8 +42,8 @@ class UsuarioWithPersona(ExtraIgnoredModel):
     estado: Optional[int] = None
     id_rolfk: Optional[int] = None
     id_personafk: Optional[int] = None
-    # attach_related en usuario_service agrega el objeto bajo la clave "persona"
-    persona: Optional[Any] = None
+    # attach_related en usuario_service agrega el objeto bajo la clave "personas"
+    personas: Optional[Any] = None
 
 
 class UsuarioListResponse(MessageEnvelope[List[UsuarioWithPersona]]):

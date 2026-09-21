@@ -21,11 +21,7 @@ def build_caja_entity(payload: dict) -> Caja:
 
 async def obtener_cajas(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     cajas = await obtenerCaja(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
-    if not cajas:
-        return cajas
-    # En endpoints GET adjuntamos `usuario` sin `rol`
-    return await attach_related(cajas, 'id_usuariofk', obtener_usuarios_sin_rol, 'id', 'id', 'usuario')
-
+    return cajas
 
 async def obtener_caja_id_usuario(filtros: dict = None, id_cajafk: int | None = None) -> Optional[int]:
     """

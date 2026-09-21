@@ -6,7 +6,7 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerLocal(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('locales', filtros, limite, offset)
+    return await get('locales', filtros, limite, offset, columns= columnas)
 
 
 async def actualizarLocal(datos: Union[Local, dict], id: Optional[int] = None):

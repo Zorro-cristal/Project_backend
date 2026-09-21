@@ -18,11 +18,6 @@ async def obtener_clientes(filtros: dict= None, columnas: str = '*', limite: int
     filtros = dict(filtros or {})
     nombre_completo = filtros.pop("nombre_completo", None)
     clientes = await obtenerCliente(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
-    if not clientes:
-        return clientes
-    clientes = await attach_related(clientes, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
-    if nombre_completo:
-        clientes = filtrar_por_nombre_completo(clientes, nombre_completo, path=['persona'])
     return clientes
 
 

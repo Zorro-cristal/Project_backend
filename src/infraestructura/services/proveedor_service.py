@@ -17,13 +17,7 @@ def build_proveedor_entity(payload: dict) -> Proveedor:
 
 async def obtener_proveedores(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
-    nombre_completo = filtros.pop("nombre_completo", None)
     proveedores = await obtenerProveedor(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
-    if not proveedores:
-        return proveedores
-    proveedores = await attach_related(proveedores, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
-    if nombre_completo:
-        proveedores = filtrar_por_nombre_completo(proveedores, nombre_completo, path=['persona'])
     return proveedores
 
 

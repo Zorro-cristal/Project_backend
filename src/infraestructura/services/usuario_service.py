@@ -50,20 +50,13 @@ def _hash_if_needed(payload: dict) -> dict:
 
 async def obtener_usuarios(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
-    nombre_completo = filtros.pop("nombre_completo", None)
-    usuarios = await obtenerUsuarios(filtros, limite, offset)
-    if not usuarios:
-        return usuarios
+    usuarios = await obtenerUsuarios(filtros, limite, offset, columnas=columnas)
 
-    usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
-    usuarios = await attach_related(usuarios, 'id_rolfk', obtener_roles, 'id', 'id', 'rol')
+    usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'personas')
 
     # Sanitizar para no exponer la contraseña
     for u in usuarios:
         u.pop('contra', None)
-
-    if nombre_completo:
-        usuarios = filtrar_por_nombre_completo(usuarios, nombre_completo, path=['persona'])
 
     return usuarios
 
@@ -75,19 +68,14 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*', li
     pero no se quiere exponer `usuario.rol`.
     """
     filtros = dict(filtros or {})
-    nombre_completo = filtros.pop("nombre_completo", None)
+    
     usuarios = await obtenerUsuarios(filtros, limite, offset)
     if not usuarios:
         return usuarios
 
-    usuarios = await attach_related(usuarios, 'id_personafk', obtener_personas, 'cedula', 'cedula', 'persona')
-
     # Sanitizar para no exponer la contraseña (cubre /vendedor que adjunta usuario)
     for u in usuarios:
         u.pop('contra', None)
-
-    if nombre_completo:
-        usuarios = filtrar_por_nombre_completo(usuarios, nombre_completo, path=['persona'])
 
     return usuarios
 
