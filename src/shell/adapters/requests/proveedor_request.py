@@ -8,7 +8,7 @@ from src.shell.adapters.requests.persona_request import (PersonaRequest,
 
 class ProveedorRequest(BaseModel):
     razon_social: str
-    ruc: int
+    ruc: str
     estado: Optional[int] = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
@@ -20,7 +20,7 @@ class ProveedorRequest(BaseModel):
 
 class ProveedorUpdateRequest(BaseModel):
     razon_social: Optional[str] = None
-    ruc: Optional[int] = None
+    ruc: Optional[str] = None
     estado: Optional[int] = None
     correo: Optional[str] = None
     id_personafk: Optional[int] = None

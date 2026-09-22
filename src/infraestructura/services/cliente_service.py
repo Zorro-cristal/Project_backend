@@ -16,7 +16,6 @@ def build_cliente_entity(payload: dict) -> Cliente:
 
 async def obtener_clientes(filtros: dict= None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = dict(filtros or {})
-    nombre_completo = filtros.pop("nombre_completo", None)
     clientes = await obtenerCliente(filtros=filtros, limite=limite, offset=offset, columnas=columnas)
     return clientes
 

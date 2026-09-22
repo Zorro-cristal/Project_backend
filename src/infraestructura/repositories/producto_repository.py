@@ -7,13 +7,26 @@ from ..models.producto import Producto
 
 
 async def obtenerProducto(filtros: Optional[dict] = None, limite: Optional[int]= 100, offset: Optional[int]= 0, columnas: str= "*"):
-    return await get('productos', filtros, limite, offset, columns="*, categorias(id_categoriofk:id, categoria_nombre:nombre, categoria_estado:estado)")
+    # Si la consulta ya incluye detalles_producto, evitamos añadir las marcas explícitamente 
+    # para prevenir el error de "table name specified more than once" en Postgrest.
+    if "detalles_producto" in columnas.lower():
+        return await get('productos', filtros, limite, offset, columns=columnas)
+    
+    # Si no incluye detalles, añadimos las marcas (quitamos categorías por petición del usuario).
+    if columnas == "*":
+        return await get('productos', filtros, limite, offset, columns="*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)")
+    
+    # Para otros casos de columnas personalizadas sin detalles_producto, concatenamos marcas.
+    if "marcas" not in columnas.lower():
+        return await get('productos', filtros, limite, offset, columns=f"{columnas}, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)")
+    
+    return await get('productos', filtros, limite, offset, columns=columnas)
 
 async def obtenerProductoConDetallesProducto(id: int):
     # DetallesProducto = detalles_producto asociados al producto
     return await obtenerProducto(
         filtros={"id": id},
-        columnas='*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado), detalles_producto(*)'
+        columnas='*, detalles_producto(*)'
     )
 
 

@@ -9,7 +9,7 @@ from .persona import Persona
 @dataclass(frozen=True)
 class Proveedor:
     razon_social: str
-    ruc: int
+    ruc: str
     estado: int = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
