@@ -3,7 +3,24 @@ from src.shell.utils import prepararPayloadDb
 
 
 async def obtenerPrecio(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('precios', filters=filtros, limit=limite, offset=offset, columns="*, detalles_precio(*)")
+    columnas_consulta = columnas
+    if columnas_consulta == "*":
+        columnas_consulta = "*, detalles_precio(*)"
+
+    if filtros and "detalles_precio.id_detalleproductofk" in filtros:
+        columnas_consulta = columnas_consulta.replace(
+            "detalles_precio(",
+            "detalles_precio!inner(",
+            1,
+        )
+
+    return await get(
+        'precios',
+        filters=filtros,
+        limit=limite,
+        offset=offset,
+        columns=columnas_consulta,
+    )
 
 
 async def crearPrecio(datos: dict) -> dict:

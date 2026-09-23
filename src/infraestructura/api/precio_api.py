@@ -31,6 +31,7 @@ async def agregarPrecioApi(requestBody: PrecioRequest):
 async def obtenerPreciosApi(
     id: Optional[str] = Query(None, description="Filtrar precios por ID"),
     producto_id: Optional[int] = Query(None, description="Filtrar precios por ID de producto"),
+    id_detalleproductofk: Optional[str] = Query(None, description="Filtrar precios por código de detalle de producto"),
     valido_desde: Optional[str] = Query(None, description="Filtrar precios válidos desde una fecha de inicio"),
     valido_hasta: Optional[str] = Query(None, description="Filtrar precios válidos hasta una fecha de fin"),
     limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
@@ -41,6 +42,8 @@ async def obtenerPreciosApi(
         filtros["id"] = id
     if producto_id is not None:
         filtros["producto_id"] = producto_id
+    if id_detalleproductofk is not None:
+        filtros["detalles_precio.id_detalleproductofk"] = id_detalleproductofk
     if valido_desde is not None:
         filtros["valido_desde"] = valido_desde
     if valido_hasta is not None:
