@@ -6,7 +6,7 @@ from pydantic import BaseModel, Field
 
 class PrecioRequest(BaseModel):
     monto: int
-    id_detalleproductofk: int
+    id_detalleproductofk: str
     valido_desde: datetime
     valido_hasta: Optional[datetime]= None
     
@@ -15,6 +15,7 @@ class PrecioRequest(BaseModel):
 
 class PrecioUpdateRequest(BaseModel):
     monto: Optional[int] = None
+    id_detalleproductofk: Optional[str] = None
     valido_desde: Optional[datetime] = None
     valido_hasta: Optional[datetime] = None
     
