@@ -10,5 +10,5 @@ class detalles_producto:
     color: str
     tamanho: int
     precios: list[Precio]
-    cod_barra: Optional[int] = None
+    cod_barra: Optional[str] = None
     id_productofk: Optional[int] = None

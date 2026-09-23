@@ -42,7 +42,7 @@ async def crear_detalles_producto(payload: dict):
     return await actualizarDetalleProducto(detalles_producto)
 
 
-async def actualizar_detalles_producto(cod_barra: int, payload: dict):
+async def actualizar_detalles_producto(cod_barra: str, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
     return await actualizarDetalleProducto(payload, cod_barra)

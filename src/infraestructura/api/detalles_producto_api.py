@@ -13,13 +13,13 @@ from ..services.detalles_producto_service import (actualizar_detalles_producto,
 router = APIRouter()
 
 @router.put("/{cod_barra}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar detalle de producto", description="Actualiza un detalle de producto existente por su código de barra.")
-async def actualizarDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUpdateRequest):
+async def actualizarDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     result = await actualizar_detalles_producto(cod_barra, payload)
     return {"message": result}
 
 @router.patch("/{cod_barra}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su código de barra.")
-async def patchDetalleProductoApi(cod_barra: int, requestBody: DetalleProductoUpdateRequest):
+async def patchDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest):
     return await actualizarDetalleProductoApi(cod_barra, requestBody)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('producto', 'crear'))], summary="Crear detalle de producto", description="Crea un nuevo detalle de producto.")
@@ -45,7 +45,7 @@ async def obtenerDetallesProductosApi(
     id: Optional[str] = Query(None, description="Filtrar detalles de productos por ID"),
     color: Optional[str] = Query(None, description="Filtrar detalles de productos por color"),
     tamanho: Optional[int] = Query(None, description="Filtrar detalles de productos por tamaño"),
-    cod_barra: Optional[int] = Query(None, description="Filtrar detalles de productos por código de barra"),
+    cod_barra: Optional[str] = Query(None, description="Filtrar detalles de productos por código de barra"),
     unidad_por_lote: Optional[int] = Query(None, description="Filtrar detalles de productos por unidades por lote"),
     stock_minimo: Optional[int] = Query(None, ge=0, description="Filtrar detalles con stock disponible estrictamente mayor a este valor"),
     include: Optional[str] = Query(None, description="include=producto para incluir datos del producto, include=precios para incluir precios asociados"),

@@ -98,7 +98,7 @@ async def obtenerDetalleProducto(
     return result
 
 
-async def actualizarDetalleProducto(datos: Union[detalles_producto, dict], cod_barra: Optional[int] = None):
+async def actualizarDetalleProducto(datos: Union[detalles_producto, dict], cod_barra: Optional[str] = None):
     payload = prepararPayloadDb(datos)
 
     # Asegurar que id_productofk venga siempre (BD lo exige como NOT NULL)

@@ -13,5 +13,5 @@ async def crear_o_actualizar_detalle_producto(payload: dict):
     return await crear_detalles_producto(payload)
 
 
-async def actualizar_detalle_producto_por_cod_barra(cod_barra: int, payload: dict):
+async def actualizar_detalle_producto_por_cod_barra(cod_barra: str, payload: dict):
     return await actualizar_detalles_producto(cod_barra, payload)
