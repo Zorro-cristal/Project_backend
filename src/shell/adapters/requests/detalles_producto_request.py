@@ -15,7 +15,7 @@ class DetalleProductoRequest(BaseModel):
     tamanho: int
     precios: List[PrecioResponse] = []
     # cod_barra es PK (en BD es VARCHAR)
-    cod_barra: Optional[int] = None
+    cod_barra: Optional[str] = None
     # FK obligatoria en BD
     id_productofk: int
 
@@ -28,7 +28,7 @@ class DetalleProductoUpdateRequest(BaseModel):
     color: Optional[str] = None
     tamanho: Optional[int] = None
     precios: Optional[List[PrecioResponse]] = None
-    cod_barra: Optional[int] = None
+    cod_barra: Optional[str] = None
     # permitir actualización si aplica
     id_productofk: Optional[int] = None
 

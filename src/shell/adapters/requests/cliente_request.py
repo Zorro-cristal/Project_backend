@@ -1,9 +1,10 @@
 from typing import Optional
+
 from pydantic import BaseModel
-from src.shell.adapters.requests.persona_request import (
-    PersonaRequest,
-    PersonaUpdateRequest,
-)
+
+from src.shell.adapters.requests.persona_request import (PersonaRequest,
+                                                         PersonaUpdateRequest)
+
 
 class ClienteRequest(BaseModel):
     persona_fisica: Optional[int] = 1
@@ -11,6 +12,7 @@ class ClienteRequest(BaseModel):
     razon_social: Optional[str] = None
     id_personafk: Optional[int] = None
     persona: Optional[PersonaRequest] = None
+    personas: Optional[PersonaRequest] = None
 
     class Config:
         validate_by_name = True
@@ -22,6 +24,7 @@ class ClienteUpdateRequest(BaseModel):
     persona_fisica: Optional[int] = None
     id_personafk: Optional[int] = None
     persona: Optional[PersonaUpdateRequest] = None
+    personas: Optional[PersonaUpdateRequest] = None
 
     class Config:
         validate_by_name = True

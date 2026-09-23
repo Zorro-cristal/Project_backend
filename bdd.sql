@@ -268,6 +268,30 @@ CREATE TABLE stocks (
     CONSTRAINT fk_stocks_local   FOREIGN KEY (id_localfk)           REFERENCES locales (id)
 );
 
+-- Vista de detalles de producto con stock disponible agregado por producto.
+CREATE OR REPLACE VIEW detalles_producto_con_stock AS
+SELECT
+    dp.cod_barra,
+    dp.unidad_por_lote,
+    dp.color,
+    dp.tamanho,
+    dp.id_productofk,
+    dp.fecha_creado,
+    COALESCE(
+        SUM(COALESCE(s.cant_mostrador, 0) + COALESCE(s.cant_deposito, 0)),
+        0
+    )::INTEGER AS stock_total
+FROM detalles_producto AS dp
+LEFT JOIN stocks AS s
+    ON s.id_detalleproductofk = dp.cod_barra
+GROUP BY
+    dp.cod_barra,
+    dp.unidad_por_lote,
+    dp.color,
+    dp.tamanho,
+    dp.id_productofk,
+    dp.fecha_creado;
+
 -- ----------------------------
 -- Tabla: cajas
 -- ----------------------------
