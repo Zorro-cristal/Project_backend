@@ -1,7 +1,7 @@
 from fastapi import APIRouter
 
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
-from src.shell.flujo.prueba.conexion_supabase import conexion_supabase
+from src.shell.flujo.prueba.conexion_supabase import conexion_turso
 
 from . import (auth_api, caja_api, categoria_api, cliente_api, compra_api,
                cuota_compra_api, cuota_venta_api, detalle_compra_api,
@@ -17,7 +17,7 @@ router = APIRouter()
 
 @router.get("/health", summary="Verificar salud del servicio", description="Verifica la conexión a la base de datos y el estado general del servicio.")
 async def root():
-    result = await conexion_supabase(True)
+    result = await conexion_turso()
     return result
 
 

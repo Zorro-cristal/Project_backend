@@ -1,12 +1,13 @@
 from typing import Optional, Union
 
-from ..models.detalle_venta import Detalle_venta
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 
+from ..models.detalle_venta import Detalle_venta
+
 
 async def obtenerDetalleVenta(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('detalle_venta', filters=filtros, limit=limite, offset=offset)
+    return await get('detalle_venta', filters=filtros, limit=limite, offset=offset, columns=columnas)
 
 
 async def actualizarDetalleVenta(datos: Union[Detalle_venta, dict], id: Optional[int] = None):
@@ -14,4 +15,4 @@ async def actualizarDetalleVenta(datos: Union[Detalle_venta, dict], id: Optional
 
     if id is None:
         return await insert('detalle_venta', payload)
-    return await update('detalle_venta', id, payload, key='id_detalle_venta')
+    return await update('detalle_venta', id, payload, key='id')

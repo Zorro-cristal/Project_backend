@@ -30,8 +30,7 @@ async def crearPrecio(datos: dict) -> dict:
     if payload.get('valido_desde') is None:
         raise ValueError('valido_desde es obligatorio (NOT NULL en precios)')
 
-    # Convertir a formato compatible con Supabase/Postgres
-    # (si llega como datetime, pasarlo a isoformat; si llega como string, dejarlo)
+    # Normalizar las fechas para almacenarlas como texto ISO en SQLite/libSQL.
     if hasattr(payload['valido_desde'], 'isoformat'):
         payload['valido_desde'] = payload['valido_desde'].isoformat()
 
@@ -57,7 +56,7 @@ async def actualizarPrecio(datos: dict, id: int | None = None) -> dict:
 
 async def vincular_precio_detalle(precio_id: int, detalle_cod: str) -> dict:
     payload = {
-        'precio_id': precio_id,
-        'detalles_producto_cod': detalle_cod
+        'id_preciofk': precio_id,
+        'id_detalleproductofk': detalle_cod
     }
     return await insert('detalles_precio', payload)

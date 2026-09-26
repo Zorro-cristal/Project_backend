@@ -3,6 +3,7 @@ from typing import Any, Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
+from src.shell.adapters.database.generic_crud import get as crud_get
 from src.shell.adapters.requests.venta_request import (VentaBase,
                                                        VentaUpdateRequest)
 
@@ -113,8 +114,6 @@ async def obtenerVentasApi(
     , limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver")
     , offset: int = Query(0, ge=0, description="Offset inicial para paginación")
 ):
-    from src.infraestructura.config.supabase import get_supabase_client
-    
     filtros = {}
     if id is not None:
         filtros["id"] = id
@@ -126,34 +125,43 @@ async def obtenerVentasApi(
         filtros["id_clientefk"] = id_clientefk
     if id_localfk is not None:
         filtros["id_localfk"] = id_localfk
-    if id_cajafk is not None:
-        filtros["id_cajafk"] = id_cajafk
     # Por defecto ocultar inactivos (estado=0), mostrar solo activos
     if mostrar_inactivo != 1:
         filtros["estado"] = 1
 
-    # Si se provee nombre_usuario, filtrar en dos pasos:datos:
+    # Caja/usuario se resuelven a vendedores y luego a secuencias de venta.
     # (demo/example JSON mantenido como comentario; evita usar `false` que rompe Python)
     # {"id":0,"nro":"1","id_localfk":1,"id_clientefk":1,"id_mesafk":1,"fecha":"2026-07-06","estado":1,"tipo_credito":false,"detalles_venta":[{"id":0,"cantidad":1,"precio":55000,"descuento":0,"id_detalleproductofk":"2000000001","id_ordenfk":6}]}
 
     if nombre_usuario:
-        client = get_supabase_client()
-        
-        # Paso 1: Buscar usuario(s) por alias
-        usuarios = client.table('usuarios').select('id').eq('alias', nombre_usuario).execute()
-        
-        if usuarios.data:
-            usuario_ids = [u['id'] for u in usuarios.data]
-            
-            # Paso 2: Buscar cajas creadas por esos usuarios
-            cajas = client.table('cajas').select('id').in_('id_usuariofk', usuario_ids).execute()
-            
-            if cajas.data:
-                caja_ids = [c['id'] for c in cajas.data]
-                filtros['id_cajafk'] = caja_ids
-            else:
-                # No hay cajas para esos usuarios, retornar vacío
-                return {"message": []}
+        usuarios = await crud_get("usuarios", {"alias": nombre_usuario}, columns="id")
+        user_ids = [usuario["id"] for usuario in usuarios]
+        if not user_ids:
+            return {"message": []}
+        vendedores = await crud_get("vendedores", {"id_usuariofk": user_ids}, columns="id")
+        seller_ids = [seller["id"] for seller in vendedores]
+        if not seller_ids:
+            return {"message": []}
+        filtros["id_vendedorfk"] = seller_ids
+
+    if id_cajafk is not None:
+        cajas = await crud_get("cajas", {"id": id_cajafk}, columns="id_usuariofk")
+        if not cajas:
+            return {"message": []}
+        vendedores = await crud_get(
+            "vendedores",
+            {"id_usuariofk": cajas[0].get("id_usuariofk")},
+            columns="id",
+        )
+        seller_ids = [seller["id"] for seller in vendedores]
+        if not seller_ids:
+            return {"message": []}
+        existing = filtros.get("id_vendedorfk")
+        if existing is not None:
+            seller_ids = [seller_id for seller_id in seller_ids if seller_id in existing]
+        if not seller_ids:
+            return {"message": []}
+        filtros["id_vendedorfk"] = seller_ids
     
     result = await obtener_ventas(filtros, limite=limit, offset=offset)
 

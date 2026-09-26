@@ -7,7 +7,7 @@ from ..models.orden import Orden
 
 
 async def obtenerOrdenes(filtros: Optional[dict] = None, limite: int = 100, offset: int = 0, columnas: str = "*"):
-    return await get('ordenes', filtros, limite, offset, columns="*, mesas(id, nombre, capacidad, id_localfk, ocupado_desde)")
+    return await get('ordenes', filtros, limite, offset, columns=columnas + ", mesas(id, nombre, capacidad, id_localfk, ocupado_desde)")
 
 
 async def actualizarOrden(datos: Union[Orden, dict], id: Optional[int] = None):

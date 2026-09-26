@@ -2,6 +2,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from src.api.index import app
+from src.configs.settings import get_settings
 
 # Inicializa el cliente de prueba
 client = TestClient(app)
@@ -9,6 +10,10 @@ client = TestClient(app)
 # Obtiene el token
 @pytest.fixture(scope="session")
 def auth_token():
+    settings = get_settings()
+    if not settings.TURSO_DATABASE_URL or not settings.TURSO_AUTH_TOKEN:
+        pytest.skip("Prueba de integración omitida: faltan credenciales de Turso.")
+
     # Simula login para obtener el token
     response = client.post("/usuario/login", json={
         "alias": "admin",

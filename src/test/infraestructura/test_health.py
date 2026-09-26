@@ -1,21 +1,33 @@
 from fastapi.testclient import TestClient
 
 from src.api.index import app
-from src.shell.adapters.database.generic_crud import get
+from src.shell.flujo.prueba import conexion_supabase as healthcheck
 
-tester= TestClient(app)
+tester = TestClient(app)
 
-def test_returns_200_ok():
+
+class DummyCursor:
+    def fetchone(self):
+        return (1,)
+
+
+class DummyConnection:
+    def execute(self, _query: str):
+        return DummyCursor()
+
+    def close(self):
+        pass
+
+
+def test_returns_200_ok(monkeypatch):
+    monkeypatch.setattr(
+        healthcheck,
+        "get_turso_connection",
+        lambda: DummyConnection(),
+        raising=False,
+    )
     response = tester.get("/health")
-    result= get('demo')
     assert response.status_code == 200
-    # El endpoint /health puede devolver un wrapper distinto.
-    response_json = response.json()
-    if hasattr(result, "__await__"):
-        result_value = None
-    else:
-        result_value = result
-
-    assert response_json.get("detail") == result_value or response_json == {"detail": result_value} or response_json == result_value
+    assert response.json()["conexion"] is True
 
 

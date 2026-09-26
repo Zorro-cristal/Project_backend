@@ -7,7 +7,7 @@ from ..models.persona import Persona
 
 
 async def obtenerPersona(filtros= None, limite= 100, offset= 0, columnas= "*"):
-    return await get('personas', filtros, limite, offset)
+    return await get('personas', filtros, limite, offset, columns=columnas)
 
 async def actualizarPersona(datos: Union[Persona, dict], cedula: Optional[int] = None):
     payload = prepararPayloadDb(datos)

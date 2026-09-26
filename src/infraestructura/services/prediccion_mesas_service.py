@@ -11,6 +11,7 @@ import pandas as pd
 from sklearn.linear_model import LinearRegression
 
 from src.configs.settings import get_settings
+from src.infraestructura.config.turso import get_turso_connection
 
 try:
     from src.infraestructura.config.supabase import get_supabase_client
@@ -230,19 +231,21 @@ MODEL_CACHE = cargar_modelo_en_memoria()
 
 def entrenar_modelo(local: str | int | None = None) -> dict[str, Any]:
     """Entrena un modelo de regresión lineal múltiple para un local concreto."""
-    cliente_supabase = get_supabase_client() if get_supabase_client is not None else None
-    if cliente_supabase is None:
-        raise RuntimeError("No hay un cliente de Supabase disponible para entrenar el modelo.")
-
+    conexion = get_turso_connection()
     try:
-        response = (
-            cliente_supabase.table("ventas")
-            .select("fecha, ocupacion, cantidad_personas, id_localfk")
-            .execute()
+        cursor = conexion.execute(
+            "SELECT v.fecha, v.ocupacion, v.cantidad_personas, "
+            "s.id_localfk, l.nombre AS local "
+            "FROM ventas AS v "
+            "LEFT JOIN secuencias_venta AS s ON s.id = v.id_secuencias_ventafk "
+            "LEFT JOIN locales AS l ON l.id = s.id_localfk"
         )
-        registros = response.data or []
+        columnas = [columna[0] for columna in cursor.description or []]
+        registros = [dict(zip(columnas, fila)) for fila in cursor.fetchall()]
     except Exception as exc:  # pragma: no cover - guard against unexpected failures
         raise RuntimeError(f"No se pudieron leer los registros de ventas: {exc}") from exc
+    finally:
+        conexion.close()
 
     local_key = _normalizar_local(local)
     if local is not None:

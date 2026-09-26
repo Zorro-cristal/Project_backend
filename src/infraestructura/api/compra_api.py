@@ -3,6 +3,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
+from src.shell.adapters.database.generic_crud import get as crud_get
 from src.shell.adapters.requests.compra_request import (CompraRequest,
                                                         CompraUpdateRequest)
 from src.shell.flujo.compra.consultarCompra import obtener_compra_con_detalles
@@ -59,8 +60,6 @@ async def obtenerComprasApi(
     limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
     offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
-    from src.infraestructura.config.supabase import get_supabase_client
-    
     filtros = {}
     if id is not None:
         filtros["id"] = id
@@ -69,34 +68,26 @@ async def obtenerComprasApi(
     if id_localfk is not None:
         filtros["id_localfk"] = id_localfk
     if id_clientefk is not None:
-        filtros["id_clientefk"] = id_clientefk
+        raise HTTPException(
+            status_code=400,
+            detail="El esquema de compras no contiene una relación con clientes; no se puede filtrar por id_clientefk.",
+        )
     if id_proveedorfk is not None:
         filtros["id_proveedorfk"] = id_proveedorfk
     if estado is not None:
         filtros["estado"] = estado
 
-    # Si se provee nombre_usuario, filtrar en dos pasos:
-    # 1. Buscar usuarios con ese alias
-    # 2. Buscar cajas creadas por esos usuarios
-    # 3. Filtrar compras por esas cajas
+    # Las compras se relacionan con el usuario mediante la caja que las creó.
     if nombre_usuario:
-        client = get_supabase_client()
-        
-        # Paso 1: Buscar usuario(s) por alias
-        usuarios = client.table('usuarios').select('id').eq('alias', nombre_usuario).execute()
-        
-        if usuarios.data:
-            usuario_ids = [u['id'] for u in usuarios.data]
-            
-            # Paso 2: Buscar cajas creadas por esos usuarios
-            cajas = client.table('cajas').select('id').in_('id_usuariofk', usuario_ids).execute()
-            
-            if cajas.data:
-                caja_ids = [c['id'] for c in cajas.data]
-                filtros['id_cajafk'] = caja_ids
-            else:
-                # No hay cajas para esos usuarios, retornar vacío
-                return {"message": []}
+        usuarios = await crud_get("usuarios", {"alias": nombre_usuario}, columns="id")
+        usuario_ids = [usuario["id"] for usuario in usuarios]
+        if not usuario_ids:
+            return {"message": []}
+        cajas = await crud_get("cajas", {"id_usuariofk": usuario_ids}, columns="id")
+        caja_ids = [caja["id"] for caja in cajas]
+        if not caja_ids:
+            return {"message": []}
+        filtros["id_cajafk"] = caja_ids
 
     result = await obtener_compras(filtros=filtros, joins=None, limite=limit, offset=offset)
     

@@ -7,9 +7,13 @@ from pydantic_settings import BaseSettings
 
 
 class Settings(BaseSettings):
-    # Supabase
-    SUPABASE_URL: str
-    SUPABASE_KEY: str
+    # Turso (base de datos transaccional)
+    TURSO_DATABASE_URL: str | None = None
+    TURSO_AUTH_TOKEN: str | None = None
+
+    # Supabase se conserva opcionalmente para Storage de modelos existente.
+    SUPABASE_URL: str | None = None
+    SUPABASE_KEY: str | None = None
 
     # Supabase Storage (modelo predicción ventas)
     SUPABASE_STORAGE_BUCKET_VENTAS_MODELS: str = "modelos"

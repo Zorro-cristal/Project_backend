@@ -5,7 +5,8 @@ from datetime import datetime, timezone
 from typing import Any, Optional
 
 from src.infraestructura.models.timbrado import Timbrado
-from src.shell.adapters.database.generic_crud import get, insert, update
+from src.shell.adapters.database.generic_crud import (get, increment, insert,
+                                                      update)
 
 
 async def obtener_timbrados(filtros: dict | None = None, limite: int = 100, offset: int = 0):
@@ -179,8 +180,6 @@ async def _obtener_or_crear_secuencia_venta(
 
 
 async def emitir_cod_num_venta(id_local: int, id_vendedor: int) -> dict:
-    from src.infraestructura.config.supabase import get_supabase_client
-
     timbrado = await obtener_timbrado_vigente()
     id_timbrado = timbrado.get("id")
 
@@ -204,39 +203,12 @@ async def emitir_cod_num_venta(id_local: int, id_vendedor: int) -> dict:
 
     secuencia = await _obtener_or_crear_secuencia_venta(id_local, id_vendedor, id_timbrado)
     id_secuencia = secuencia.get("id")
-    ultimo_nro = int(secuencia.get("ultimo_nro") or 0)
+    if id_secuencia is None:
+        raise ValueError("La secuencia de venta no tiene identificador")
 
-    nuevo = ultimo_nro + 1
-
-    # Incremento persistido (UPDATE con PK compuesta)
-    # Nota: sin lock/SQL atómico real, esto no es 100% seguro ante concurrencia.
-    # Pero sí hacemos retry si el UPDATE no afectó filas.
-    client = get_supabase_client()
-
-    updated = (
-        client.table("secuencias_venta")
-        .update({"ultimo_nro": nuevo})
-        .eq("id_localfk", id_local)
-        .eq("id_vendedorfk", id_vendedor)
-        .eq("id_timbradofk", id_timbrado)
-        .execute()
-    )
-
-    if not getattr(updated, "data", None):
-        # Si no existía (o no se afectó), creamos y volvemos a intentar una vez.
-        await _obtener_or_crear_secuencia_venta(id_local, id_vendedor, id_timbrado)
-
-        updated = (
-            client.table("secuencias_venta")
-            .update({"ultimo_nro": nuevo})
-            .eq("id_localfk", id_local)
-            .eq("id_vendedorfk", id_vendedor)
-            .eq("id_timbradofk", id_timbrado)
-            .execute()
-        )
-
-        if not getattr(updated, "data", None):
-            raise ValueError("No se pudo actualizar secuencias_venta. (PK compuesta no encontrada)")
+    # Incremento en una sola sentencia SQL para no reutilizar números concurrentemente.
+    updated = await increment("secuencias_venta", id_secuencia, "ultimo_nro")
+    nuevo = int(updated.get("ultimo_nro") or 0)
 
     cod_num_completo = (
         str(cod_local_digits).zfill(3)

@@ -8,32 +8,27 @@ import pytest
 import src.infraestructura.services.prediccion_mesas_service as prediccion_mesas_service
 
 
-class DummyResponse:
-    def __init__(self, data):
-        self.data = data
+class DummyCursor:
+    description = (("fecha",), ("ocupacion",), ("cantidad_personas",), ("id_localfk",), ("local",))
+
+    def fetchall(self):
+        return []
 
 
-class DummyTable:
-    def __init__(self, data):
-        self._data = data
+class DummyTursoConnection:
+    def execute(self, _query: str):
+        return DummyCursor()
 
-    def select(self, *_args, **_kwargs):
-        return self
-
-    def execute(self):
-        return DummyResponse(self._data)
-
-
-class DummySupabaseClient:
-    def __init__(self, data):
-        self._data = data
-
-    def table(self, _name: str):
-        return DummyTable(self._data)
+    def close(self):
+        pass
 
 
 def test_entrenar_modelo_aborta_con_menos_de_10_registros(monkeypatch):
-    monkeypatch.setattr(prediccion_mesas_service, "get_supabase_client", lambda: DummySupabaseClient([]))
+    monkeypatch.setattr(
+        prediccion_mesas_service,
+        "get_turso_connection",
+        DummyTursoConnection,
+    )
     monkeypatch.setattr(prediccion_mesas_service, "MODEL_CACHE", None)
 
     with pytest.raises(ValueError, match="al menos 10"):
@@ -42,6 +37,7 @@ def test_entrenar_modelo_aborta_con_menos_de_10_registros(monkeypatch):
 
 def test_predecir_tiempo_usa_formula_teorica_si_no_hay_modelo(monkeypatch):
     monkeypatch.setattr(prediccion_mesas_service, "MODEL_CACHE", None)
+    monkeypatch.setattr(prediccion_mesas_service, "cargar_modelo_en_memoria", lambda: None)
 
     resultado = prediccion_mesas_service.predecir_tiempo_ocupacion(4, "local-1", True)
 

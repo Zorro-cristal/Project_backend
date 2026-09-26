@@ -1,19 +1,19 @@
 from __future__ import annotations
 
 from datetime import datetime, timedelta
+from io import BytesIO
 from pathlib import Path
 from typing import Any, Iterable
-from io import BytesIO
-
-import requests
 
 import joblib
 import pandas as pd
+import requests
 from sklearn.ensemble import RandomForestRegressor
 from sklearn.metrics import mean_absolute_error
 
 from src.configs.settings import get_settings
 from src.infraestructura.config.supabase import get_supabase_client
+from src.infraestructura.config.turso import get_turso_connection
 from src.shell.adapters.externals.openmeteo import obtenerInformacionClimatica
 
 MODEL_DIR = Path(__file__).resolve().parents[3] / "src" / "ml" / "ventas_prediccion"
@@ -254,14 +254,22 @@ def load_sales_forecast_model(path: Path | str | None = None) -> dict[str, Any]:
 
 
 def _fetch_sales_history(limite: int | None = None) -> pd.DataFrame:
-    """Obtiene el historial de ventas desde Supabase usando ventas y detalle_venta."""
-    supabase = get_supabase_client()
+    """Obtiene el historial de ventas desde Turso y sus detalles asociados."""
+    connection = get_turso_connection()
+    try:
+        ventas_cursor = connection.execute(
+            "SELECT id, fecha, evento_festivo, clima, temperatura, humedad FROM ventas"
+        )
+        ventas_columns = [column[0] for column in ventas_cursor.description or []]
+        ventas_data = [dict(zip(ventas_columns, row)) for row in ventas_cursor.fetchall()]
 
-    ventas_response = supabase.table("ventas").select("id,fecha,evento_festivo,clima,temperatura,humedad").execute()
-    ventas_data = ventas_response.data or []
-
-    detalles_response = supabase.table("detalle_venta").select("id_ventafk,cantidad,precio,descuento").execute()
-    detalles_data = detalles_response.data or []
+        detalles_cursor = connection.execute(
+            "SELECT id_ventafk, cantidad, precio, descuento FROM detalle_venta"
+        )
+        detalles_columns = [column[0] for column in detalles_cursor.description or []]
+        detalles_data = [dict(zip(detalles_columns, row)) for row in detalles_cursor.fetchall()]
+    finally:
+        connection.close()
 
     if not ventas_data:
         return pd.DataFrame(columns=["fecha", "evento_festivo", "condicion_clima", "ventas_totales"])
@@ -552,6 +560,7 @@ def build_daily_prediction_payloads(
             "velocidad_viento": weather_payload.get("velocidad_viento", 0.0),
             "lluvia": weather_payload.get("lluvia", 0.0),
             "precipitaciones": weather_payload.get("precipitaciones", 0.0),
+            "probabilidad_precipitaciones": weather_payload.get("probabilidad_precipitaciones", 0.0),
         })
         current = current + timedelta(days=1)
 
@@ -581,6 +590,7 @@ def build_daily_prediction_payloads(
             "velocidad_viento": weather_payload.get("velocidad_viento", 0.0),
             "lluvia": weather_payload.get("lluvia", 0.0),
             "precipitaciones": weather_payload.get("precipitaciones", 0.0),
+            "probabilidad_precipitaciones": weather_payload.get("probabilidad_precipitaciones", 0.0),
         },
             "ventas_previstas": round(ventas_previstas, 2),
             "monto_a_recaudar_estimado": round(ventas_previstas, 2),

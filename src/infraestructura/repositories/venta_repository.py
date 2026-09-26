@@ -14,71 +14,45 @@ async def obtenerVenta(filtros=None, limite=100, offset=0, columnas="*", joins=N
     """
     filtros = filtros or {}
 
-    # 1) Primero obtenemos ventas desde la tabla física `ventas` con los filtros que apliquen.
-    #    Nota: `id_localfk`/`id_vendedorfk` se manejan después.
+    # Las columnas local/vendedor viven en secuencias_venta, no en ventas.
     ventas_filtros = dict(filtros)
-    ventas_filtros.pop("id_localfk", None)
-    ventas_filtros.pop("id_vendedorfk", None)
+    id_local = ventas_filtros.pop("id_localfk", None)
+    id_vendedor = ventas_filtros.pop("id_vendedorfk", None)
 
     # Soporte para compatibilidad con filtros antiguos:
     # - algunos llaman con `fecha` como inicio
     if "fecha_inicio" not in ventas_filtros and "fecha" in ventas_filtros:
         ventas_filtros["fecha_inicio"] = ventas_filtros.pop("fecha")
 
-    ventas = await get("ventas", ventas_filtros, limite, offset, columns=columnas, joins=joins)
-    if not ventas:
-        return []
+    seq_filters = {}
+    if id_local is not None:
+        seq_filters["id_localfk"] = id_local
+    if id_vendedor is not None:
+        seq_filters["id_vendedorfk"] = id_vendedor
 
-    # 2) Si no se pidieron filtros por local/vendedor, devolvemos tal cual.
-    if "id_localfk" not in filtros and "id_vendedorfk" not in filtros:
-        return ventas
-
-    # 3) Consultar secuencias_venta para obtener id_localfk e id_vendedorfk "virtuales".
-    #    Necesitamos mapear por `id` (secuencias_venta.id) que está en ventas.id_secuencias_ventafk.
-    id_seq_list = []
-    for v in ventas:
-        seq_id = v.get("id_secuencias_ventafk")
-        if seq_id is not None:
-            id_seq_list.append(seq_id)
-
-    if not id_seq_list:
-        return []
-
-    # El generic_crud `get` soporta filtros simples; para IN usamos `in_`
-    # así que consultamos en bruto vía RPC no, sino usando get con filtro.
     secuencias = await get(
         "secuencias_venta",
-        {"id": id_seq_list},
-        limite=len(id_seq_list),
+        seq_filters,
+        limit=10000,
         offset=0,
         columns="id,id_localfk,id_vendedorfk",
-    )
+    ) if seq_filters else []
 
-    seq_map = {}
-    for s in secuencias or []:
-        sid = s.get("id")
-        seq_map[sid] = s
+    if seq_filters:
+        if not secuencias:
+            return []
+        ventas_filtros["id_secuencias_ventafk"] = [seq["id"] for seq in secuencias]
 
-    # 4) Adjuntar id_localfk/id_vendedorfk y filtrar en servidor.
-    id_localfk_wanted = filtros.get("id_localfk")
-    id_vendedorfk_wanted = filtros.get("id_vendedorfk")
+    ventas = await get("ventas", ventas_filtros, limite, offset, columns=columnas, joins=joins)
+    if not ventas or not seq_filters:
+        return ventas
 
-    resultados = []
-    for v in ventas:
-        seq_id = v.get("id_secuencias_ventafk")
-        s = seq_map.get(seq_id, {})
-        v_out = dict(v)
-        v_out["id_localfk"] = s.get("id_localfk")
-        v_out["id_vendedorfk"] = s.get("id_vendedorfk")
-
-        if id_localfk_wanted is not None and v_out["id_localfk"] != id_localfk_wanted:
-            continue
-        if id_vendedorfk_wanted is not None and v_out["id_vendedorfk"] != id_vendedorfk_wanted:
-            continue
-
-        resultados.append(v_out)
-
-    return resultados
+    secuencias_por_id = {secuencia["id"]: secuencia for secuencia in secuencias}
+    for venta in ventas:
+        secuencia = secuencias_por_id.get(venta.get("id_secuencias_ventafk"), {})
+        venta["id_localfk"] = secuencia.get("id_localfk")
+        venta["id_vendedorfk"] = secuencia.get("id_vendedorfk")
+    return ventas
 
 
 async def actualizarVenta(datos: Union[Venta, dict], id: Optional[int] = None):

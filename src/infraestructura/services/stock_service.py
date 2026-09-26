@@ -39,32 +39,21 @@ async def attach_related_data(stocks: list[dict]) -> list[dict]:
 async def obtener_stocks(filtros: dict = None, columnas: str = '*', limite: int = 100, offset: int = 0):
     filtros = filtros or {}
 
-    # Filtro especial: con_stock => (cant_mostrador > 0 OR cant_deposito > 0)
-    # Implementación directa en Supabase (generic_crud no soporta OR/gt por nombres de campo arbitrarios)
+    # Filtro especial: con_stock => (cant_mostrador > 0 OR cant_deposito > 0).
     if filtros.get("con_stock") == 1:
-        from src.infraestructura.config.supabase import get_supabase_client
-
         base_filtros = {k: v for k, v in filtros.items() if k != "con_stock"}
-
-        client = get_supabase_client()
-
-        # Consulta por cant_mostrador > 0
-        q1 = client.table("stocks").select(columnas)
-        for field, value in base_filtros.items():
-            q1 = q1.eq(field, value)
-        q1 = q1.gt("cant_mostrador", 0).order("fecha_vencimiento", desc=False)
-
-        r1 = q1.execute()
-        stocks_mostrador = r1.data or []
-
-        # Consulta por cant_deposito > 0
-        q2 = client.table("stocks").select(columnas)
-        for field, value in base_filtros.items():
-            q2 = q2.eq(field, value)
-        q2 = q2.gt("cant_deposito", 0).order("fecha_vencimiento", desc=False)
-
-        r2 = q2.execute()
-        stocks_deposito = r2.data or []
+        stocks_mostrador = await obtenerStock(
+            filtros={**base_filtros, "cant_mostrador_mayor_que": 0},
+            columnas=columnas,
+            limite=10000,
+            offset=0,
+        )
+        stocks_deposito = await obtenerStock(
+            filtros={**base_filtros, "cant_deposito_mayor_que": 0},
+            columnas=columnas,
+            limite=10000,
+            offset=0,
+        )
 
         # Unir sin duplicados por id
         por_id = {}
@@ -76,6 +65,7 @@ async def obtener_stocks(filtros: dict = None, columnas: str = '*', limite: int 
                 por_id[id(s)] = s
 
         stocks = list(por_id.values())
+        stocks.sort(key=lambda stock: stock.get("fecha_vencimiento") or "")
         # Aplicar paginación si fue solicitada
         if offset:
             stocks = stocks[offset:]

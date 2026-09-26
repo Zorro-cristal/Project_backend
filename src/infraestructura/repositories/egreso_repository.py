@@ -7,7 +7,7 @@ from ..models.egreso import Egreso
 
 
 async def obtenerEgreso(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('egresos', filtros, limite, offset, columns=columnas+', cajas(id, fecha_apertura, fecha_cierre, monto_inicial, monto_final, id_usuariofk, usuarios(alias, estado, id_rolfk, personas(nombres, apellidos, telefono)))')
+    return await get('egresos', filtros, limite, offset, columns=columnas+', cajas(id, fecha_creado, fecha_cierre, monto_apertura, monto_cierre, id_usuariofk, usuarios(alias, estado, id_rolfk, personas(nombres, apellidos, telefono)))')
 
 
 async def actualizarEgreso(datos: Union[Egreso, dict], id: Optional[int] = None):
