@@ -18,7 +18,7 @@ async def obtenerDetalleProducto(
     filtros = dict(filtros or {})
     stock_minimo = filtros.pop("stock_minimo", None)
     if stock_minimo is not None:
-        filtros["stock_total_mayor_que"] = stock_minimo
+        filtros["stock_total_inicio"] = stock_minimo
 
     # Si se solicita incluir producto, usamos la columna específica con la relación
     # pero excluyendo detalles_producto del producto para evitar ciclos
