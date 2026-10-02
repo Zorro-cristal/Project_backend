@@ -38,6 +38,8 @@ async def obtenerOrdenesApi(
     estado: Optional[int] = Query(None, description="Filtrar por estado (0:inactivo, 1:pendiente, 2:en_proceso, 3:listo, 4:entregado)"),
     id_mesafk: Optional[int] = Query(None, description="Filtrar por ID de mesa"),
     id_detalleproductofk: Optional[str] = Query(None, description="Filtrar por ID detalle_producto (cod_barra)"),
+    id_clientefk: Optional[int] = Query(None, description="Filtrar por ID cliente"),
+    estado_distinto: Optional[str] = Query(None, description="Filtrar estados excluidos (separados por coma)"),
     limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
     offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
@@ -50,6 +52,14 @@ async def obtenerOrdenesApi(
         filtros['id_mesafk'] = id_mesafk
     if id_detalleproductofk is not None:
         filtros['id_detalleproductofk'] = id_detalleproductofk
+    if id_clientefk is not None:
+        filtros['id_clientefk'] = id_clientefk
+    if estado_distinto is not None:
+        # Parse comma-separated string into a list of integers
+        try:
+            filtros['estado_distinto'] = [int(x.strip()) for x in estado_distinto.split(",") if x.strip()]
+        except ValueError:
+            pass
 
     result = await obtener_ordenes(filtros=filtros, columnas='*', limite=limit, offset=offset)
     return {"message": result}

@@ -185,8 +185,8 @@ def _filter_sql(
             field_name, operator = field.removesuffix("_inicio"), ">="
         elif field.endswith("_fin"):
             field_name, operator = field.removesuffix("_fin"), "<="
-        elif field.endswith("_mayor_que"):
-            field_name, operator = field.removesuffix("_mayor_que"), ">"
+        elif field.endswith("_distinto"):
+            field_name = field.removesuffix("_distinto")
         field_sql = _identifier(field_name)
 
         if isinstance(value, (list, tuple, set)):
@@ -195,8 +195,14 @@ def _filter_sql(
                 clauses.append("0 = 1")
                 continue
             placeholders = ", ".join("?" for _ in items)
-            clauses.append(f"{field_sql} IN ({placeholders})")
+            if field.endswith("_distinto"):
+                clauses.append(f"{field_sql} NOT IN ({placeholders})")
+            else:
+                clauses.append(f"{field_sql} IN ({placeholders})")
             values.extend(items)
+        elif value is not None and field.endswith("estado_distinto"):
+            clauses.append(f"{field_sql} != ?")
+            values.append(value)
         elif value is None:
             clauses.append(f"{field_sql} IS NULL" if operator == "=" else f"{field_sql} {operator} NULL")
         else:
