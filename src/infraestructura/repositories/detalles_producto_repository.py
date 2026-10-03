@@ -91,9 +91,10 @@ async def obtenerDetalleProducto(
             if include_producto and 'id_productofk' in item:
                 item['producto'] = item.pop('id_productofk')
 
-            # Renombrar el campo detalles_precio a precios
+            # Renombrar y aplanar el campo detalles_precio a precios
             if include_precios and 'detalles_precio' in item:
-                item['precios'] = item.pop('detalles_precio')
+                raw_precios = item.pop('detalles_precio')
+                item['precios'] = [p.get('id_preciofk') if isinstance(p, dict) and 'id_preciofk' in p else p for p in raw_precios]
     
     return result
 
