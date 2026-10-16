@@ -1,5 +1,3 @@
-from src.shell.utils import attach_related, filtrar_por_nombre_completo
-
 from ..models.proveedor import Proveedor
 from ..repositories.proveedor_repository import (actualizarProveedor,
                                                  obtenerProveedor)

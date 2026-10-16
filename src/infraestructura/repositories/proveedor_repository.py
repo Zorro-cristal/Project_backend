@@ -1,12 +1,26 @@
 from typing import Optional, Union
 
-from ..models.proveedor import Proveedor
 from src.shell.adapters.database.generic_crud import get, insert, update
 from src.shell.utils import prepararPayloadDb
 
+from ..models.proveedor import Proveedor
+
 
 async def obtenerProveedor(filtros=None, limite=100, offset=0, columnas="*"):
-    return await get('proveedores', filtros, limite, offset, columns="*, personas(cedula,nombres, apellidos, telefono)")
+    joins = [{
+        "table": "personas",
+        "foreign_key": "cedula",
+        "primary_key": "cedula",
+        "type": "LEFT",
+    }]
+    return await get(
+        'proveedores',
+        filtros,
+        limite,
+        offset,
+        columns="*, personas(cedula,nombres, apellidos, telefono)",
+        joins=joins,
+    )
 
 
 async def actualizarProveedor(datos: Union[Proveedor, dict], id: Optional[int] = None):

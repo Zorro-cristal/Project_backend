@@ -160,6 +160,12 @@ def _filter_sql(
 ) -> tuple[list[str], list[Any]]:
     clauses: list[str] = []
     values: list[Any] = []
+
+    # Extraer el filtro especial primero para que no se procese en el bucle
+    filtro_compuesto = None
+    if filters:
+        filtro_compuesto = filters.pop("__filtro_compuesto", None)
+
     for field, value in (filters or {}).items():
         if "mostrar_inactivo" in field:
             if value == 0:
@@ -208,6 +214,10 @@ def _filter_sql(
         else:
             clauses.append(f"{field_sql} {operator} ?")
             values.append(value)
+
+    if filtro_compuesto:
+        clauses.append(f"({filtro_compuesto})")
+
     return clauses, values
 
 
@@ -387,32 +397,23 @@ async def get(
     def operation(connection: Any) -> list[dict[str, Any]]:
         clauses, parameters = _filter_sql(table, filters)
 
+        join_sql: list[str] = []
         for join_config in joins or []:
             join_table = join_config.get("table")
             foreign_key = join_config.get("foreign_key")
             primary_key = join_config.get("primary_key", "id")
-            name_field = join_config.get("name_field")
-            name_filter = join_config.get("nombre_usuario")
-            if not all((join_table, foreign_key, name_field)) or name_filter is None:
+            join_type = str(join_config.get("type", "LEFT")).upper()
+            if not all((join_table, foreign_key, primary_key)):
                 continue
 
-            comparison = "=" if name_field in _EXACT_JOIN_FIELDS else "LIKE"
-            match_value = name_filter if comparison == "=" else f"%{name_filter}%"
-            related_ids = _fetch_dicts(
-                connection,
-                f"SELECT {_identifier(primary_key)} FROM {_identifier(join_table)} "
-                f"WHERE {_identifier(name_field)} {comparison} ? COLLATE NOCASE",
-                (match_value,),
+            join_sql.append(
+                f"{join_type} JOIN {_identifier(join_table)} "
+                f"ON {_identifier(table)}.{_identifier(foreign_key)} = {_identifier(join_table)}.{_identifier(primary_key)}"
             )
-            id_values = [row[primary_key] for row in related_ids]
-            if not id_values:
-                return []
-            clauses.append(
-                f"{_identifier(foreign_key)} IN ({', '.join('?' for _ in id_values)})"
-            )
-            parameters.extend(id_values)
 
         sql = f"SELECT * FROM {_identifier(table)}"
+        if join_sql:
+            sql += " " + " ".join(join_sql)
         if clauses:
             sql += " WHERE " + " AND ".join(clauses)
         if order_by:
@@ -425,6 +426,7 @@ async def get(
                 order_fields.append(f'"id" {"DESC" if order_desc else "ASC"}')
             sql += " ORDER BY " + ", ".join(order_fields)
         sql += " LIMIT ? OFFSET ?"
+        print(sql)
         parameters.extend((-1 if limit is None else max(0, limit), max(0, offset)))
         records = _fetch_dicts(connection, sql, tuple(parameters))
         return _hydrate_relations(connection, table, records, columns)

@@ -1,5 +1,5 @@
 from src.shared.security.password_hasher import hash_password
-from src.shell.utils import attach_related, filtrar_por_nombre_completo
+from src.shell.utils import attach_related
 
 from ..models.usuario import Usuario
 from ..repositories.usuario_repository import (actualizarUsuario,

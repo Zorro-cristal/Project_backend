@@ -1,5 +1,3 @@
-from src.shell.utils import attach_related, filtrar_por_nombre_completo
-
 from ..models.cliente import Cliente
 from ..repositories.cliente_repository import actualizarCliente, obtenerCliente
 from .persona_service import (actualizar_persona, crear_persona,

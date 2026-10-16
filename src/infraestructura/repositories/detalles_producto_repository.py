@@ -15,30 +15,49 @@ async def obtenerDetalleProducto(
     include_precios: bool = False,
     filtros_producto: Optional[dict] = None
 ):
+    joins = []
+    
+    # Si se solicita incluir producto, usamos la columna específica con la relación
+    # pero excluyendo detalles_producto del producto para evitar ciclos
+    if include_producto:
+        joins.append({
+            "table": "productos",
+            "foreign_key": "id_productofk",
+            "primary_key": "id",
+            "type": "LEFT",
+        })
+
+    if include_precios:
+        # Incluir precios directamente a través de detalles_precio
+        joins.append({
+            "table": "detalles_precio",
+            "foreign_key": "id_detalles_productofk",
+            "primary_key": "id",
+            "type": "LEFT",
+        })
+
     filtros = dict(filtros or {})
     stock_minimo = filtros.pop("stock_minimo", None)
     if stock_minimo is not None:
         filtros["stock_total_inicio"] = stock_minimo
+    
+    # Construir columnas con relaciones si existen
+    if include_producto and include_precios:
+        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
+        columnas = f"*, {producto_select}, detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
+    elif include_producto:
+        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
+        columnas = f"*, {producto_select}"
+    elif include_precios:
+        columnas = f"* , detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
 
-    # Si se solicita incluir producto, usamos la columna específica con la relación
-    # pero excluyendo detalles_producto del producto para evitar ciclos
-    relaciones = []
-    
-    if include_producto:
-        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida,marcas(id,nombre)"
-        relaciones.append(f"id_productofk:productos({producto_select})")
-    
-    if include_precios:
-        # Incluir precios directamente a través de detalles_precio
-        # Usando la sintaxis de Supabase para traer el array de precios directamente
-        relaciones.append("detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))")
-    
-    # Construir columnas con relaciones
-    if relaciones:
-        columnas = f"*, {', '.join(relaciones)}"
-    
     result = await get(
-        'detalles_producto_con_stock', filtros, limite, offset, columns=columnas
+        'detalles_producto_con_stock', 
+        filtros, 
+        limite, 
+        offset, 
+        columns=columnas,
+        joins=joins if joins else None
     )
     
     # Aplicar filtros en memoria (q, es_comida) con semántica de unión

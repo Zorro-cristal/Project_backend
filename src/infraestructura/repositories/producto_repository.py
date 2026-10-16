@@ -12,15 +12,34 @@ async def obtenerProducto(filtros: Optional[dict] = None, limite: Optional[int]=
     if "detalles_producto" in columnas.lower():
         return await get('productos', filtros, limite, offset, columns=columnas)
     
+    joins = []
+
     # Si no incluye detalles, añadimos las marcas (quitamos categorías por petición del usuario).
     if columnas == "*":
-        return await get('productos', filtros, limite, offset, columns="*, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)")
-    
+        joins.append({
+            "table": "marcas",
+            "foreign_key": "id_marcafk",
+            "primary_key": "id",
+            "type": "LEFT",
+        })
+
     # Para otros casos de columnas personalizadas sin detalles_producto, concatenamos marcas.
     if "marcas" not in columnas.lower():
-        return await get('productos', filtros, limite, offset, columns=f"{columnas}, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)")
-    
-    return await get('productos', filtros, limite, offset, columns=columnas)
+        joins.append({
+            "table": "marcas",
+            "foreign_key": "id_marcafk",
+            "primary_key": "id",
+            "type": "LEFT",
+        })
+
+    return await get(
+        'productos', 
+        filtros, 
+        limite, 
+        offset, 
+        columns=columnas if len(joins) == 0 else f"{columnas}, marcas(id_marcafk:id, marca_nombre:nombre, marca_estado:estado)",
+        joins=joins if len(joins) > 0 else None,
+    )
 
 async def obtenerProductoConDetallesProducto(id: int):
     # DetallesProducto = detalles_producto asociados al producto

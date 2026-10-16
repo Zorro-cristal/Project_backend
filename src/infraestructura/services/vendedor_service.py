@@ -1,5 +1,3 @@
-from src.shell.utils import attach_related, filtrar_por_nombre_completo
-
 from ..models.vendedor import Vendedor
 from ..repositories.vendedor_repository import (actualizarVendedor,
                                                 obtenerVendedor)
