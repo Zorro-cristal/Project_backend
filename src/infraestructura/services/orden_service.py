@@ -118,7 +118,7 @@ async def crear_orden(payload: dict, background_tasks: Optional[BackgroundTasks]
         filtros={"cod_barra": [id_detalleproductofk]},
         include_producto=True,
     )
-
+    print(detalles)
     if not detalles:
         raise ValueError("No se encontró detalle_producto para la orden")
 

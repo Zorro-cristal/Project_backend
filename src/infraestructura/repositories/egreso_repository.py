@@ -54,11 +54,6 @@ async def obtenerEgreso(filtros=None, limite=100, offset=0, columnas="*"):
         filtros,
         limite,
         offset,
-    return await get(
-        'egresos',
-        filtros,
-        limite,
-        offset,
         columns=columnas_con_joins if len(joins) > 0 else columnas,
         joins=joins if len(joins) > 0 and ("cajas" in columnas.lower() or "usuarios" not in columnas.lower()) else None,
     )

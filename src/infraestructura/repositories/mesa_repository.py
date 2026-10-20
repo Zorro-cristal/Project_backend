@@ -18,7 +18,7 @@ async def obtenerMesa(filtros=None, limite=100, offset=0, columnas="*"):
         filtros,
         limite,
         offset,
-        columns="*, locales(id, nombre, direccion)",
+        columns=columnas + ", locales(id, nombre, direccion)",
         joins=joins,
     )
 

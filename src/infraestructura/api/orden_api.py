@@ -47,11 +47,11 @@ async def obtenerOrdenesApi(
     if id is not None:
         filtros['id'] = id
     if estado is not None:
-        filtros['estado'] = estado
+        filtros['estado'] = estado  # Quitar 'ordenes.'
     if id_mesafk is not None:
-        filtros['id_mesafk'] = id_mesafk
+        filtros['id_mesafk'] = id_mesafk # Quitar 'ordenes.'
     if id_detalleproductofk is not None:
-        filtros['id_detalleproductofk'] = id_detalleproductofk
+        filtros['id_detalleproductofk'] = id_detalleproductofk # Ya estaba bien, pero asegúrate de que no tenga prefijo
     if id_clientefk is not None:
         filtros['id_clientefk'] = id_clientefk
     if estado_distinto is not None:

@@ -17,8 +17,9 @@ async def obtenerDetalleProducto(
 ):
     joins = []
     
-    # Si se solicita incluir producto, usamos la columna específica con la relación
-    # pero excluyendo detalles_producto del producto para evitar ciclos
+    # Definir columnas base para el producto
+    producto_cols = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
+
     if include_producto:
         joins.append({
             "table": "productos",
@@ -28,7 +29,6 @@ async def obtenerDetalleProducto(
         })
 
     if include_precios:
-        # Incluir precios directamente a través de detalles_precio
         joins.append({
             "table": "detalles_precio",
             "foreign_key": "id_detalles_productofk",
@@ -41,13 +41,11 @@ async def obtenerDetalleProducto(
     if stock_minimo is not None:
         filtros["stock_total_inicio"] = stock_minimo
     
-    # Construir columnas con relaciones si existen
+    # Construir columnas con relaciones usando proyecciones anidadas para evitar aplanamiento y colisiones
     if include_producto and include_precios:
-        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
-        columnas = f"*, {producto_select}, detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
+        columnas = f"*, productos({producto_cols}), detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
     elif include_producto:
-        producto_select = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
-        columnas = f"*, {producto_select}"
+        columnas = f"*, productos({producto_cols})"
     elif include_precios:
         columnas = f"* , detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
 
@@ -68,31 +66,25 @@ async def obtenerDetalleProducto(
         if result and (q or es_comida is not None):
             filtered = []
             for item in result:
-                # Determinar si el ítem coincide con q (búsqueda en cod_barra y/o nombre de producto)
                 match_q = True
                 if q:
                     q_lower = q.lower()
+                    cod_barra = str(item.get('cod_barra') or '')
+                    match_cod_barra = q_lower in cod_barra.lower()
                     
-                    # Buscar en cod_barra (siempre, como string para búsqueda por contenido)
-                    cod_barra = item.get('cod_barra')
-                    cod_barra_str = str(cod_barra) if cod_barra is not None else ''
-                    match_cod_barra = q_lower in cod_barra_str.lower()
-                    
-                    # Buscar en nombre de producto (solo si include_producto)
                     match_nombre = False
                     if include_producto:
-                        producto = item.get('id_productofk') or item.get('producto')
+                        # El objeto producto puede venir en la llave 'productos' por la proyección anidada
+                        producto = item.get('productos') or item.get('producto')
                         if isinstance(producto, dict):
                             nombre = producto.get('nombre') or ''
                             match_nombre = q_lower in nombre.lower()
                     
-                    # Unión (OR): coincide si el q aparece en cod_barra o en el nombre del producto
                     match_q = match_cod_barra or match_nombre
                 
-                # Aplicar filtro es_comida en memoria sobre el producto unido (solo si include_producto)
                 match_es_comida = True
                 if es_comida is not None and include_producto:
-                    producto = item.get('id_productofk') or item.get('producto')
+                    producto = item.get('productos') or item.get('producto')
                     if isinstance(producto, dict):
                         prod_es_comida = producto.get('es_comida')
                         match_es_comida = str(prod_es_comida).lower() == str(es_comida).lower()
@@ -106,9 +98,10 @@ async def obtenerDetalleProducto(
     # Normalizar campos para mejor experiencia de API
     if result:
         for item in result:
-            # Supabase devuelve la relación como 'id_productofk' cuando se incluye producto
-            if include_producto and 'id_productofk' in item:
-                item['producto'] = item.pop('id_productofk')
+            # Asegurar que el campo 'producto' sea un diccionario si se solicitó y existe la relación
+            if include_producto:
+                if 'productos' in item and isinstance(item['productos'], dict):
+                    item['producto'] = item.pop('productos')
 
             # Renombrar y aplanar el campo detalles_precio a precios
             if include_precios and 'detalles_precio' in item:
@@ -116,6 +109,7 @@ async def obtenerDetalleProducto(
                 item['precios'] = [p.get('id_preciofk') if isinstance(p, dict) and 'id_preciofk' in p else p for p in raw_precios]
     
     return result
+
 
 
 async def actualizarDetalleProducto(datos: Union[detalles_producto, dict], cod_barra: Optional[str] = None):

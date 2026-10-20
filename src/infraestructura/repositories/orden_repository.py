@@ -9,7 +9,7 @@ from ..models.orden import Orden
 async def obtenerOrdenes(filtros: Optional[dict] = None, limite: int = 100, offset: int = 0, columnas: str = "*"):
     joins = [{
         "table": "mesas",
-        "foreign_key": "id_localfk",
+        "foreign_key": "id_mesafk",
         "primary_key": "id",
         "type": "LEFT",
     }]

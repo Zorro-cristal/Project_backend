@@ -47,6 +47,7 @@ TABLE_PRIMARY_KEYS: dict[str, str] = {
 RELATIONSHIPS: dict[tuple[str, str], tuple[str, str, str, bool]] = {
     ("productos", "marcas"): ("marcas", "id_marcafk", "id", False),
     ("productos", "detalles_producto"): ("detalles_producto", "id", "id_productofk", True),
+    ("detalle_venta", "detalles_producto"): ("detalles_producto", "id_detalleproductofk", "cod_barra", False),
     ("detalles_producto", "productos"): ("productos", "id_productofk", "id", False),
     ("detalles_producto_con_stock", "productos"): ("productos", "id_productofk", "id", False),
     ("detalles_producto", "detalles_precio"): ("detalles_precio", "cod_barra", "id_detalleproductofk", True),
@@ -169,7 +170,7 @@ def _filter_sql(
     for field, value in (filters or {}).items():
         if "mostrar_inactivo" in field:
             if value == 0:
-                clauses.append('"estado" != ?')
+                clauses.append(f"{_identifier(table)}.{_identifier('estado')} != ?")
                 values.append(0)
             continue
 
@@ -193,7 +194,17 @@ def _filter_sql(
             field_name, operator = field.removesuffix("_fin"), "<="
         elif field.endswith("_distinto"):
             field_name = field.removesuffix("_distinto")
-        field_sql = _identifier(field_name)
+                    
+        # En consultas con JOINs, siempre calificar el campo con la tabla base
+        # para evitar columnas ambiguas como id_clientefk, id_mesafk o id.
+        if "." not in field:
+            if field_name == "id":
+                primary_key = TABLE_PRIMARY_KEYS.get(table, "id")
+                field_sql = f"{_identifier(table)}.{_identifier(primary_key)}"
+            else:
+                field_sql = f"{_identifier(table)}.{_identifier(field_name)}"
+        else:
+            field_sql = _identifier(field_name)
 
         if isinstance(value, (list, tuple, set)):
             items = list(value)
@@ -403,12 +414,13 @@ async def get(
             foreign_key = join_config.get("foreign_key")
             primary_key = join_config.get("primary_key", "id")
             join_type = str(join_config.get("type", "LEFT")).upper()
+            source_table = join_config.get("source_table", table)
             if not all((join_table, foreign_key, primary_key)):
                 continue
 
             join_sql.append(
                 f"{join_type} JOIN {_identifier(join_table)} "
-                f"ON {_identifier(table)}.{_identifier(foreign_key)} = {_identifier(join_table)}.{_identifier(primary_key)}"
+                f"ON {_identifier(source_table)}.{_identifier(foreign_key)} = {_identifier(join_table)}.{_identifier(primary_key)}"
             )
 
         sql = f"SELECT * FROM {_identifier(table)}"

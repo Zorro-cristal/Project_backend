@@ -10,22 +10,15 @@ async def obtenerCaja(filtros=None, limite=100, offset=0, columnas="*"):
     joins = [{
         "table": "usuarios",
         "foreign_key": "id_usuariofk",
+        "primary_key": "id",
+        "type": "LEFT",
+    }, {
+        "table": "personas",
+        "foreign_key": "id_personafk",
+        "source_table": "usuarios",
         "primary_key": "cedula",
         "type": "LEFT",
     }]
-    
-    # Añadir la relación personas a través de usuarios si no está ya en columnas
-    if "personas" not in columnas.lower():
-        columns = f"{columnas}, usuarios(personas(nombres, apellidos, telefono))"
-    else:
-        columns = columnas
-    
-    joins.append({
-        "table": "personas",
-        "foreign_key": "id_personafk",
-        "primary_key": "cedula",
-        "type": "LEFT",
-    })
 
     return await get(
         'cajas',
@@ -33,7 +26,7 @@ async def obtenerCaja(filtros=None, limite=100, offset=0, columnas="*"):
         limite,
         offset,
         order_by='fecha_cierre',
-        columns=columns,
+        columns=columnas,
         joins=joins,
     )
 

@@ -33,7 +33,7 @@ async def agregarClienteApi(requestBody: ClienteRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('cliente', 'leer'))], summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")
 async def obtenerClientesApi(
-    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
+    q: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar clientes por ID"),
     ruc: Optional[int] = Query(None, description="Filtrar clientes por RUC"),
     razon_social: Optional[str] = Query(None, description="Filtrar clientes por razón social parcial"),
@@ -45,8 +45,13 @@ async def obtenerClientesApi(
     offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
-    if nombre_completo is not None:
-        filtros["nombre_completo"] = nombre_completo
+    if q is not None:
+        if q.isnumeric():
+            filtros["personas.cedula"] = q
+        else:
+            q = q.replace(" ", "%")
+            # Usamos el filtro especial para la lógica compleja de OR
+            filtros["__filtro_compuesto"] = f"personas.nombres LIKE '%{q}%' OR personas.apellidos LIKE '%{q}%'"
     if id is not None:
         filtros["id"] = id
     if ruc is not None:

@@ -9,7 +9,7 @@ from ..models.proveedor import Proveedor
 async def obtenerProveedor(filtros=None, limite=100, offset=0, columnas="*"):
     joins = [{
         "table": "personas",
-        "foreign_key": "cedula",
+        "foreign_key": "id_personafk",
         "primary_key": "cedula",
         "type": "LEFT",
     }]
