@@ -114,8 +114,12 @@ def _parse_projection_item(item: str) -> tuple[str, str, list[str] | None, bool]
         has_alias = False
 
     if "(" not in selector:
-        field = selector.strip()
-        if not _IDENTIFIER.fullmatch(field) and field != "*":
+        field = selector
+        if " as " in selector.lower():
+            field = selector.split(" as ")[0].strip()
+        
+        # Validar el nombre del campo extraído (o el selector completo si no había 'as')
+        if field != "*" and not _IDENTIFIER.fullmatch(field):
             raise ValueError(f"Columna no válida en proyección: {field!r}")
         return alias if has_alias else field, field, None, False
 
