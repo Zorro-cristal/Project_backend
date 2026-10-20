@@ -7,19 +7,12 @@ from ..models.mesa import Mesa
 
 
 async def obtenerMesa(filtros=None, limite=100, offset=0, columnas="*"):
-    joins = [{
-        "table": "locales",
-        "foreign_key": "id_localfk",
-        "primary_key": "id",
-        "type": "LEFT",
-    }]
     return await get(
         'mesas',
         filtros,
         limite,
         offset,
-        columns=columnas + ", locales(id, nombre, direccion)",
-        joins=joins,
+        columns=columnas + ", locales(id as id_local, nombre as nombre_local, direccion)",
     )
 
 
