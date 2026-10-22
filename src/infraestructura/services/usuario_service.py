@@ -2,6 +2,7 @@ from src.shared.security.password_hasher import hash_password
 from src.shell.utils import attach_related
 
 from ..models.usuario import Usuario
+from ..repositories.rol_repository import obtenerRol
 from ..repositories.usuario_repository import (actualizarUsuario,
                                                obtenerUsuarios)
 from .persona_service import (actualizar_persona, crear_persona,
@@ -82,34 +83,37 @@ async def obtener_usuarios_sin_rol(filtros: dict = None, columnas: str = '*', li
 
 
 async def crear_usuario(payload: dict):
-    # Extraer y procesar la persona relacionada
-    id_persona = None
-    
-    # Prioridad 1: Si ya viene id_personafk directamente, usarlo
-    if 'id_personafk' in payload and payload['id_personafk']:
-        id_persona = payload.get('id_personafk')
-    elif 'persona' in payload and payload['persona']:
-        # Prioridad 2: Si viene objeto persona, procesarlo
-        persona_data = payload.pop('persona')  # Extraer y remover del payload principal
+    payload = dict(payload)
+    persona_data = payload.pop('personas', None)
+    id_persona = payload.get('id_personafk')
+    id_rol = payload.get('id_rolfk')
+
+    if id_rol is None:
+        raise ValueError('Se requiere id_rolfk')
+    if not await obtenerRol(filtros={'id': id_rol}):
+        raise ValueError(f'El rol con id {id_rol} no existe')
+
+    if persona_data:
         cedula = persona_data.get('cedula')
-        
-        if cedula:
-            # Verificar si la persona ya existe
-            personas_existentes = await obtener_personas({'cedula': cedula})
-            
-            if personas_existentes:
-                # La persona existe, actualizamos sus datos
-                await actualizar_persona(cedula, persona_data)
-                id_persona = cedula  # La cedula es la clave primaria en Persona
-            else:
-                # Crear nueva persona
-                nueva_persona = await crear_persona(persona_data)
-                id_persona = persona_data.get('cedula')
-    
-    # Agregar el id_personafk al payload si existe
-    if id_persona is not None:
-        payload['id_personafk'] = id_persona
-    
+        if id_persona is not None and id_persona != cedula:
+            raise ValueError('id_personafk debe coincidir con la cedula de la persona')
+        if cedula is None:
+            raise ValueError('La persona requiere una cedula')
+
+        personas_existentes = await obtener_personas({'cedula': cedula})
+        if personas_existentes:
+            await actualizar_persona(cedula, persona_data)
+        else:
+            await crear_persona(persona_data)
+        id_persona = cedula
+    elif id_persona is not None:
+        if not await obtener_personas({'cedula': id_persona}):
+            raise ValueError(f'La persona con cedula {id_persona} no existe')
+    else:
+        raise ValueError('Se requiere una persona o id_personafk existente')
+
+    payload['id_personafk'] = id_persona
+
     # Hashear la contraseña si es necesario
     payload = _hash_if_needed(payload)
     

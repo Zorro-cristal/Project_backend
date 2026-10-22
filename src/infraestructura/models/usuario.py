@@ -11,6 +11,7 @@ class Usuario:
     contra: str
     estado: int = 1
     id: int = None
+    fecha_creado: Optional[str] = None
 
     # FK requerida por la tabla `usuarios` (NOT NULL)
     id_rolfk: Optional[int] = None

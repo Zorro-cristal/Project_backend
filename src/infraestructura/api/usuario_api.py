@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 
 from src.infraestructura.api.dependencies import permiso_requerido
@@ -57,7 +57,10 @@ async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
 @router.post("/", dependencies=[Depends(permiso_requerido('Usuarios', 'crear'))], summary="Crear usuario", description="Crea un nuevo usuario.")
 async def agregarUsuarioApi(requestBody: UsuarioRequest):
     payload = requestBody.model_dump()
-    result = await crear_usuario(payload)
+    try:
+        result = await crear_usuario(payload)
+    except ValueError as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"message": result}
 
 

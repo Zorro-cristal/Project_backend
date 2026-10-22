@@ -11,4 +11,4 @@ class Cliente:
     razon_social: Optional[str] = None
     id_personafk: Optional[int] = None
     id: Optional[int] = None
-    persona: Optional[Persona] = None
+    personas: Optional[Persona] = None

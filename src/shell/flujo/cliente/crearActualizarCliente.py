@@ -1,8 +1,11 @@
-from src.infraestructura.services.cliente_service import crear_cliente, actualizar_cliente
-from src.shell.flujo.persona.crearActualizarPersona import crear_o_actualizar_persona
+from src.infraestructura.services.cliente_service import (actualizar_cliente,
+                                                          crear_cliente)
+from src.shell.flujo.persona.crearActualizarPersona import \
+    crear_o_actualizar_persona
+
 
 async def crear_o_actualizar_cliente(payload: dict):
-    persona_payload = payload.pop('persona', None)
+    persona_payload = payload.pop('personas', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
         payload['id_personafk'] = persona.get('cedula')
@@ -11,7 +14,7 @@ async def crear_o_actualizar_cliente(payload: dict):
 
 
 async def actualizar_cliente_por_id(id_cliente: int, payload: dict):
-    persona_payload = payload.pop('persona', None)
+    persona_payload = payload.pop('personas', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
         payload['id_personafk'] = persona.get('cedula')

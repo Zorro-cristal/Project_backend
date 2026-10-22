@@ -1,6 +1,6 @@
 from typing import Optional
 
-from pydantic import BaseModel
+from pydantic import AliasChoices, BaseModel, Field
 
 from src.shell.adapters.requests.persona_request import (PersonaRequest,
                                                          PersonaUpdateRequest)
@@ -12,7 +12,7 @@ class UsuarioRequest(BaseModel):
     estado: Optional[int] = 1
     id_rolfk: Optional[int] = None
     id_personafk: Optional[int] = None  # FK directa a persona existente
-    persona: Optional[PersonaRequest] = None  # Objeto persona (se crea o actualiza si no existe)
+    personas: Optional[PersonaRequest] = None  # Objeto persona (se crea o actualiza si no existe)
 
     class Config:
         validate_by_name = True
@@ -23,8 +23,7 @@ class UsuarioUpdateRequest(BaseModel):
     estado: Optional[int] = None
     id_rolfk: Optional[int] = None
     id_personafk: Optional[int] = None  # FK directa a persona existente
-    persona: Optional[PersonaUpdateRequest] = None
+    personas: Optional[PersonaUpdateRequest] = None
 
     class Config:
         validate_by_name = True
-

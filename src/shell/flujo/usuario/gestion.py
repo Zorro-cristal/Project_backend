@@ -7,7 +7,7 @@ from src.shell.flujo.persona.crearActualizarPersona import \
 
 async def crear_o_actualizar_usuario(payload: dict):
     alias = payload.get('alias')
-    persona_payload = payload.pop('persona', None)
+    persona_payload = payload.pop('personas', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
         payload['id_personafk'] = persona.get('cedula')
@@ -22,7 +22,7 @@ async def crear_o_actualizar_usuario(payload: dict):
 
 
 async def actualizar_usuario_por_id(id_usuario: int, payload: dict):
-    persona_payload = payload.pop('persona', None)
+    persona_payload = payload.pop('personas', None)
     if persona_payload is not None:
         persona = await crear_o_actualizar_persona(persona_payload)
         payload['id_personafk'] = persona.get('cedula')

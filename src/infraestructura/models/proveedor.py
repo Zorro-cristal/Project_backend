@@ -13,6 +13,6 @@ class Proveedor:
     estado: int = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
-    persona: Optional[Persona] = None
+    personas: Optional[Persona] = None
 
     id: Optional[int] = None

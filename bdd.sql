@@ -474,7 +474,7 @@ CREATE TABLE egresos (
 -- ----------------------------
 CREATE TABLE ordenes (
     id                   INTEGER PRIMARY KEY AUTOINCREMENT,
-    estado               INTEGER NOT NULL DEFAULT 1,
+    estado               INTEGER NOT NULL DEFAULT 1, -- 
     cantidad             INTEGER NOT NULL DEFAULT 1,
     observacion          TEXT,
     id_mesafk            INTEGER NOT NULL,
@@ -556,7 +556,7 @@ BEGIN
 END;
 
 -- ----------------------------
--- Datos Iniciales
+-- Datos Iniciales      
 -- ----------------------------
 INSERT INTO personas (cedula, nombres, apellidos) VALUES 
 (1, 'Cliente', 'Ocasional'), 
@@ -566,13 +566,13 @@ INSERT INTO roles (id, nombre, observacion, estado) VALUES
 (1, 'Admin', 'Acceso Total', 1);
 
 INSERT INTO permisos (id, nombre, estado) VALUES 
-(1, 'Usuario', 1), (2, 'Rol', 1), (3, 'Permiso_rol', 1), (4, 'Producto', 1), 
-(5, 'Categoria', 1), (6, 'Marca', 1), (7, 'Precio', 1), (8, 'Ingrediente', 1), 
-(9, 'Cliente', 1), (10, 'Proveedor', 1), (11, 'Vendedor', 1), (12, 'Local', 1), 
-(13, 'Mesa', 1), (14, 'Stock', 1), (15, 'Caja', 1), (16, 'Venta', 1), 
-(17, 'Cuota_venta', 1), (18, 'Pago_venta', 1), (19, 'Compra', 1), 
-(20, 'Cuota_compra', 1), (21, 'Pago_compra', 1), (22, 'Egreso', 1), 
-(23, 'Orden', 1), (24, 'Reserva', 1);
+(1, 'Usuarios', 1), (2, 'Roles', 1), (3, 'Permisos_roles', 1), (4, 'Productos', 1), 
+(5, 'Categorias', 1), (6, 'Marcas', 1), (7, 'Precios', 1), (8, 'Ingredientes', 1), 
+(9, 'Clientes', 1), (10, 'Proveedores', 1), (11, 'Vendedores', 1), (12, 'Locales', 1), 
+(13, 'Mesas', 1), (14, 'Stocks', 1), (15, 'Cajas', 1), (16, 'Ventas', 1), 
+(17, 'Cuotas_venta', 1), (18, 'Pagos_venta', 1), (19, 'Compras', 1), 
+(20, 'Cuotas_compra', 1), (21, 'Pagos_compra', 1), (22, 'Egresos', 1), 
+(23, 'Ordenes', 1), (24, 'Reservas', 1);
 
 INSERT INTO permisos_roles (crear, editar, eliminar, leer, id_permisofk, id_rolfk)
 SELECT 

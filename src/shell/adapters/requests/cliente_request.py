@@ -11,7 +11,6 @@ class ClienteRequest(BaseModel):
     ruc: Optional[int] = None
     razon_social: Optional[str] = None
     id_personafk: Optional[int] = None
-    persona: Optional[PersonaRequest] = None
     personas: Optional[PersonaRequest] = None
 
     class Config:
@@ -23,7 +22,6 @@ class ClienteUpdateRequest(BaseModel):
     razon_social: Optional[str] = None
     persona_fisica: Optional[int] = None
     id_personafk: Optional[int] = None
-    persona: Optional[PersonaUpdateRequest] = None
     personas: Optional[PersonaUpdateRequest] = None
 
     class Config:

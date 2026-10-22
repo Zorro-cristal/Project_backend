@@ -12,7 +12,7 @@ class ProveedorRequest(BaseModel):
     estado: Optional[int] = 1
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
-    persona: Optional[PersonaRequest] = None
+    personas: Optional[PersonaRequest] = None
 
     class Config:
         validate_by_name = True
@@ -24,7 +24,7 @@ class ProveedorUpdateRequest(BaseModel):
     estado: Optional[int] = None
     correo: Optional[str] = None
     id_personafk: Optional[int] = None
-    persona: Optional[PersonaUpdateRequest] = None
+    personas: Optional[PersonaUpdateRequest] = None
 
     class Config:
         validate_by_name = True
