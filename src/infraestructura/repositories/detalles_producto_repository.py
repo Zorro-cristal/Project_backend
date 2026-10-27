@@ -87,13 +87,33 @@ async def obtenerDetalleProducto(
                     match_q = match_cod_barra or match_nombre
                 
                 match_es_comida = True
-                if es_comida is not None and include_producto:
-                    producto = item.get('productos') or item.get('producto')
-                    if isinstance(producto, dict):
-                        prod_es_comida = producto.get('es_comida')
-                        match_es_comida = str(prod_es_comida).lower() == str(es_comida).lower()
+                if es_comida is not None:
+                    # Try to get the product object from either 'productos' or 'producto' keys
+                    producto_obj = item.get('productos') or item.get('producto')
+                    
+                    val_to_check = None
+                    if isinstance(producto_obj, dict):
+                        val_to_check = producto_obj.get('es_comida')
+                    
+                    if val_to_check is None:
+                        val_to_check = item.get('es_comida')
+
+                    if val_to_check is not None:
+                        # Normalize both to boolean for comparison
+                        def to_bool(v):
+                            if isinstance(v, bool): return v
+                            if isinstance(v, (int, float)): return bool(v)
+                            if isinstance(v, str):
+                                if v.lower() in ('true', '1', 't', 'y', 'si'): return True
+                                if v.lower() in ('false', '0', 'f', 'n', 'no'): return False
+                            return bool(v)
+
+                        match_es_comida = to_bool(val_to_check) == to_bool(es_comida)
                     else:
                         match_es_comida = False
+                
+                
+                
                 
                 if match_q and match_es_comida:
                     filtered.append(item)
