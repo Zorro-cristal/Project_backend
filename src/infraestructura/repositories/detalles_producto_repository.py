@@ -15,31 +15,11 @@ async def obtenerDetalleProducto(
     include_precios: bool = False,
     filtros_producto: Optional[dict] = None
 ):
-    joins = []
-    
     # Definir columnas base para el producto
     producto_cols = "id,nombre,impuesto,pesable,costeo,unidad_medida,id_categoriafk,id_marcafk,descripcion,estado,perecedero,es_ingrediente,es_comida"
 
-    if include_producto:
-        joins.append({
-            "table": "productos",
-            "foreign_key": "id_productofk",
-            "primary_key": "id",
-            "type": "LEFT",
-        })
-
-    if include_precios:
-        joins.append({
-            "table": "detalles_precio",
-            "foreign_key": "id_detalles_productofk",
-            "primary_key": "id",
-            "type": "LEFT",
-        })
-
     filtros = dict(filtros or {})
     stock_minimo = filtros.pop("stock_minimo", None)
-    if stock_minimo is not None:
-        filtros["stock_total_inicio"] = stock_minimo
     
     # Construir columnas con relaciones usando proyecciones anidadas para evitar aplanamiento y colisiones
     if include_producto and include_precios:
@@ -50,13 +30,37 @@ async def obtenerDetalleProducto(
         columnas = f"* , detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
 
     result = await get(
-        'detalles_producto_con_stock', 
-        filtros, 
-        limite, 
-        offset, 
+        'detalles_producto',
+        filtros,
+        None if stock_minimo is not None else limite,
+        0 if stock_minimo is not None else offset,
         columns=columnas,
-        joins=joins if joins else None
     )
+
+    if result:
+        codigos_barra = [
+            item["cod_barra"] for item in result if item.get("cod_barra") is not None
+        ]
+        stock_total_por_codigo: dict[str, int] = {}
+        for inicio in range(0, len(codigos_barra), 500):
+            lote_codigos = codigos_barra[inicio : inicio + 500]
+            stocks = await get(
+                "stocks",
+                {"id_detalleproductofk": lote_codigos},
+                limit=None,
+                columns="id_detalleproductofk,cant_deposito,cant_mostrador",
+            )
+            for stock in stocks:
+                codigo = stock["id_detalleproductofk"]
+                stock_total_por_codigo[codigo] = stock_total_por_codigo.get(codigo, 0) + (
+                    (stock.get("cant_deposito") or 0) + (stock.get("cant_mostrador") or 0)
+                )
+        for item in result:
+            item["stock_total"] = stock_total_por_codigo.get(item.get("cod_barra"), 0)
+
+    if stock_minimo is not None:
+        result = [item for item in result if item["stock_total"] >= stock_minimo]
+        result = result[offset : None if limite is None else offset + limite]
     
     # Aplicar filtros en memoria (q, es_comida) con semántica de unión
     if filtros_producto:
