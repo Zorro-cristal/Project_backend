@@ -231,7 +231,12 @@ def _filter_sql(
             values.append(value)
 
     if filtro_compuesto:
-        clauses.append(f"({filtro_compuesto})")
+        if isinstance(filtro_compuesto, tuple):
+            expression, filter_values = filtro_compuesto
+            clauses.append(f"({expression})")
+            values.extend(filter_values)
+        else:
+            clauses.append(f"({filtro_compuesto})")
 
     return clauses, values
 

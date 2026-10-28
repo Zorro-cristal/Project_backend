@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
@@ -72,7 +72,8 @@ async def agregarUsuarioApi(requestBody: UsuarioRequest):
     response_model=UsuarioListResponse,
 )
 async def obtenerUsuariosApi(
-    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
+    q: Annotated[Optional[str], Query(description="Buscar por ID, cédula, nombres o apellidos (coincidencia parcial)")] = None,
+    nombre_completo: Annotated[Optional[str], Query(description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)")] = None,
     id: Optional[str] = None,
     alias: Optional[str] = None,
     estado: Optional[int] = None,
@@ -82,8 +83,20 @@ async def obtenerUsuariosApi(
     offset: int = Query(0, ge=0, description="Offset inicial para paginación"),
 ):
     filtros = {}
-    if nombre_completo is not None:
-        filtros["nombre_completo"] = nombre_completo
+    if q is None:
+        q = nombre_completo
+    if q is not None:
+        if q.isnumeric():
+            filtros["__filtro_compuesto"] = (
+                "usuarios.id LIKE ? OR personas.cedula LIKE ?",
+                (f"%{q}%", f"%{q}%"),
+            )
+        else:
+            q = q.replace(" ", "%")
+            filtros["__filtro_compuesto"] = (
+                "personas.nombres LIKE ? OR personas.apellidos LIKE ?",
+                (f"%{q}%", f"%{q}%"),
+            )
     if id is not None:
         filtros["id"] = id
     if alias is not None:

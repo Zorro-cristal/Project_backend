@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Annotated, Optional
 
 from fastapi import APIRouter, Depends, Query
 
@@ -32,19 +32,29 @@ async def agregarVendedorApi(requestBody: VendedorRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
 async def obtenerVendedoresApi(
-    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada al usuario (nombre o apellido, contiene)"),
-    id: Optional[str] = Query(None, description="Filtrar vendedores por ID"),
-    salario: Optional[float] = Query(None, description="Filtrar vendedores por salario mínimo"),
-    comision: Optional[float] = Query(None, description="Filtrar vendedores por comisión"),
-    estado: Optional[int] = Query(None, description="Filtrar vendedores por estado (1 activo, 0 inactivo)"),
-    id_usuariofk: Optional[int] = Query(None, description="Filtrar vendedores por ID de usuario asociado"),
-    mostrar_inactivo: Optional[int] = Query(None, description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos"),
-    limit: int = Query(100, ge=0, description="Cantidad máxima de registros a devolver"),
-    offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
+    q: Annotated[Optional[str], Query(description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)")] = None,
+    id: Annotated[Optional[str], Query(description="Filtrar vendedores por ID")] = None,
+    salario: Annotated[Optional[float], Query(description="Filtrar vendedores por salario mínimo")] = None,
+    comision: Annotated[Optional[float], Query(description="Filtrar vendedores por comisión")] = None,
+    estado: Annotated[Optional[int], Query(description="Filtrar vendedores por estado (1 activo, 0 inactivo)")] = None,
+    id_usuariofk: Annotated[Optional[int], Query(description="Filtrar vendedores por ID de usuario asociado")] = None,
+    mostrar_inactivo: Annotated[Optional[int], Query(description="Si es 1, muestra registros inactivos (estado=0). Por defecto solo muestra activos")] = None,
+    limit: Annotated[int, Query(ge=0, description="Cantidad máxima de registros a devolver")] = 100,
+    offset: Annotated[int, Query(ge=0, description="Offset desde el cual devolver registros, por defecto 0")] = 0,
 ):
     filtros = {}
-    if nombre_completo is not None:
-        filtros["nombre_completo"] = nombre_completo
+    if q is not None:
+        if q.isnumeric():
+            filtros["__filtro_compuesto"] = (
+                "personas.cedula LIKE ? OR vendedores.id LIKE ?",
+                (f"%{q}%", f"%{q}%"),
+            )
+        else:
+            q = q.replace(" ", "%")
+            filtros["__filtro_compuesto"] = (
+                "personas.nombres LIKE ? OR personas.apellidos LIKE ?",
+                (f"%{q}%", f"%{q}%"),
+            )
     if id is not None:
         filtros["id"] = id
     if salario is not None:
@@ -67,5 +77,4 @@ async def obtenerVendedoresApi(
         return {"message": result if isinstance(result, list) else [result]}
 
     return {"message": result}
-
 

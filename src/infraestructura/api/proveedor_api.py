@@ -33,7 +33,7 @@ async def agregarProveedorApi(requestBody: ProveedorRequest):
 
 @router.get("/", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
 async def obtenerProveedoresApi(
-    nombre_completo: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre o apellido, contiene)"),
+    q: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar proveedores por ID"),
     razon_social: Optional[str] = Query(None, description="Filtrar proveedores por razón social parcial"),
     ruc: Optional[int] = Query(None, description="Filtrar proveedores por RUC"),
@@ -45,8 +45,14 @@ async def obtenerProveedoresApi(
     offset: int = Query(0, ge=0, description="Offset desde el cual devolver registros, por defecto 0"),
 ):
     filtros = {}
-    if nombre_completo is not None:
-        filtros["nombre_completo"] = nombre_completo
+    if q is not None:
+        if q.isnumeric():
+            # Si es numérico, buscamos en cedula, id_personafk e id usando LIKE para permitir coincidencias parciales
+            filtros["__filtro_compuesto"] = f"personas.cedula LIKE '%{q}%' OR proveedores.id_personafk LIKE '%{q}%' OR proveedores.id LIKE '%{q}%'"
+        else:
+            q = q.replace(" ", "%")
+            # Si es texto, buscamos en nombres, apellidos y razón social usando LIKE
+            filtros["__filtro_compuesto"] = f"personas.nombres LIKE '%{q}%' OR personas.apellidos LIKE '%{q}%' OR proveedores.razon_social LIKE '%{q}%'"
     if id is not None:
         filtros["id"] = id
     if razon_social is not None:
