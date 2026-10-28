@@ -22,6 +22,7 @@ class VentaBase(BaseModel):
     monto_entrega: Optional[float] = 0
     cod_num: Optional[str] = None
     id_vendedorfk: Optional[int] = None
+    id_usuariofk: Optional[int] = None
     id_clientefk: Optional[int] = None
     id_localfk: Optional[int] = None
     id_cajafk: Optional[int] = None
