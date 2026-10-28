@@ -8,6 +8,7 @@ from ..repositories.orden_repository import actualizarOrden, obtenerOrdenes
 from ..repositories.precio_repository import obtenerPrecio
 from .detalles_producto_service import obtener_detalles_productos
 from .orden_stock import (consumir_ingredientes_para_producto_comida,
+                          desreservar_stock_para_orden,
                           consumir_stock_para_orden)
 from .print_service import dispatch_print_job
 
@@ -198,4 +199,21 @@ def _agendar_impresion(background_tasks: Optional[BackgroundTasks], orden: dict)
 async def actualizar_orden_por_id(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
+
+    if payload.get("estado") == 4:
+        ordenes = await obtenerOrdenes(
+            filtros={"id": id},
+            limite=1,
+            columnas="id,estado,cantidad,id_detalleproductofk",
+        )
+        orden = ordenes[0] if ordenes else None
+        if orden and orden.get("estado") != 4:
+            id_detalleproductofk = orden.get("id_detalleproductofk")
+            cantidad = orden.get("cantidad")
+            if id_detalleproductofk is not None and cantidad is not None:
+                await desreservar_stock_para_orden(
+                    id_detalleproductofk=str(id_detalleproductofk),
+                    cantidad_a_liberar=int(cantidad),
+                )
+
     return await actualizarOrden(payload, id)

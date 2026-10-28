@@ -192,7 +192,11 @@ def _filter_sql(
 
         field_name = field
         operator = "="
-        if field.endswith("_inicio"):
+        if field.endswith("_mayor_que"):
+            field_name, operator = field.removesuffix("_mayor_que"), ">"
+        elif field.endswith("_menor_que"):
+            field_name, operator = field.removesuffix("_menor_que"), "<"
+        elif field.endswith("_inicio"):
             field_name, operator = field.removesuffix("_inicio"), ">="
         elif field.endswith("_fin"):
             field_name, operator = field.removesuffix("_fin"), "<="

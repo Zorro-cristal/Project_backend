@@ -10,7 +10,7 @@ from ..models.venta import Venta
 from ..repositories.detalle_venta_repository import obtenerDetalleVenta
 from ..repositories.local_repository import obtenerLocal
 from ..repositories.orden_repository import \
-    actualizarOrden as actualizarOrdenRepo
+    actualizarOrden as actualizarOrdenRepo, obtenerOrdenes
 from ..repositories.vendedor_repository import obtenerVendedor
 from ..repositories.venta_repository import actualizarVenta, obtenerVenta
 from .caja_service import obtener_cajas
@@ -408,13 +408,25 @@ async def crear_venta(payload: dict, _ya_procesado: bool = False, _detalles_vent
 
             # 1) Cambiar ordenes.estado a 5 (a cobrado)
             id_ordenfk = detalle.get('id_ordenfk')
+            orden_ya_entregada = False
             if id_ordenfk is not None:
+                ordenes = await obtenerOrdenes(
+                    filtros={'id': id_ordenfk},
+                    limite=1,
+                    columnas='id,estado',
+                )
+                orden = ordenes[0] if ordenes else None
+                orden_ya_entregada = bool(orden and orden.get('estado') == 4)
                 await actualizarOrdenRepo({'estado': 5}, id_ordenfk)
 
             # 2) Desreservar stock: restar cantidad desde stocks.cant_reservado
             id_detalleproductofk = detalle.get('id_detalleproductofk')
             cantidad_detalle = detalle.get('cantidad')
-            if id_detalleproductofk is not None and cantidad_detalle is not None:
+            if (
+                not orden_ya_entregada
+                and id_detalleproductofk is not None
+                and cantidad_detalle is not None
+            ):
                 import logging
                 logger = logging.getLogger(__name__)
                 logger.info(
@@ -614,4 +626,3 @@ async def crear_venta_credito(payload: dict) -> dict:
         'monto_cuota': monto_cuota,
         'tipo': 'credito',
     }
-

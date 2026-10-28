@@ -144,13 +144,10 @@ async def _desreservar_stock_fifo_por_detalle(
     cantidad_a_liberar: int,
 ) -> None:
     """
-    Desreserva (libera) stock consumido por una venta.
+    Descuenta stock reservado usando FIFO por fecha de vencimiento.
 
-    Regla requerida:
-    - Solo disminuir stocks.cant_reservado
-    - No modificar cant_mostrador ni cant_deposito
-
-    FIFO por fecha_vencimiento (con el mismo ordering de obtener_stocks).
+    Solo modifica stocks.cant_reservado; no repone cant_mostrador ni
+    cant_deposito porque el stock ya fue apartado al crear la orden.
     """
     if cantidad_a_liberar <= 0:
         return
@@ -164,8 +161,8 @@ async def _desreservar_stock_fifo_por_detalle(
         columnas="*",
     )
 
-    # Filtrar en memoria porque obtener_stocks/con_stock no cubre este caso
-    # (y generic_crud no ofrece OR/gt robusto sobre cant_reservado).
+    # Filtrar en memoria para conservar el comportamiento en los distintos
+    # adaptadores de base de datos.
     stocks = [s for s in (stocks or []) if int(s.get("cant_reservado") or 0) > 0]
 
     if not stocks:
@@ -207,6 +204,65 @@ async def _desreservar_stock_fifo_por_detalle(
                 "cant_reservado": s["cant_reservado"],
             },
             s["id"],
+        )
+
+
+async def desreservar_stock_para_orden(
+    *,
+    id_detalleproductofk: str,
+    cantidad_a_liberar: int,
+) -> None:
+    detalles = await obtener_detalles_productos(
+        filtros={"cod_barra": [id_detalleproductofk]},
+        include_producto=True,
+    )
+    if not detalles:
+        raise ValueError("No se encontró detalle_producto para la orden")
+
+    producto = detalles[0].get("producto")
+    if not producto or not bool(producto.get("es_comida")):
+        await _desreservar_stock_fifo_por_detalle(
+            id_detalleproductofk=id_detalleproductofk,
+            cantidad_a_liberar=cantidad_a_liberar,
+        )
+        return
+
+    ingredientes = await obtener_ingredientes(
+        {"id_producto_finalfk": int(producto["id"])}
+    )
+    for ingrediente in ingredientes or []:
+        id_producto_ingrediente = ingrediente.get("id_producto_ingredientefk")
+        cantidad_ingrediente = ingrediente.get("cantidad") or 0
+        if id_producto_ingrediente is None or cantidad_ingrediente <= 0:
+            continue
+
+        detalles_ingrediente = await obtener_detalles_productos(
+            filtros={"id_productofk": int(id_producto_ingrediente)},
+            include_producto=False,
+        )
+        if not detalles_ingrediente:
+            raise ValueError(
+                "No se encontraron detalles_producto para ingrediente "
+                f"productofk={id_producto_ingrediente}"
+            )
+
+        codigo_barras = next(
+            (
+                detalle.get("cod_barra")
+                for detalle in detalles_ingrediente
+                if detalle.get("cod_barra") is not None
+            ),
+            None,
+        )
+        if codigo_barras is None:
+            raise ValueError(
+                "No existe cod_barra en detalles_producto para ingrediente "
+                f"productofk={id_producto_ingrediente}"
+            )
+
+        await _desreservar_stock_fifo_por_detalle(
+            id_detalleproductofk=str(codigo_barras),
+            cantidad_a_liberar=int(cantidad_ingrediente) * int(cantidad_a_liberar),
         )
 
 
