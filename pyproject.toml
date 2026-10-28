@@ -8,7 +8,6 @@ dependencies = [
 	"supabase==2.27.2",
 	"libsql==0.1.11",
 	"pydantic-settings==2.12.0",
-	"pytest==9.0.2",
 	"pandas==3.0.1",
 	"scikit-learn==1.8.0",
 	"openmeteo-requests==1.7.5",
@@ -18,10 +17,10 @@ dependencies = [
 	"python-jose[cryptography]==3.3.0",
 ]
 
+[dependency-groups]
+dev = ["pytest==9.0.2"]
+
 [tool.vercel.scripts]
 
 [tool.fastapi]
-app = "src.api.index:app"
-
-[project.scripts]
 app = "src.api.index:app"
