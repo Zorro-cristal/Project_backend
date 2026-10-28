@@ -436,7 +436,7 @@ async def get(
                 f"ON {_identifier(source_table)}.{_identifier(foreign_key)} = {_identifier(join_table)}.{_identifier(primary_key)}"
             )
 
-        sql = f"SELECT * FROM {_identifier(table)}"
+        sql = f"SELECT {_identifier(table)}.* FROM {_identifier(table)}"
         if join_sql:
             sql += " " + " ".join(join_sql)
         if clauses:
