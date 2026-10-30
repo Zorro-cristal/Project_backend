@@ -20,11 +20,12 @@ async def obtenerDetalleProducto(
 
     filtros = dict(filtros or {})
     stock_minimo = filtros.pop("stock_minimo", None)
+    cargar_producto = include_producto or stock_minimo is not None
     
     # Construir columnas con relaciones usando proyecciones anidadas para evitar aplanamiento y colisiones
-    if include_producto and include_precios:
+    if cargar_producto and include_precios:
         columnas = f"*, productos({producto_cols}), detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
-    elif include_producto:
+    elif cargar_producto:
         columnas = f"*, productos({producto_cols})"
     elif include_precios:
         columnas = f"* , detalles_precio(id_preciofk(id,monto,valido_desde,valido_hasta))"
@@ -59,6 +60,91 @@ async def obtenerDetalleProducto(
             item["stock_total"] = stock_total_por_codigo.get(item.get("cod_barra"), 0)
 
     if stock_minimo is not None:
+        productos_comida = {
+            producto.get("id")
+            for item in result
+            for producto in [item.get("productos") or item.get("producto")]
+            if isinstance(producto, dict)
+            and producto.get("id") is not None
+            and str(producto.get("es_comida")).lower() in {"true", "1", "t", "si", "y"}
+        }
+
+        if productos_comida:
+            ingredientes = await get(
+                "ingredientes",
+                {"id_producto_finalfk": list(productos_comida)},
+                limit=None,
+                columns="id_producto_finalfk,id_producto_ingredientefk,cantidad",
+            )
+            cantidades_por_comida: dict[int, dict[int, int]] = {}
+            for ingrediente in ingredientes:
+                id_comida = ingrediente.get("id_producto_finalfk")
+                id_ingrediente = ingrediente.get("id_producto_ingredientefk")
+                cantidad = int(ingrediente.get("cantidad") or 0)
+                if (
+                    id_comida in productos_comida
+                    and id_ingrediente is not None
+                    and cantidad > 0
+                ):
+                    ingredientes_comida = cantidades_por_comida.setdefault(id_comida, {})
+                    ingredientes_comida[id_ingrediente] = (
+                        ingredientes_comida.get(id_ingrediente, 0) + cantidad
+                    )
+
+            ids_ingredientes = {
+                id_ingrediente
+                for cantidades in cantidades_por_comida.values()
+                for id_ingrediente in cantidades
+            }
+            cod_barra_por_ingrediente: dict[int, str] = {}
+            ids_ingredientes_lista = list(ids_ingredientes)
+            for inicio in range(0, len(ids_ingredientes_lista), 500):
+                lote_ids = ids_ingredientes_lista[inicio : inicio + 500]
+                detalles_ingredientes = await get(
+                    "detalles_producto",
+                    {"id_productofk": lote_ids},
+                    limit=None,
+                    columns="id_productofk,cod_barra",
+                )
+                for detalle_ingrediente in detalles_ingredientes:
+                    id_ingrediente = detalle_ingrediente.get("id_productofk")
+                    cod_barra = detalle_ingrediente.get("cod_barra")
+                    if id_ingrediente is not None and cod_barra is not None:
+                        cod_barra_por_ingrediente.setdefault(id_ingrediente, cod_barra)
+
+            stock_ingredientes_por_codigo: dict[str, int] = {}
+            codigos_ingredientes = list(set(cod_barra_por_ingrediente.values()))
+            for inicio in range(0, len(codigos_ingredientes), 500):
+                lote_codigos = codigos_ingredientes[inicio : inicio + 500]
+                stocks_ingredientes = await get(
+                    "stocks",
+                    {"id_detalleproductofk": lote_codigos},
+                    limit=None,
+                    columns="id_detalleproductofk,cant_deposito,cant_mostrador",
+                )
+                for stock in stocks_ingredientes:
+                    codigo = stock["id_detalleproductofk"]
+                    stock_ingredientes_por_codigo[codigo] = (
+                        stock_ingredientes_por_codigo.get(codigo, 0)
+                        + (stock.get("cant_deposito") or 0)
+                        + (stock.get("cant_mostrador") or 0)
+                    )
+
+            for item in result:
+                producto = item.get("productos") or item.get("producto")
+                if not isinstance(producto, dict) or producto.get("id") not in productos_comida:
+                    continue
+
+                cantidades = cantidades_por_comida.get(producto["id"], {})
+                porciones_disponibles = [
+                    stock_ingredientes_por_codigo.get(
+                        cod_barra_por_ingrediente.get(id_ingrediente), 0
+                    )
+                    // cantidad_por_porcion
+                    for id_ingrediente, cantidad_por_porcion in cantidades.items()
+                ]
+                item["stock_total"] = min(porciones_disponibles, default=0)
+
         result = [item for item in result if item["stock_total"] >= stock_minimo]
         result = result[offset : None if limite is None else offset + limite]
     
@@ -126,6 +212,9 @@ async def obtenerDetalleProducto(
             if include_producto:
                 if 'productos' in item and isinstance(item['productos'], dict):
                     item['producto'] = item.pop('productos')
+            elif stock_minimo is not None:
+                item.pop("productos", None)
+                item.pop("producto", None)
 
             # Renombrar y aplanar el campo detalles_precio a precios
             if include_precios and 'detalles_precio' in item:
