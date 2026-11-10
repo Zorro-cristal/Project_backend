@@ -15,8 +15,8 @@ from ..services.compra_service import (actualizar_compra,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
-async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Compras', 'editar'))], summary="Actualizar compras", description="Actualiza una compra existente por su ID.")
+async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest, current_user: dict = Depends(permiso_requerido('Compras', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -29,13 +29,13 @@ async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest, current
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra parcialmente", description="Actualiza parcialmente una compra existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Compras', 'editar'))], summary="Actualizar compra parcialmente", description="Actualiza parcialmente una compra existente por su ID.")
 async def patchCompraApi(id: int, requestBody: CompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
     return await actualizarCompraApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Crear compra", description="Crea una nueva compra.")
-async def agregarCompraApi(requestBody: CompraRequest, current_user: dict = Depends(permiso_requerido('compra', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Compras', 'crear'))], summary="Crear compra", description="Crea una nueva compra.")
+async def agregarCompraApi(requestBody: CompraRequest, current_user: dict = Depends(permiso_requerido('Compras', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -55,7 +55,7 @@ async def agregarCompraApi(requestBody: CompraRequest, current_user: dict = Depe
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Obtener compras", description="Obtiene una lista de compras con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Compras', 'leer'))], summary="Obtener compras", description="Obtiene una lista de compras con filtros opcionales.")
 async def obtenerComprasApi(
     id: Optional[int] = Query(None, description="Filtrar compras por ID"),
     nro: Optional[str] = Query(None, description="Filtrar compras por número"),

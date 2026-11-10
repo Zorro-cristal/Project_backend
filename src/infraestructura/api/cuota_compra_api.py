@@ -14,8 +14,8 @@ from ..services.cuota_compra_service import (actualizar_cuota_compra,
 router = APIRouter()
 
 
-@router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Generar cuotas compra", description="Genera cuotas automáticamente para una compra a crédito.")
-async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('compra', 'crear'))):
+@router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('Compras', 'crear'))], summary="Generar cuotas compra", description="Genera cuotas automáticamente para una compra a crédito.")
+async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('Compras', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -34,8 +34,8 @@ async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest, cur
     return {"message": cuotas}
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar cuota compra", description="Actualiza una cuota de compra existente por su ID.")
-async def actualizarCuotaCompraApi(id: int, requestBody: CuotaCompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Compras', 'editar'))], summary="Actualizar cuota compra", description="Actualiza una cuota de compra existente por su ID.")
+async def actualizarCuotaCompraApi(id: int, requestBody: CuotaCompraUpdateRequest, current_user: dict = Depends(permiso_requerido('Compras', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -48,7 +48,7 @@ async def actualizarCuotaCompraApi(id: int, requestBody: CuotaCompraUpdateReques
     return {"message": resultado}
 
 
-@router.post("/{id}/recalcular", dependencies=[Depends(permiso_requerido('compra', 'leer'))], summary="Recalcular estado cuotas compra", description="Recalcula el estado de las cuotas de la compra usando lógica FIFO (cobertura acumulada).")
+@router.post("/{id}/recalcular", dependencies=[Depends(permiso_requerido('Compras', 'leer'))], summary="Recalcular estado cuotas compra", description="Recalcula el estado de las cuotas de la compra usando lógica FIFO (cobertura acumulada).")
 async def recalcularCuotasCompraApi(id: int, total_pagado: float = Query(..., description="Total de dinero pagado")):
     resultado = await recalcular_estado_cuotas(id, total_pagado)
     return {"message": resultado}

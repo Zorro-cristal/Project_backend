@@ -25,5 +25,5 @@ class Producto:
     marca: Optional[Marca] = None
     detalles_producto: Optional[list[detalles_producto]] = None
     ingredientes: Optional[list[Ingrediente]] = None
-    actualizado_por: int
+    actualizado_por: int= None
     id: Optional[int] = None

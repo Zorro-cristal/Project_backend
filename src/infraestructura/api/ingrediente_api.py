@@ -13,8 +13,8 @@ from ..services.ingrediente_service import (actualizar_ingrediente,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente", description="Actualiza un ingrediente existente por su ID.")
-async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Ingredientes', 'editar'))], summary="Actualizar ingrediente", description="Actualiza un ingrediente existente por su ID.")
+async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('Ingredientes', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -27,13 +27,13 @@ async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateReques
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Ingredientes', 'editar'))], summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
 async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'editar'))):
     return await actualizarIngredienteApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('ingrediente', 'crear'))], summary="Crear ingrediente", description="Crea un nuevo ingrediente.")
-async def agregarIngredienteApi(requestBody: IngredienteRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Ingredientes', 'crear'))], summary="Crear ingrediente", description="Crea un nuevo ingrediente.")
+async def agregarIngredienteApi(requestBody: IngredienteRequest, current_user: dict = Depends(permiso_requerido('Ingredientes', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -45,7 +45,7 @@ async def agregarIngredienteApi(requestBody: IngredienteRequest, current_user: d
     result = await crear_ingrediente(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('ingrediente', 'leer'))], summary="Obtener ingredientes", description="Obtiene una lista de ingredientes con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Ingredientes', 'leer'))], summary="Obtener ingredientes", description="Obtiene una lista de ingredientes con filtros opcionales.")
 async def obtenerIngredientesApi(
     id: Optional[str] = Query(None, description="Filtrar ingredientes por ID"),
     cantidad: Optional[int] = Query(None, description="Filtrar ingredientes por cantidad"),

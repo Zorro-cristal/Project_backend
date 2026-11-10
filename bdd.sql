@@ -15,6 +15,7 @@ DROP TABLE IF EXISTS pagos_venta;
 DROP TABLE IF EXISTS cuotas_venta;
 DROP TABLE IF EXISTS detalle_venta;
 DROP TABLE IF EXISTS ventas;
+DROP TABLE IF EXISTS audit_login;
 DROP TABLE IF EXISTS secuencias_venta;
 DROP TABLE IF EXISTS timbrados;
 DROP TABLE IF EXISTS cajas;
@@ -51,8 +52,7 @@ CREATE TABLE personas (
     direccion    TEXT,
     nacionalidad TEXT,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -64,8 +64,7 @@ CREATE TABLE roles (
     observacion  TEXT,
     estado       INTEGER NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -76,8 +75,7 @@ CREATE TABLE permisos (
     nombre       TEXT NOT NULL,
     estado       INTEGER NOT NULL DEFAULT 1,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -85,17 +83,16 @@ CREATE TABLE permisos (
 -- ----------------------------
 CREATE TABLE permisos_roles (
     id           INTEGER PRIMARY KEY AUTOINCREMENT,
-    crear        INTEGER NOT NULL, -- 0 = false, 1 = true
+    crear        INTEGER NOT NULL,
     editar       INTEGER NOT NULL,
     eliminar     INTEGER NOT NULL,
     leer         INTEGER NOT NULL,
     id_permisofk INTEGER NOT NULL,
     id_rolfk     INTEGER NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_permisofk) REFERENCES permisos (id),
-    FOREIGN KEY (id_rolfk) REFERENCES roles (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_rolfk) REFERENCES roles (id)
 );
 
 -- ----------------------------
@@ -106,9 +103,39 @@ CREATE TABLE marcas (
     nombre       TEXT NOT NULL,
     estado       INTEGER NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
+
+-- ----------------------------
+-- Tabla: audit_login
+-- ----------------------------
+CREATE TABLE audit_login (
+    id           INTEGER PRIMARY KEY AUTOINCREMENT,
+    fecha        TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
+    alias        TEXT NOT NULL CHECK (length(alias) <= 255),
+    usuario_id   INTEGER,
+    resultado    TEXT NOT NULL CHECK (resultado IN ('success', 'fail', 'inactive', 'blocked')),
+    motivo       TEXT,
+    ip           TEXT NOT NULL,
+    user_agent   TEXT CHECK (user_agent IS NULL OR length(user_agent) <= 512),
+    request_id   TEXT NOT NULL CHECK (length(request_id) <= 128),
+    FOREIGN KEY (usuario_id) REFERENCES usuarios (id)
+);
+
+CREATE INDEX idx_audit_login_fecha ON audit_login(fecha);
+CREATE INDEX idx_audit_login_alias_ip ON audit_login(alias, ip);
+CREATE INDEX idx_audit_login_resultado ON audit_login(resultado);
+
+-- Retención: conservar como máximo 180 días; la siguiente escritura elimina
+-- los eventos vencidos. La lectura queda reservada al personal autorizado
+-- mediante acceso administrativo a la base; la API no expone estos registros.
+CREATE TRIGGER trg_audit_login_retention
+AFTER INSERT ON audit_login
+BEGIN
+    DELETE FROM audit_login
+    WHERE datetime(fecha) < datetime('now', '-180 days');
+END;
+
 
 -- ----------------------------
 -- Tabla: categorias
@@ -119,8 +146,7 @@ CREATE TABLE categorias (
     descripcion  TEXT,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     estado       INTEGER NOT NULL,
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -132,8 +158,7 @@ CREATE TABLE precios (
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     valido_desde TEXT NOT NULL,
     valido_hasta TEXT,
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -154,10 +179,9 @@ CREATE TABLE productos (
     id_categoriafk INTEGER NOT NULL,
     id_marcafk     INTEGER NOT NULL,
     fecha_creado   TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_categoriafk) REFERENCES categorias (id),
-    FOREIGN KEY (id_marcafk) REFERENCES marcas (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_marcafk) REFERENCES marcas (id)
 );
 
 -- ----------------------------
@@ -170,9 +194,8 @@ CREATE TABLE detalles_producto (
     tamanho         INTEGER,
     id_productofk   INTEGER NOT NULL,
     fecha_creado    TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_productofk) REFERENCES productos (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_productofk) REFERENCES productos (id)
 );
 
 -- ----------------------------
@@ -183,10 +206,9 @@ CREATE TABLE detalles_precio (
     id_preciofk          INTEGER NOT NULL,
     id_detalleproductofk TEXT NOT NULL,
     fecha_creado         TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_preciofk) REFERENCES precios (id),
-    FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra)
 );
 
 -- ----------------------------
@@ -199,10 +221,9 @@ CREATE TABLE ingredientes (
     id_producto_ingredientefk INTEGER NOT NULL,
     id_producto_finalfk       INTEGER NOT NULL,
     fecha_creado              TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_producto_ingredientefk) REFERENCES productos (id),
-    FOREIGN KEY (id_producto_finalfk) REFERENCES productos (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_producto_finalfk) REFERENCES productos (id)
 );
 
 -- ----------------------------
@@ -216,10 +237,9 @@ CREATE TABLE usuarios (
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     id_rolfk     INTEGER NOT NULL,
     id_personafk INTEGER NOT NULL,
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_rolfk) REFERENCES roles (id),
-    FOREIGN KEY (id_personafk) REFERENCES personas (cedula),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_personafk) REFERENCES personas (cedula)
 );
 
 -- ----------------------------
@@ -233,9 +253,8 @@ CREATE TABLE proveedores (
     correo       TEXT,
     estado       INTEGER NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_personafk) REFERENCES personas (cedula),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_personafk) REFERENCES personas (cedula)
 );
 
 -- ----------------------------
@@ -248,9 +267,8 @@ CREATE TABLE clientes (
     razon_social   TEXT,
     persona_fisica INTEGER NOT NULL,
     fecha_creado   TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_personafk) REFERENCES personas (cedula),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_personafk) REFERENCES personas (cedula)
 );
 
 -- ----------------------------
@@ -264,9 +282,8 @@ CREATE TABLE vendedores (
     estado       INTEGER NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     id_usuariofk INTEGER NOT NULL,
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id)
 );
 
 -- ----------------------------
@@ -282,8 +299,7 @@ CREATE TABLE locales (
     latitud      REAL,
     longitud     REAL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -298,10 +314,9 @@ CREATE TABLE mesas (
     id_clientefk INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     ocupado_desde TEXT,
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_localfk) REFERENCES locales (id),
-    FOREIGN KEY (id_clientefk) REFERENCES clientes (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_clientefk) REFERENCES clientes (id)
 );
 
 -- ----------------------------
@@ -317,10 +332,9 @@ CREATE TABLE stocks (
     id_detalleproductofk TEXT NOT NULL,
     id_localfk           INTEGER NOT NULL,
     fecha_creado         TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra),
-    FOREIGN KEY (id_localfk) REFERENCES locales (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_localfk) REFERENCES locales (id)
 );
 
 -- Vista de detalles de producto con stock disponible
@@ -356,9 +370,8 @@ CREATE TABLE cajas (
     monto_apertura REAL NOT NULL,
     monto_cierre   REAL,
     id_usuariofk   INTEGER NOT NULL,
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_usuariofk) REFERENCES usuarios (id)
 );
 
 -- ----------------------------
@@ -369,8 +382,7 @@ CREATE TABLE timbrados (
     nro_timbrado TEXT NOT NULL,
     fin_vigencia TEXT NOT NULL,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER
 );
 
 -- ----------------------------
@@ -382,11 +394,10 @@ CREATE TABLE secuencias_venta (
     id_vendedorfk INTEGER,
     id_timbradofk INTEGER,
     ultimo_nro    INTEGER NOT NULL DEFAULT 0,
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_localfk) REFERENCES locales (id),
     FOREIGN KEY (id_vendedorfk) REFERENCES vendedores (id),
-    FOREIGN KEY (id_timbradofk) REFERENCES timbrados (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_timbradofk) REFERENCES timbrados (id)
 );
 
 -- ----------------------------
@@ -413,9 +424,8 @@ CREATE TABLE ventas (
     id_cobradorfk         INTEGER,
     id_secuencias_ventafk INTEGER NOT NULL,
     fecha_creado          TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_clientefk) REFERENCES clientes (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_clientefk) REFERENCES clientes (id)
 );
 
 -- ----------------------------
@@ -429,10 +439,9 @@ CREATE TABLE detalle_venta (
     id_detalleproductofk TEXT NOT NULL,
     id_ventafk           INTEGER NOT NULL,
     fecha_creado         TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra),
-    FOREIGN KEY (id_ventafk) REFERENCES ventas (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_ventafk) REFERENCES ventas (id)
 );
 
 -- ----------------------------
@@ -448,9 +457,8 @@ CREATE TABLE cuotas_venta (
     id_ventafk   INTEGER,
     id_usuariofk INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_ventafk) REFERENCES ventas (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_ventafk) REFERENCES ventas (id)
 );
 
 -- ----------------------------
@@ -465,10 +473,9 @@ CREATE TABLE pagos_venta (
     id_ventafk   INTEGER,
     id_cajafk    INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_cajafk) REFERENCES cajas (id),
-    FOREIGN KEY (id_ventafk) REFERENCES ventas (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_ventafk) REFERENCES ventas (id)
 );
 
 -- ----------------------------
@@ -486,11 +493,10 @@ CREATE TABLE compras (
     fecha_creado   TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
     id_proveedorfk INTEGER NOT NULL,
     id_cajafk      INTEGER NOT NULL,
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_cajafk) REFERENCES cajas (id),
     FOREIGN KEY (id_localfk) REFERENCES locales (id),
-    FOREIGN KEY (id_proveedorfk) REFERENCES proveedores (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_proveedorfk) REFERENCES proveedores (id)
 );
 
 -- ----------------------------
@@ -503,10 +509,9 @@ CREATE TABLE detalle_compra (
     id_comprafk       INTEGER NOT NULL,
     id_stockfk        INTEGER NOT NULL,
     fecha_creado      TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_comprafk) REFERENCES compras (id),
-    FOREIGN KEY (id_stockfk) REFERENCES stocks (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_stockfk) REFERENCES stocks (id)
 );
 
 -- ----------------------------
@@ -520,9 +525,8 @@ CREATE TABLE egresos (
     fecha        TEXT NOT NULL,
     id_cajafk    INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_cajafk) REFERENCES cajas (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_cajafk) REFERENCES cajas (id)
 );
 
 -- ----------------------------
@@ -542,12 +546,11 @@ CREATE TABLE ordenes (
     estado_impresion     TEXT NOT NULL DEFAULT 'PENDIENTE',
     last_print_error     TEXT,
     fecha_creado         TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_mesafk) REFERENCES mesas (id),
     FOREIGN KEY (id_preciofk) REFERENCES precios (id),
     FOREIGN KEY (id_detalleproductofk) REFERENCES detalles_producto (cod_barra),
-    CHECK (estado_impresion IN ('PENDIENTE', 'IMPRESO', 'FALLO')),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    CHECK (estado_impresion IN ('PENDIENTE', 'IMPRESO', 'FALLO'))
 );
 
 -- ----------------------------
@@ -565,10 +568,9 @@ CREATE TABLE reservas (
     id_usuariofk      INTEGER,
     id_clientefk      INTEGER,
     fecha_creado      TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_mesafk) REFERENCES mesas (id),
-    FOREIGN KEY (id_clientefk) REFERENCES clientes (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_clientefk) REFERENCES clientes (id)
 );
 
 -- ----------------------------
@@ -584,9 +586,8 @@ CREATE TABLE cuotas_compra (
     id_comprafk  INTEGER,
     id_usuariofk INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
-    FOREIGN KEY (id_comprafk) REFERENCES compras (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    actualizado_por INTEGER,
+    FOREIGN KEY (id_comprafk) REFERENCES compras (id)
 );
 
 -- ----------------------------
@@ -601,10 +602,9 @@ CREATE TABLE pagos_compra (
     id_comprafk  INTEGER,
     id_cajafk    INTEGER,
     fecha_creado TEXT NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-    actualizado_por INTEGER NOT NULL,
+    actualizado_por INTEGER,
     FOREIGN KEY (id_cajafk) REFERENCES cajas (id),
-    FOREIGN KEY (id_comprafk) REFERENCES compras (id),
-    FOREIGN KEY (actualizado_por) REFERENCES usuarios (id)
+    FOREIGN KEY (id_comprafk) REFERENCES compras (id)
 );
 
 -- ----------------------------
@@ -624,31 +624,30 @@ END;
 -- ----------------------------
 PRAGMA foreign_keys = OFF;
 
-INSERT INTO personas (cedula, nombres, apellidos, actualizado_por) VALUES
-(1, 'Cliente', 'Ocasional', 1),
-(4360067, 'Alejandro', 'Alvarez', 1);
+INSERT INTO personas (cedula, nombres, apellidos) VALUES
+(1, 'Cliente', 'Ocasional'),
+(4360067, 'Alejandro', 'Alvarez');
 
-INSERT INTO roles (id, nombre, observacion, estado, actualizado_por) VALUES
-(1, 'Admin', 'Acceso Total', 1, 1);
+INSERT INTO roles (id, nombre, observacion, estado) VALUES
+(1, 'Admin', 'Acceso Total', 1);
 
-INSERT INTO permisos (id, nombre, estado, actualizado_por) VALUES
-(1, 'Usuarios', 1, 1), (2, 'Roles', 1, 1), (3, 'Permisos_roles', 1, 1), (4, 'Productos', 1, 1),
-(5, 'Categorias', 1, 1), (6, 'Marcas', 1, 1), (7, 'Precios', 1, 1), (8, 'Ingredientes', 1, 1),
-(9, 'Clientes', 1, 1), (10, 'Proveedores', 1, 1), (11, 'Vendedores', 1, 1), (12, 'Locales', 1, 1),
-(13, 'Mesas', 1, 1), (14, 'Stocks', 1, 1), (15, 'Cajas', 1, 1), (16, 'Ventas', 1, 1),
-(17, 'Cuotas_venta', 1, 1), (18, 'Pagos_venta', 1, 1), (19, 'Compras', 1, 1),
-(20, 'Cuotas_compra', 1, 1), (21, 'Pagos_compra', 1, 1), (22, 'Egresos', 1, 1),
-(23, 'Ordenes', 1, 1), (24, 'Reservas', 1, 1);
+INSERT INTO permisos (id, nombre, estado) VALUES
+(1, 'Usuarios', 1), (2, 'Roles', 1), (3, 'Permisos_roles', 1), (4, 'Productos', 1),
+(5, 'Categorias', 1), (6, 'Marcas', 1), (7, 'Precios', 1), (8, 'Ingredientes', 1),
+(9, 'Clientes', 1), (10, 'Proveedores', 1), (11, 'Vendedores', 1), (12, 'Locales', 1),
+(13, 'Mesas', 1), (14, 'Stocks', 1), (15, 'Cajas', 1), (16, 'Ventas', 1),
+(17, 'Cuotas_venta', 1), (18, 'Pagos_venta', 1), (19, 'Compras', 1),
+(20, 'Cuotas_compra', 1), (21, 'Pagos_compra', 1), (22, 'Egresos', 1),
+(23, 'Ordenes', 1), (24, 'Reservas', 1);
 
-INSERT INTO permisos_roles (crear, editar, eliminar, leer, id_permisofk, id_rolfk, actualizado_por)
+INSERT INTO permisos_roles (crear, editar, eliminar, leer, id_permisofk, id_rolfk)
 SELECT 
     1 AS crear,
     1 AS editar,
     1 AS eliminar,
     1 AS leer,
     p.id AS id_permisofk,
-    1 AS id_rolfk,
-    1 AS actualizado_por
+    1 AS id_rolfk
 FROM permisos p
 WHERE NOT EXISTS (
     SELECT 1 
@@ -656,16 +655,16 @@ WHERE NOT EXISTS (
     WHERE pr.id_permisofk = p.id AND pr.id_rolfk = 1
 );
 
-INSERT INTO usuarios (id, contra, alias, estado, id_rolfk, id_personafk, actualizado_por) VALUES
-(1, 'scrypt$pQDitONnZE/sjyQuLA373w==$3qTf0pWmVEm36W5957vaqUXTmH8dTbjsB65un1+sd3o=', 'admin', 1, 1, 4360067, 1);
+INSERT INTO usuarios (id, contra, alias, estado, id_rolfk, id_personafk) VALUES
+(1, 'scrypt$pQDitONnZE/sjyQuLA373w==$3qTf0pWmVEm36W5957vaqUXTmH8dTbjsB65un1+sd3o=', 'admin', 1, 1, 4360067);
 
-INSERT INTO marcas (id, nombre, estado, actualizado_por) VALUES
-(1, 'Sin Marca', 1, 1);
+INSERT INTO marcas (id, nombre, estado) VALUES
+(1, 'Sin Marca', 1);
 
-INSERT INTO clientes (id, id_personafk, persona_fisica, actualizado_por) VALUES
-(1, 1, 1, 1);
+INSERT INTO clientes (id, id_personafk, persona_fisica) VALUES
+(1, 1, 1);
 
-INSERT INTO locales (id, nombre, actualizado_por) VALUES
-(1, 'Central', 1);
+INSERT INTO locales (id, nombre) VALUES
+(1, 'Central');
 
 PRAGMA foreign_keys = ON;

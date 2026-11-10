@@ -45,7 +45,7 @@ async def agregarProveedorApi(requestBody: ProveedorRequest, current_user: dict 
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('proveedor', 'leer'))], summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Proveedores', 'leer'))], summary="Obtener proveedores", description="Obtiene una lista de proveedores con filtros opcionales.")
 async def obtenerProveedoresApi(
     q: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar proveedores por ID"),

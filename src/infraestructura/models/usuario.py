@@ -16,7 +16,7 @@ class Usuario:
     # FK requerida por la tabla `usuarios` (NOT NULL)
     id_rolfk: Optional[int] = None
     
-    actualizado_por: int
+    actualizado_por: Optional[int] = None
 
     # Mantener rol como referencia opcional (no se usará para insertar si no se convierte a FK)
     rol: Optional[Rol] = None
@@ -24,6 +24,4 @@ class Usuario:
     # Nombre de columna alineado con tu esquema (Supabase)
     id_personafk: Optional[int] = None
     personas: Optional[Persona] = None
-    id: Optional[int] = None
-
 

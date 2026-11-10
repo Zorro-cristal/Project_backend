@@ -48,7 +48,7 @@ async def patchRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict
     summary="Crear rol",
     description="Crea un nuevo rol.",
 )
-async def agregarRolApi(requestBody: RolRequest, current_user: dict = Depends(permiso_requerido('rol', 'crear'))):
+async def agregarRolApi(requestBody: RolRequest, current_user: dict = Depends(permiso_requerido('Roles', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir

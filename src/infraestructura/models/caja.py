@@ -18,7 +18,7 @@ class Caja:
     monto_cierre: Optional[float]= None
     fecha_cierre: Optional[datetime] = None
     id_usuariofk: Optional[int]= None
-    actualizado_por: int
+    actualizado_por: int= None
     usuario: Optional[Usuario] = None
     egreso: Optional["Egreso"] = None
     compra: Optional["Compra"] = None

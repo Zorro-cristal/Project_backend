@@ -14,8 +14,8 @@ from ..services.egreso_service import (actualizar_egreso, crear_egreso,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso", description="Actualiza un egreso existente por su ID.")
-async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('egreso', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Egresos', 'editar'))], summary="Actualizar egresos", description="Actualiza un egreso existente por su ID.")
+async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('Egresos', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -28,13 +28,13 @@ async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest, current
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Egresos', 'editar'))], summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
 async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('egreso', 'editar'))):
     return await actualizarEgresoApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('egreso', 'crear'))], summary="Crear egreso", description="Crea un nuevo egreso.")
-async def agregarEgresoApi(requestBody: EgresoRequest, current_user: dict = Depends(permiso_requerido('egreso', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Egresos', 'crear'))], summary="Crear egresos", description="Crea un nuevo egreso.")
+async def agregarEgresoApi(requestBody: EgresoRequest, current_user: dict = Depends(permiso_requerido('Egresos', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -47,7 +47,7 @@ async def agregarEgresoApi(requestBody: EgresoRequest, current_user: dict = Depe
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('egreso', 'leer'))], summary="Obtener egresos", description="Obtiene una lista de egresos con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Egresos', 'leer'))], summary="Obtener egresos", description="Obtiene una lista de egresos con filtros opcionales.")
 async def obtenerEgresosApi(
     id: Optional[int] = Query(None, description="Filtrar egresos por ID"),
     monto: Optional[float] = Query(None, description="Filtrar egresos por monto"),
@@ -81,7 +81,7 @@ async def obtenerEgresosApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'leer'))], summary="Obtener egreso por ID", description="Obtiene un egreso específico por su ID. Usa include=caja para incluir caja.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('Egresos', 'leer'))], summary="Obtener egreso por ID", description="Obtiene un egreso específico por su ID. Usa include=caja para incluir caja.")
 async def obtenerEgresoPorIdApi(
     id: int,
     include: Optional[str] = Query(None, description="include=caja para incluir caja")

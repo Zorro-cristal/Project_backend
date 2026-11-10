@@ -12,8 +12,8 @@ from ..services.reserva_service import (actualizar_reserva, crear_reserva,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('reserva', 'editar'))], summary="Actualizar reserva", description="Actualiza una reserva existente por su ID.")
-async def actualizarReservaApi(id: int, requestBody: ReservaUpdateRequest, current_user: dict = Depends(permiso_requerido('reserva', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Reservas', 'editar'))], summary="Actualizar reserva", description="Actualiza una reserva existente por su ID.")
+async def actualizarReservaApi(id: int, requestBody: ReservaUpdateRequest, current_user: dict = Depends(permiso_requerido('Reservas', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -28,13 +28,13 @@ async def actualizarReservaApi(id: int, requestBody: ReservaUpdateRequest, curre
         raise HTTPException(status_code=400, detail=str(exc))
     return {"message": result}
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('reserva', 'editar'))], summary="Actualizar reserva parcialmente", description="Actualiza parcialmente una reserva existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Reservas', 'editar'))], summary="Actualizar reserva parcialmente", description="Actualiza parcialmente una reserva existente por su ID.")
 async def patchReservaApi(id: int, requestBody: ReservaUpdateRequest):
     return await actualizarReservaApi(id, requestBody)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('reserva', 'crear'))], summary="Crear reserva", description="Crea una nueva reserva.")
-async def agregarReservaApi(requestBody: ReservaRequest, current_user: dict = Depends(permiso_requerido('reserva', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Reservas', 'crear'))], summary="Crear reserva", description="Crea una nueva reserva.")
+async def agregarReservaApi(requestBody: ReservaRequest, current_user: dict = Depends(permiso_requerido('Reservas', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -50,7 +50,7 @@ async def agregarReservaApi(requestBody: ReservaRequest, current_user: dict = De
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('reserva', 'leer'))], summary="Obtener reservas", description="Obtiene una lista de reservas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Reservas', 'leer'))], summary="Obtener reservas", description="Obtiene una lista de reservas con filtros opcionales.")
 async def obtenerReservasApi(
     id: Optional[int] = Query(None, description="Filtrar reservas por ID"),
     estado: Optional[int] = Query(None, description="Filtrar por estado"),
@@ -82,7 +82,7 @@ async def obtenerReservasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('reserva', 'leer'))], summary="Obtener reserva por ID", description="Obtiene una reserva específica por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('Reservas', 'leer'))], summary="Obtener reserva por ID", description="Obtiene una reserva específica por su ID.")
 async def obtenerReservaPorIdApi(id: int):
     filtros = {'id': id}
     result = await obtener_reservas(filtros)

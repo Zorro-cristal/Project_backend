@@ -41,7 +41,7 @@ async def agregarPrecioApi(requestBody: PrecioRequest, current_user: dict = Depe
     result = await crear_precio(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('precio', 'leer'))], summary="Obtener precios", description="Obtiene una lista de precios con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Precios', 'leer'))], summary="Obtener precios", description="Obtiene una lista de precios con filtros opcionales.")
 async def obtenerPreciosApi(
     id: Optional[str] = Query(None, description="Filtrar precios por ID"),
     producto_id: Optional[int] = Query(None, description="Filtrar precios por ID de producto"),

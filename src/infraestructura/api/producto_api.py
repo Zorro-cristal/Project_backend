@@ -1,8 +1,9 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
+from src.infraestructura.services.producto_service import ProductoReferenciaInvalida
 from src.shell.adapters.database.generic_crud import get as crud_get
 from src.shell.adapters.requests.producto_request import (
     ProductoRequest, ProductoUpdateRequest)
@@ -20,11 +21,14 @@ router = APIRouter()
 
 @router.put(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("producto", "editar"))],
     summary="Actualizar producto",
     description="Actualiza un producto existente por su ID.",
 )
-async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
+async def actualizarProductoApi(
+    id: int,
+    requestBody: ProductoUpdateRequest,
+    current_user: dict = Depends(permiso_requerido("Productos", "editar")),
+):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -39,21 +43,26 @@ async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest, cur
 
 @router.patch(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("producto", "editar"))],
     summary="Actualizar producto parcialmente",
     description="Actualiza parcialmente un producto existente por su ID.",
 )
-async def patchProductoApi(id: int, requestBody: ProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
+async def patchProductoApi(
+    id: int,
+    requestBody: ProductoUpdateRequest,
+    current_user: dict = Depends(permiso_requerido("Productos", "editar")),
+):
     return await actualizarProductoApi(id, requestBody, current_user)
 
 
 @router.post(
     "/",
-    dependencies=[Depends(permiso_requerido("producto", "crear"))],
     summary="Crear producto",
     description="Crea un nuevo producto.",
 )
-async def agregarProductoApi(requestBody: ProductoRequest, current_user: dict = Depends(permiso_requerido('producto', 'crear'))):
+async def agregarProductoApi(
+    requestBody: ProductoRequest,
+    current_user: dict = Depends(permiso_requerido("Productos", "crear")),
+):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -62,13 +71,16 @@ async def agregarProductoApi(requestBody: ProductoRequest, current_user: dict = 
         raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
     payload["actualizado_por"] = actor_id
     
-    result = await crear_producto(payload)
+    try:
+        result = await crear_producto(payload)
+    except ProductoReferenciaInvalida as exc:
+        raise HTTPException(status_code=400, detail=str(exc)) from exc
     return {"message": result}
 
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("producto", "leer"))],
+    dependencies=[Depends(permiso_requerido("Productos", "leer"))],
     summary="Obtener productos",
     description="Obtiene una lista de productos con filtros opcionales.",
     response_model=ProductoListResponse,
@@ -132,7 +144,7 @@ async def obtenerProductosApi(
 
 @router.get(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("producto", "leer"))],
+    dependencies=[Depends(permiso_requerido("Productos", "leer"))],
     summary="Obtener producto",
     description="Obtiene un producto por su ID.",
 )
@@ -148,7 +160,7 @@ async def obtenerProductoApi(
 
 @router.get(
     "/{id}/detallesProducto",
-    dependencies=[Depends(permiso_requerido("producto", "leer"))],
+    dependencies=[Depends(permiso_requerido("Productos", "leer"))],
     summary="Obtener detallesProducto",
     description="Obtiene solo los detallesProducto (detalles_producto) de un producto.",
 )
@@ -159,7 +171,7 @@ async def obtenerDetallesProductoApi(id: int):
 
 @router.get(
     "/detalles_producto/{id}",
-    dependencies=[Depends(permiso_requerido("producto", "leer"))],
+    dependencies=[Depends(permiso_requerido("Productos", "leer"))],
     summary="Obtener detalles_producto por cod_barra (alias)",
     description="Alias: Retorna el detalle_producto por cod_barra, con precios y el producto asociado.",
 )
@@ -187,5 +199,3 @@ async def obtenerDetalleProductoPorCodBarraApi(id: int):
         producto_asociado = await obtener_producto(id_producto)
 
     return {"message": {"detalle": detalle_con_precios_obj, "producto": producto_asociado}}
-
-

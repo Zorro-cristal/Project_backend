@@ -12,8 +12,8 @@ from ..services.stock_service import (actualizar_stock, crear_stock,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
-async def actualizarStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('stock', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Stocks', 'editar'))], summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
+async def actualizarStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('Stocks', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -26,13 +26,13 @@ async def actualizarStockApi(id: int, requestBody: StockUpdateRequest, current_u
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Stocks', 'editar'))], summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
 async def patchStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('stock', 'editar'))):
     return await actualizarStockApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('stock', 'crear'))], summary="Crear stock", description="Crea un nuevo stock.")
-async def agregarStockApi(requestBody: StockRequest, current_user: dict = Depends(permiso_requerido('stock', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Stocks', 'crear'))], summary="Crear stock", description="Crea un nuevo stock.")
+async def agregarStockApi(requestBody: StockRequest, current_user: dict = Depends(permiso_requerido('Stocks', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -45,7 +45,7 @@ async def agregarStockApi(requestBody: StockRequest, current_user: dict = Depend
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('stock', 'leer'))], summary="Obtener stocks", description="Obtiene una lista de stocks con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Stocks', 'leer'))], summary="Obtener stocks", description="Obtiene una lista de stocks con filtros opcionales.")
 async def obtenerStocksApi(
     id: Optional[str] = Query(None, description="Filtrar stocks por ID"),
     id_localfk: Optional[int] = Query(None, description="Filtrar stocks por ID de local asociada"),
@@ -71,7 +71,7 @@ async def obtenerStocksApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('stock', 'leer'))], summary="Obtener stock por ID", description="Obtiene un stock específico por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('Stocks', 'leer'))], summary="Obtener stock por ID", description="Obtiene un stock específico por su ID.")
 async def obtenerStockPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_stocks(filtros)

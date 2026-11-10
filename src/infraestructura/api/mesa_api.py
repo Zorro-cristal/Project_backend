@@ -43,7 +43,7 @@ async def patchMesaApi(
 @router.post("/", summary="Crear mesa", description="Crea una nueva mesa.")
 async def agregarMesaApi(
 	requestBody: MesaRequest,
-	current_user: dict = Depends(permiso_requerido('mesa', 'crear')),
+	current_user: dict = Depends(permiso_requerido('Mesas', 'crear')),
 ):
 	payload = requestBody.model_dump()
 	actor_id = current_user.get("id")

@@ -12,6 +12,7 @@ TABLE_PRIMARY_KEYS: dict[str, str] = {
     "roles": "id",
     "permisos": "id",
     "permisos_roles": "id",
+    "audit_login": "id",
     "marcas": "id",
     "categorias": "id",
     "precios": "id",
@@ -367,7 +368,7 @@ def _sync_update(connection: Any, table: str, row_id: Any, updates: dict[str, An
 async def insert(table: str, data: dict[str, Any]) -> dict[str, Any]:
     payload = dict(data)
     primary_key = TABLE_PRIMARY_KEYS.get(table)
-    if table != "secuencias_venta" and (
+    if table not in {"secuencias_venta", "audit_login"} and (
         "fecha_creado" not in payload or payload["fecha_creado"] is None
     ):
         payload["fecha_creado"] = datetime.now(timezone.utc).isoformat()

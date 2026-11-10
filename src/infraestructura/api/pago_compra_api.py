@@ -11,8 +11,8 @@ from ..services.pago_compra_service import (anular_pago,
 router = APIRouter()
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('pago', 'crear'))], summary="Registrar pago compra", description="Registra un pago para una compra.")
-async def registrarPagoCompraApi(requestBody: PagoCompraRequest, current_user: dict = Depends(permiso_requerido('pago', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Pagos_compra', 'crear'))], summary="Registrar pago compra", description="Registra un pago para una compra.")
+async def registrarPagoCompraApi(requestBody: PagoCompraRequest, current_user: dict = Depends(permiso_requerido('Pagos_compra', 'crear'))):
     payload = requestBody.model_dump(exclude_unset=True)
 
     # Propagar el actor autenticado antes de persistir (no debe ser editable por cliente)
@@ -37,19 +37,19 @@ async def registrarPagoCompraApi(requestBody: PagoCompraRequest, current_user: d
     return {"message": resultado}
 
 
-@router.get("/{id}/pagos", dependencies=[Depends(permiso_requerido('pago', 'leer'))], summary="Obtener pagos compra", description="Obtiene todos los pagos de una compra.")
+@router.get("/{id}/pagos", dependencies=[Depends(permiso_requerido('Pagos_compra', 'leer'))], summary="Obtener pagos compra", description="Obtiene todos los pagos de una compra.")
 async def obtenerPagosPorCompraApi(id: int):
     pagos = await obtener_pagos_por_compra(id)
     return {"message": pagos if pagos else []}
 
 
-@router.get("/{id}/total", dependencies=[Depends(permiso_requerido('pago', 'leer'))], summary="Obtener total pagado compra", description="Obtiene el total pagado de una compra.")
+@router.get("/{id}/total", dependencies=[Depends(permiso_requerido('Pagos_compra', 'leer'))], summary="Obtener total pagado compra", description="Obtiene el total pagado de una compra.")
 async def obtenerTotalPagadoCompraApi(id: int):
     total = await obtener_total_pagado(id)
     return {"message": {"id_compra": id, "total_pagado": total}}
 
 
-@router.patch("/{id}/anular", dependencies=[Depends(permiso_requerido('pago', 'eliminar'))], summary="Anular pago compra", description="Anula un pago de compra (cambia estado a inactivo).")
+@router.patch("/{id}/anular", dependencies=[Depends(permiso_requerido('Pagos_compra', 'eliminar'))], summary="Anular pago compra", description="Anula un pago de compra (cambia estado a inactivo).")
 async def anularPagoCompraApi(id: int, current_user: dict = Depends(permiso_requerido('pago', 'eliminar'))):
     # Recalcular saldos si existe la compra asociada
     from ..repositories.pago_compra_repository import obtenerPagoCompra
@@ -68,7 +68,7 @@ async def anularPagoCompraApi(id: int, current_user: dict = Depends(permiso_requ
     return {"message": resultado}
 
 
-@router.post("/{id}/recalcular-saldos", dependencies=[Depends(permiso_requerido('pago', 'leer'))], summary="Recalcular saldos compra", description="Recalcula los saldos de una compra usando lógica FIFO.")
+@router.post("/{id}/recalcular-saldos", dependencies=[Depends(permiso_requerido('Pagos_compra', 'leer'))], summary="Recalcular saldos compra", description="Recalcula los saldos de una compra usando lógica FIFO.")
 async def recalcularSaldosCompraApi(id: int):
     resultado = await recalcular_saldos(id)
     return {"message": resultado}

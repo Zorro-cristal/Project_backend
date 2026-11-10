@@ -2,9 +2,15 @@ from src.shell.flujo.producto.crearActualizarProducto import (
     actualizar_producto_por_id, crear_o_actualizar_producto)
 
 from ..models.producto import Producto
+from ..repositories.categoria_repository import obtenerCategoria
+from ..repositories.marca_repository import obtenerMarca
 from ..repositories.producto_repository import (
     obtenerDetallesProducto, obtenerProducto,
     obtenerProductoConDetallesProducto)
+
+
+class ProductoReferenciaInvalida(ValueError):
+    pass
 
 
 def build_producto_entity(payload: dict) -> Producto:
@@ -29,6 +35,26 @@ async def obtener_detallesProducto(id: int):
 
 async def crear_producto(payload: dict):
     producto = build_producto_entity(payload)
+    categorias = await obtenerCategoria(
+        filtros={"id": producto.id_categoriafk},
+        limite=1,
+        offset=0,
+    )
+    if not categorias:
+        raise ProductoReferenciaInvalida(
+            f"No existe la categoría con id {producto.id_categoriafk}."
+        )
+
+    marcas = await obtenerMarca(
+        filtros={"id": producto.id_marcafk},
+        limite=1,
+        offset=0,
+    )
+    if not marcas:
+        raise ProductoReferenciaInvalida(
+            f"No existe la marca con id {producto.id_marcafk}."
+        )
+
     return await crear_o_actualizar_producto(producto)
 
 
@@ -36,4 +62,3 @@ async def actualizar_producto(id: int, payload: dict):
     if not payload:
         raise ValueError('No hay campos para actualizar')
     return await actualizar_producto_por_id(id, payload)
-

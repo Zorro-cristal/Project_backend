@@ -35,7 +35,7 @@ async def agregarCategoriaApi(requestBody: CategoriaRequest, current_user: dict 
     result = await crear_categoria(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('categoria', 'leer'))], summary="Obtener categorías", description="Obtiene una lista de categorías con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Categorias', 'leer'))], summary="Obtener categorías", description="Obtiene una lista de categorías con filtros opcionales.")
 async def obtenerCategoriasApi(
     id: Optional[str] = Query(None, description="Filtrar categorias por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar categorías por nombre parcial"),

@@ -13,7 +13,7 @@ from ..services.caja_service import (actualizar_caja, crear_caja,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('caja', 'editar'))], summary="Actualizar caja", description="Actualiza una caja existente por su ID.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Cajas', 'editar'))], summary="Actualizar cajas", description="Actualiza una caja existente por su ID.")
 async def actualizarCajaApi(id: int, requestBody: CajaUpdateRequest):
     payload = requestBody.model_dump(exclude_unset=True)
     try:
@@ -23,13 +23,13 @@ async def actualizarCajaApi(id: int, requestBody: CajaUpdateRequest):
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('caja', 'editar'))], summary="Actualizar caja parcialmente", description="Actualiza parcialmente una caja existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Cajas', 'editar'))], summary="Actualizar cajas parcialmente", description="Actualiza parcialmente una caja existente por su ID.")
 async def patchCajaApi(id: int, requestBody: CajaUpdateRequest):
     return await actualizarCajaApi(id, requestBody)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('caja', 'crear'))], summary="Crear caja", description="Crea una nueva caja.")
-async def agregarCajaApi(requestBody: CajaRequest, current_user: dict = Depends(permiso_requerido('caja', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Cajas', 'crear'))], summary="Crear cajas", description="Crea una nueva caja.")
+async def agregarCajaApi(requestBody: CajaRequest, current_user: dict = Depends(permiso_requerido('Cajas', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -42,7 +42,7 @@ async def agregarCajaApi(requestBody: CajaRequest, current_user: dict = Depends(
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener cajas", description="Obtiene una lista de cajas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Cajas', 'leer'))], summary="Obtener cajas", description="Obtiene una lista de cajas con filtros opcionales.")
 async def obtenerCajasApi(
     id: Optional[str] = Query(None, description="Filtrar cajas por ID"),
     id_usuariofk: Optional[int] = Query(None, description="Filtrar cajas por ID de usuario asociado"),
@@ -65,7 +65,7 @@ async def obtenerCajasApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('caja', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID, incluyendo egresos, pagos_venta y pagos_cuota asociados.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('Cajas', 'leer'))], summary="Obtener caja por ID", description="Obtiene una caja específica por su ID, incluyendo egresos, pagos_venta y pagos_cuota asociados.")
 async def obtenerCajaPorIdApi(id: int):
     filtros = {"id": id}
     result = await obtener_caja_por_id_con_movimientos(filtros)

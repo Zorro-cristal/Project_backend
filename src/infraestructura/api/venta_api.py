@@ -19,8 +19,8 @@ from .schemas.relational_sanitizers import (VentaFKOnly, VentaListResponse,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
-async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest, current_user: dict = Depends(permiso_requerido('venta', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Ventas', 'editar'))], summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
+async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest, current_user: dict = Depends(permiso_requerido('Ventas', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -36,7 +36,7 @@ async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest, current_u
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar venta parcialmente", description="Actualiza parcialmente una venta existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Ventas', 'editar'))], summary="Actualizar venta parcialmente", description="Actualiza parcialmente una venta existente por su ID.")
 async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
     return await actualizarVentaApi(id, requestBody)
 

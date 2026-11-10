@@ -48,7 +48,7 @@ async def patchLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: 
     summary="Crear local",
     description="Crea un nuevo local.",
 )
-async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depends(permiso_requerido('local', 'crear'))):
+async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depends(permiso_requerido('Locales', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir

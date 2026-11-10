@@ -12,8 +12,8 @@ from ..services.vendedor_service import (actualizar_vendedor, crear_vendedor,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'editar'))], summary="Actualizar vendedor", description="Actualiza un vendedor existente por su ID.")
-async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest, current_user: dict = Depends(permiso_requerido('vendedor', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Vendedores', 'editar'))], summary="Actualizar vendedor", description="Actualiza un vendedor existente por su ID.")
+async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest, current_user: dict = Depends(permiso_requerido('Vendedores', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -25,13 +25,13 @@ async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest, cur
     result = await actualizar_vendedor(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('vendedor', 'editar'))], summary="Actualizar vendedor parcialmente", description="Actualiza parcialmente un vendedor existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Vendedores', 'editar'))], summary="Actualizar vendedor parcialmente", description="Actualiza parcialmente un vendedor existente por su ID.")
 async def patchVendedorApi(id: int, requestBody: VendedorUpdateRequest, current_user: dict = Depends(permiso_requerido('vendedor', 'editar'))):
     return await actualizarVendedorApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('vendedor', 'crear'))], summary="Crear vendedor", description="Crea un nuevo vendedor.")
-async def agregarVendedorApi(requestBody: VendedorRequest, current_user: dict = Depends(permiso_requerido('vendedor', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Vendedores', 'crear'))], summary="Crear vendedor", description="Crea un nuevo vendedor.")
+async def agregarVendedorApi(requestBody: VendedorRequest, current_user: dict = Depends(permiso_requerido('Vendedores', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -44,7 +44,7 @@ async def agregarVendedorApi(requestBody: VendedorRequest, current_user: dict = 
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('vendedor', 'leer'))], summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Vendedores', 'leer'))], summary="Obtener vendedores", description="Obtiene una lista de vendedores con filtros opcionales.")
 async def obtenerVendedoresApi(
     q: Annotated[Optional[str], Query(description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)")] = None,
     id: Annotated[Optional[str], Query(description="Filtrar vendedores por ID")] = None,

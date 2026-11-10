@@ -29,9 +29,9 @@ class Settings(BaseSettings):
     API_VERSION: str = "v1"
     
     # Seguridad
-    SECRET_KEY: str = "tu_clave_secreta_super_segura_aqui" # Cambiar por variable de entorno
+    SECRET_KEY: str  # Debe ser configurada vía variable de entorno
     ALGORITHM: str = "HS256"
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60 * 24  # 24 horas
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 15
 
     # CORS - Lista explícita sin wildcards para permitir credentials
     ALLOWED_ORIGINS: str = "http://localhost:3000,http://localhost:5173,https://projectfrontend-psi.vercel.app,https://project-backend-gamma-seven.vercel.app"

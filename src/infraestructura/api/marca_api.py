@@ -41,7 +41,7 @@ async def agregarMarcaApi(requestBody: MarcaRequest, current_user: dict = Depend
     result = await crear_marca(payload)
     return {"message": result}
 
-@router.get("/", dependencies=[Depends(permiso_requerido('marca', 'leer'))], summary="Obtener marcas", description="Obtiene una lista de marcas con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Marcas', 'leer'))], summary="Obtener marcas", description="Obtiene una lista de marcas con filtros opcionales.")
 async def obtenerMarcasApi(
     id: Optional[str] = Query(None, description="Filtrar marcas por ID"),
     nombre: Optional[str] = Query(None, description="Filtrar marcas por nombre parcial"),

@@ -1,6 +1,6 @@
 from typing import Annotated, Optional
 
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, Request
 from pydantic import BaseModel
 
 from src.infraestructura.api.dependencies import permiso_requerido
@@ -23,9 +23,9 @@ class UsuarioLoginRequest(BaseModel):
     contra: str
 
 @router.post("/login", summary="Iniciar sesión", description="Procesa el inicio de sesión de un usuario con alias y contraseña.")
-async def login(request_body: UsuarioLoginRequest):
+async def login(request_body: UsuarioLoginRequest, request: Request):
     user_for_processing = Usuario(alias=request_body.alias, contra=request_body.contra)
-    result = await procesarLogin(user_for_processing)
+    result = await procesarLogin(user_for_processing, request)
     
     if not result:
         from fastapi import HTTPException
@@ -57,7 +57,7 @@ async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest, curre
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Usuarios', 'editar'))], summary="Actualizar usuario parcialmente", description="Actualiza parcialmente un usuario existente por su ID.")
-async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest, current_user: dict = Depends(permiso_requerido('Usuarios', 'editar'))):
+async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest, current_user: dict = Depends(permiso_requerido('usuarios', 'editar'))):
     return await actualizarUsuarioApi(id, requestBody, current_user)
 
 
@@ -127,7 +127,7 @@ async def obtenerUsuariosApi(
     return {"message": result}
 
 
-@router.post("/usuario_test", summary="Crear usuarios de prueba", description="Crea 5 usuarios de prueba (alias y contra iguales, contra hasheada) solo si NO existe ningún usuario en la base de datos.")
+@router.post("/usuario_test", dependencies=[Depends(permiso_requerido('usuarios', 'crear'))], summary="Crear usuarios de prueba", description="Crea 5 usuarios de prueba (alias y contra iguales, contra hasheada) solo si NO existe ningún usuario en la base de datos.")
 async def usuarioTest():
     # Si existe al menos un usuario en la BD, no creamos nada
     total_usuarios = await count("usuarios")

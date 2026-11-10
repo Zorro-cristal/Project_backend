@@ -7,5 +7,5 @@ from typing import Optional
 class Timbrado:
     nro_timbrado: int
     fin_vigencia: datetime
-    actualizado_por: int
+    actualizado_por: int= None
     id: Optional[int] = None

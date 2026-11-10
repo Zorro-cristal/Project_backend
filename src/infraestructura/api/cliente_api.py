@@ -39,7 +39,7 @@ async def agregarClienteApi(requestBody: ClienteRequest, current_user: dict = De
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('cliente', 'leer'))], summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Clientes', 'leer'))], summary="Obtener clientes", description="Obtiene una lista de clientes con filtros opcionales.")
 async def obtenerClientesApi(
     q: Optional[str] = Query(None, description="Buscar por nombre completo de la persona asociada (nombre, apellido o cedula, contiene)"),
     id: Optional[str] = Query(None, description="Filtrar clientes por ID"),

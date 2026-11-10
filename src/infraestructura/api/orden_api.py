@@ -12,8 +12,8 @@ from ..services.orden_service import (actualizar_orden_por_id, crear_orden,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden", description="Actualiza una orden existente por su ID.")
-async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_user: dict = Depends(permiso_requerido('orden', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Ordenes', 'editar'))], summary="Actualizar orden", description="Actualiza una orden existente por su ID.")
+async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_user: dict = Depends(permiso_requerido('Ordenes', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -26,13 +26,13 @@ async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_u
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden parcialmente", description="Actualiza parcialmente una orden existente por su ID.")
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Ordenes', 'editar'))], summary="Actualizar orden parcialmente", description="Actualiza parcialmente una orden existente por su ID.")
 async def patchOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_user: dict = Depends(permiso_requerido('orden', 'editar'))):
     return await actualizarOrdenApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('orden', 'crear'))], summary="Crear orden", description="Crea una nueva orden.")
-async def agregarOrdenApi(requestBody: OrdenRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(permiso_requerido('orden', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Ordenes', 'crear'))], summary="Crear orden", description="Crea una nueva orden.")
+async def agregarOrdenApi(requestBody: OrdenRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(permiso_requerido('Ordenes', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir
@@ -45,7 +45,7 @@ async def agregarOrdenApi(requestBody: OrdenRequest, background_tasks: Backgroun
     return {"message": result}
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido('orden', 'leer'))], summary="Obtener órdenes", description="Obtiene una lista de órdenes con filtros opcionales.")
+@router.get("/", dependencies=[Depends(permiso_requerido('Ordenes', 'leer'))], summary="Obtener órdenes", description="Obtiene una lista de órdenes con filtros opcionales.")
 async def obtenerOrdenesApi(
     id: Optional[str] = Query(None, description="Filtrar orden por ID"),
     estado: Optional[int] = Query(None, description="Filtrar por estado (0:inactivo, 1:pendiente, 2:en_proceso, 3:listo, 4:entregado)"),
@@ -78,7 +78,7 @@ async def obtenerOrdenesApi(
     return {"message": result}
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido('orden', 'leer'))], summary="Obtener orden por ID", description="Obtiene una orden específica por su ID.")
+@router.get("/{id}", dependencies=[Depends(permiso_requerido('Ordenes', 'leer'))], summary="Obtener orden por ID", description="Obtiene una orden específica por su ID.")
 async def obtenerOrdenPorIdApi(id: int):
     filtros = {'id': id}
     result = await obtener_ordenes(filtros)
