@@ -12,18 +12,32 @@ from ..services.precio_service import (actualizar_precio, crear_precio,
 router = APIRouter()
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('precio', 'editar'))], summary="Actualizar precio", description="Actualiza un precio existente por su ID.")
-async def actualizarPrecioApi(id: int, requestBody: PrecioUpdateRequest):
+async def actualizarPrecioApi(id: int, requestBody: PrecioUpdateRequest, current_user: dict = Depends(permiso_requerido('precio', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_precio(id, payload)
     return {"message": result}
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('precio', 'editar'))], summary="Actualizar precio parcialmente", description="Actualiza parcialmente un precio existente por su ID.")
-async def patchPrecioApi(id: int, requestBody: PrecioUpdateRequest):
-    return await actualizarPrecioApi(id, requestBody)
+async def patchPrecioApi(id: int, requestBody: PrecioUpdateRequest, current_user: dict = Depends(permiso_requerido('precio', 'editar'))):
+    return await actualizarPrecioApi(id, requestBody, current_user)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('precio', 'crear'))], summary="Crear precio", description="Crea un nuevo precio.")
-async def agregarPrecioApi(requestBody: PrecioRequest):
+async def agregarPrecioApi(requestBody: PrecioRequest, current_user: dict = Depends(permiso_requerido('precio', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_precio(payload)
     return {"message": result}
 

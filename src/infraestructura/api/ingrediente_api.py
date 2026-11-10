@@ -14,20 +14,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente", description="Actualiza un ingrediente existente por su ID.")
-async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateRequest):
+async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_ingrediente(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('ingrediente', 'editar'))], summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
-async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest):
-    return await actualizarIngredienteApi(id, requestBody)
+async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'editar'))):
+    return await actualizarIngredienteApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('ingrediente', 'crear'))], summary="Crear ingrediente", description="Crea un nuevo ingrediente.")
-async def agregarIngredienteApi(requestBody: IngredienteRequest):
+async def agregarIngredienteApi(requestBody: IngredienteRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_ingrediente(payload)
     return {"message": result}
 

@@ -12,18 +12,32 @@ from ..services.marca_service import (actualizar_marca, crear_marca,
 router = APIRouter()
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('marca', 'editar'))], summary="Actualizar marca", description="Actualiza una marca existente por su ID.")
-async def actualizarMarcaApi(id: int, requestBody: MarcaUpdateRequest):
+async def actualizarMarcaApi(id: int, requestBody: MarcaUpdateRequest, current_user: dict = Depends(permiso_requerido('marca', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_marca(id, payload)
     return {"message": result}
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('marca', 'editar'))], summary="Actualizar marca parcialmente", description="Actualiza parcialmente una marca existente por su ID.")
-async def patchMarcaApi(id: int, requestBody: MarcaUpdateRequest):
-    return await actualizarMarcaApi(id, requestBody)
+async def patchMarcaApi(id: int, requestBody: MarcaUpdateRequest, current_user: dict = Depends(permiso_requerido('marca', 'editar'))):
+    return await actualizarMarcaApi(id, requestBody, current_user)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('marca', 'crear'))], summary="Crear marca", description="Crea una nueva marca.")
-async def agregarMarcaApi(requestBody: MarcaRequest):
+async def agregarMarcaApi(requestBody: MarcaRequest, current_user: dict = Depends(permiso_requerido('marca', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_marca(payload)
     return {"message": result}
 

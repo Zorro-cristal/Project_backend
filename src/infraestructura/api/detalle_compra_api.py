@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Depends, Query
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.detalle_compra_request import (
@@ -14,20 +14,33 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar detalle de compra", description="Actualiza un detalle de compra existente por su ID.")
-async def actualizarDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest):
+async def actualizarDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await actualizar_detalle_compra(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar detalle de compra parcialmente", description="Actualiza parcialmente un detalle de compra existente por su ID.")
-async def patchDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest):
+async def patchDetalleCompraApi(id: int, requestBody: DetalleCompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
+    payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     return await actualizarDetalleCompraApi(id, requestBody)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Crear detalle de compra", description="Crea un nuevo detalle de compra.")
-async def agregarDetalleCompraApi(requestBody: DetalleCompraRequest):
+async def agregarDetalleCompraApi(requestBody: DetalleCompraRequest, current_user: dict = Depends(permiso_requerido('compra', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await crear_detalle_compra(payload)
     return {"message": result}
 

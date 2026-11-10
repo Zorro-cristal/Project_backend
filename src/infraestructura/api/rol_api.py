@@ -19,8 +19,15 @@ router = APIRouter()
     summary="Actualizar rol",
     description="Actualiza un rol existente por su ID.",
 )
-async def actualizarRolApi(id: int, requestBody: RolUpdateRequest):
+async def actualizarRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('rol', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_rol(id, payload)
     return {"message": result}
 
@@ -31,8 +38,8 @@ async def actualizarRolApi(id: int, requestBody: RolUpdateRequest):
     summary="Actualizar rol parcialmente",
     description="Actualiza parcialmente un rol existente por su ID.",
 )
-async def patchRolApi(id: int, requestBody: RolUpdateRequest):
-    return await actualizarRolApi(id, requestBody)
+async def patchRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('rol', 'editar'))):
+    return await actualizarRolApi(id, requestBody, current_user)
 
 
 @router.post(
@@ -41,8 +48,15 @@ async def patchRolApi(id: int, requestBody: RolUpdateRequest):
     summary="Crear rol",
     description="Crea un nuevo rol.",
 )
-async def agregarRolApi(requestBody: RolRequest):
+async def agregarRolApi(requestBody: RolRequest, current_user: dict = Depends(permiso_requerido('rol', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_rol(payload)
     return {"message": result}
 

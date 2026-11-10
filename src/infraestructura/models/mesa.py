@@ -11,6 +11,7 @@ class Mesa:
     nombre: str
     estado: int
     capacidad: int
+    actualizado_por: int
     id_localfk: Optional[int] = None
     local: Optional[Local] = None
     id_clientefk: Optional[int] = None

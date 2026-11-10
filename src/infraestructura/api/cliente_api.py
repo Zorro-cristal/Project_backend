@@ -13,20 +13,28 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente", description="Actualiza un cliente existente por su ID.")
-async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest):
+async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('cliente', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await actualizar_cliente(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente parcialmente", description="Actualiza parcialmente un cliente existente por su ID.")
-async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest):
-    return await actualizarClienteApi(id, requestBody)
+async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('cliente', 'editar'))):
+    return await actualizarClienteApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('cliente', 'crear'))], summary="Crear cliente", description="Crea un nuevo cliente.")
-async def agregarClienteApi(requestBody: ClienteRequest):
+async def agregarClienteApi(requestBody: ClienteRequest, current_user: dict = Depends(permiso_requerido('cliente', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await crear_cliente(payload)
     return {"message": result}
 

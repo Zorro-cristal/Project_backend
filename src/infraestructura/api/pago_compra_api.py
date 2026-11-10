@@ -1,24 +1,26 @@
-from fastapi import APIRouter, Depends, Query, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
-from src.shell.adapters.requests.pago_compra_request import (
-    PagoCompraRequest,
-)
+from src.shell.adapters.requests.pago_compra_request import PagoCompraRequest
 
-from ..services.pago_compra_service import (
-    anular_pago,
-    obtener_pagos_por_compra,
-    obtener_total_pagado,
-    recalcular_saldos,
-    registrar_pago,
-)
+from ..services.pago_compra_service import (anular_pago,
+                                            obtener_pagos_por_compra,
+                                            obtener_total_pagado,
+                                            recalcular_saldos, registrar_pago)
 
 router = APIRouter()
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('pago', 'crear'))], summary="Registrar pago compra", description="Registra un pago para una compra.")
-async def registrarPagoCompraApi(requestBody: PagoCompraRequest):
+async def registrarPagoCompraApi(requestBody: PagoCompraRequest, current_user: dict = Depends(permiso_requerido('pago', 'crear'))):
     payload = requestBody.model_dump(exclude_unset=True)
+
+    # Propagar el actor autenticado antes de persistir (no debe ser editable por cliente)
+    if "actualizado_por" not in payload or payload["actualizado_por"] is None:
+        id_usuariofk = current_user.get("id")
+        if id_usuariofk is None:
+            raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+        payload["actualizado_por"] = id_usuariofk
 
     try:
         resultado = await registrar_pago(
@@ -48,11 +50,16 @@ async def obtenerTotalPagadoCompraApi(id: int):
 
 
 @router.patch("/{id}/anular", dependencies=[Depends(permiso_requerido('pago', 'eliminar'))], summary="Anular pago compra", description="Anula un pago de compra (cambia estado a inactivo).")
-async def anularPagoCompraApi(id: int):
+async def anularPagoCompraApi(id: int, current_user: dict = Depends(permiso_requerido('pago', 'eliminar'))):
     # Recalcular saldos si existe la compra asociada
     from ..repositories.pago_compra_repository import obtenerPagoCompra
 
     pago = await obtenerPagoCompra({'id': id})
+    
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    
     resultado = await anular_pago(id)
 
     if pago and pago[0].get('id_comprafk'):

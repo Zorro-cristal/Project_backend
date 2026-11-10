@@ -4,21 +4,15 @@ from fastapi import APIRouter, Depends, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
 from src.shell.adapters.requests.pago_venta_request import (
-    PagoVentaRequest,
-    PagoVentaUpdateRequest,
-    RegistroPagoContadoRequest,
-    RegistroPagoCuotaRequest,
-)
+    PagoVentaRequest, PagoVentaUpdateRequest, RegistroPagoContadoRequest,
+    RegistroPagoCuotaRequest)
 
-from ..services.pago_venta_service import (
-    anular_pago,
-    obtener_pagos_por_venta,
-    obtener_total_pagado,
-    recalcular_saldos,
-    registrar_pago,
-    registrar_pago_contado,
-    registrar_pago_cuota,
-)
+from ..services.pago_venta_service import (anular_pago,
+                                           obtener_pagos_por_venta,
+                                           obtener_total_pagado,
+                                           recalcular_saldos, registrar_pago,
+                                           registrar_pago_contado,
+                                           registrar_pago_cuota)
 
 router = APIRouter()
 
@@ -29,9 +23,16 @@ router = APIRouter()
     summary="Registrar pago",
     description="Registra un pago para una venta.",
 )
-async def registrarPagoApi(requestBody: PagoVentaRequest):
+async def registrarPagoApi(requestBody: PagoVentaRequest, current_user: dict = Depends(permiso_requerido('pago', 'crear'))):
     """Registra un pago."""
     payload = requestBody.model_dump(exclude_unset=True)
+
+    # Propagar el actor autenticado antes de persistir (no debe ser editable por cliente)
+    if "actualizado_por" not in payload or payload["actualizado_por"] is None:
+        id_usuariofk = current_user.get("id")
+        if id_usuariofk is None:
+            raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+        payload["actualizado_por"] = id_usuariofk
 
     resultado = await registrar_pago(
         id_venta=payload['id_ventafk'],
@@ -64,11 +65,15 @@ async def obtenerTotalPagadoApi(id: int):
 
 
 @router.patch("/{id}/anular", dependencies=[Depends(permiso_requerido('pago', 'eliminar'))], summary="Anular pago", description="Anula un pago (cambia estado a inactivo).")
-async def anularPagoApi(id: int):
+async def anularPagoApi(id: int, current_user: dict = Depends(permiso_requerido('pago', 'eliminar'))):
     """Anula un pago."""
     # Primero obtener la venta asociada para recalcular después
     from ..repositories.pago_venta_repository import obtenerPagoVenta
     pago = await obtenerPagoVenta({'id': id})
+    
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
     
     resultado = await anular_pago(id)
     

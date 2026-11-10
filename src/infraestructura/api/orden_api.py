@@ -13,21 +13,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden", description="Actualiza una orden existente por su ID.")
-async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest):
+async def actualizarOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_user: dict = Depends(permiso_requerido('orden', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_orden_por_id(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('orden', 'editar'))], summary="Actualizar orden parcialmente", description="Actualiza parcialmente una orden existente por su ID.")
-async def patchOrdenApi(id: int, requestBody: OrdenUpdateRequest):
-    return await actualizarOrdenApi(id, requestBody)
+async def patchOrdenApi(id: int, requestBody: OrdenUpdateRequest, current_user: dict = Depends(permiso_requerido('orden', 'editar'))):
+    return await actualizarOrdenApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('orden', 'crear'))], summary="Crear orden", description="Crea una nueva orden.")
-async def agregarOrdenApi(requestBody: OrdenRequest,
-                          background_tasks: BackgroundTasks):
+async def agregarOrdenApi(requestBody: OrdenRequest, background_tasks: BackgroundTasks, current_user: dict = Depends(permiso_requerido('orden', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_orden(payload, background_tasks=background_tasks)
     return {"message": result}
 

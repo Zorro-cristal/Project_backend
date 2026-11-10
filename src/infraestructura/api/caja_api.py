@@ -29,8 +29,12 @@ async def patchCajaApi(id: int, requestBody: CajaUpdateRequest):
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('caja', 'crear'))], summary="Crear caja", description="Crea una nueva caja.")
-async def agregarCajaApi(requestBody: CajaRequest):
+async def agregarCajaApi(requestBody: CajaRequest, current_user: dict = Depends(permiso_requerido('caja', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     try:
         result = await crear_caja(payload)
     except ValueError as exc:

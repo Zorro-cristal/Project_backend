@@ -14,20 +14,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('permiso', 'editar'))], summary="Actualizar permiso", description="Actualiza un permiso existente por su ID.")
-async def actualizarPermisoApi(id: int, requestBody: PermisoUpdateRequest):
+async def actualizarPermisoApi(id: int, requestBody: PermisoUpdateRequest, current_user: dict = Depends(permiso_requerido('permiso', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_permiso(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('permiso', 'editar'))], summary="Actualizar permiso parcialmente", description="Actualiza parcialmente un permiso existente por su ID.")
-async def patchPermisoApi(id: int, requestBody: PermisoUpdateRequest):
-    return await actualizarPermisoApi(id, requestBody)
+async def patchPermisoApi(id: int, requestBody: PermisoUpdateRequest, current_user: dict = Depends(permiso_requerido('permiso', 'editar'))):
+    return await actualizarPermisoApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('permiso', 'crear'))], summary="Crear permiso", description="Crea un nuevo permiso.")
-async def agregarPermisoApi(requestBody: PermisoRequest):
+async def agregarPermisoApi(requestBody: PermisoRequest, current_user: dict = Depends(permiso_requerido('permiso', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_permiso(payload)
     return {"message": result}
 

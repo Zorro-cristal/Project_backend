@@ -13,18 +13,26 @@ from ..services.detalles_producto_service import (actualizar_detalles_producto,
 router = APIRouter()
 
 @router.put("/{cod_barra}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar detalle de producto", description="Actualiza un detalle de producto existente por su código de barra.")
-async def actualizarDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest):
+async def actualizarDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await actualizar_detalles_producto(cod_barra, payload)
     return {"message": result}
 
 @router.patch("/{cod_barra}", dependencies=[Depends(permiso_requerido('producto', 'editar'))], summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su código de barra.")
-async def patchDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest):
-    return await actualizarDetalleProductoApi(cod_barra, requestBody)
+async def patchDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
+    return await actualizarDetalleProductoApi(cod_barra, requestBody, current_user)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('producto', 'crear'))], summary="Crear detalle de producto", description="Crea un nuevo detalle de producto.")
-async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest):
+async def agregarDetalleProductoApi(requestBody: DetalleProductoRequest, current_user: dict = Depends(permiso_requerido('producto', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     result = await crear_detalles_producto(payload)
     return {"message": result}
 

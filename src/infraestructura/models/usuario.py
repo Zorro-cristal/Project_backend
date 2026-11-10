@@ -15,6 +15,8 @@ class Usuario:
 
     # FK requerida por la tabla `usuarios` (NOT NULL)
     id_rolfk: Optional[int] = None
+    
+    actualizado_por: int
 
     # Mantener rol como referencia opcional (no se usará para insertar si no se convierte a FK)
     rol: Optional[Rol] = None

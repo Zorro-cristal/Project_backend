@@ -15,8 +15,12 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso", description="Actualiza un egreso existente por su ID.")
-async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest):
+async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('egreso', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     try:
         result = await actualizar_egreso(id, payload)
     except ValueError as exc:
@@ -25,13 +29,17 @@ async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest):
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('egreso', 'editar'))], summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
-async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest):
-    return await actualizarEgresoApi(id, requestBody)
+async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('egreso', 'editar'))):
+    return await actualizarEgresoApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('egreso', 'crear'))], summary="Crear egreso", description="Crea un nuevo egreso.")
-async def agregarEgresoApi(requestBody: EgresoRequest):
+async def agregarEgresoApi(requestBody: EgresoRequest, current_user: dict = Depends(permiso_requerido('egreso', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     try:
         result = await crear_egreso(payload)
     except ValueError as exc:

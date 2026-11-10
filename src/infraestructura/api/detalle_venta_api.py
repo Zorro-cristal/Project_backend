@@ -14,20 +14,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar detalle de venta", description="Actualiza un detalle de venta existente por su ID.")
-async def actualizarDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest):
+async def actualizarDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest, current_user: dict = Depends(permiso_requerido('venta', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_detalle_venta(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar detalle de venta parcialmente", description="Actualiza parcialmente un detalle de venta existente por su ID.")
-async def patchDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest):
-    return await actualizarDetalleVentaApi(id, requestBody)
+async def patchDetalleVentaApi(id: int, requestBody: DetalleVentaUpdateRequest, current_user: dict = Depends(permiso_requerido('venta', 'editar'))):
+    return await actualizarDetalleVentaApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear detalle de venta", description="Crea un nuevo detalle de venta.")
-async def agregarDetalleVentaApi(requestBody: DetalleVentaRequest):
+async def agregarDetalleVentaApi(requestBody: DetalleVentaRequest, current_user: dict = Depends(permiso_requerido('venta', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_detalle_venta(payload)
     return {"message": result}
 

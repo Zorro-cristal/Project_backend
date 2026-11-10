@@ -14,9 +14,16 @@ router = APIRouter()
 
 
 @router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Generar cuotas", description="Genera cuotas automáticamente para una venta a crédito.")
-async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest):
+async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('venta', 'crear'))):
     """Genera cuotas para una venta."""
     payload = requestBody.model_dump()
+
+    # Propagar el actor autenticado antes de persistir (no debe ser editable por cliente)
+    if "actualizado_por" not in payload or payload["actualizado_por"] is None:
+        id_usuariofk = current_user.get("id")
+        if id_usuariofk is None:
+            raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+        payload["actualizado_por"] = id_usuariofk
     
     cuotas = await crear_cuotas_para_venta(
         id_venta=id,

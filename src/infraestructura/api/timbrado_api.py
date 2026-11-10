@@ -56,9 +56,13 @@ async def obtener_timbrado(id: int):
     dependencies=[Depends(permiso_requerido("timbrado", "crear"))],
     summary="Crear timbrado",
 )
-async def crear_timbrado_api(body: TimbradoBase):
+async def crear_timbrado_api(body: TimbradoBase, current_user: dict = Depends(permiso_requerido("timbrado", "crear"))):
     try:
         payload = body.model_dump()
+        actor_id = current_user.get("id")
+        if actor_id is None:
+            raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+        payload["actualizado_por"] = actor_id
         return {"message": await crear_timbrado(payload)}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))
@@ -69,11 +73,15 @@ async def crear_timbrado_api(body: TimbradoBase):
     dependencies=[Depends(permiso_requerido("timbrado", "editar"))],
     summary="Actualizar timbrado",
 )
-async def actualizar_timbrado_api(id: int, body: TimbradoUpdate):
+async def actualizar_timbrado_api(id: int, body: TimbradoUpdate, current_user: dict = Depends(permiso_requerido("timbrado", "editar"))):
     try:
         payload = body.model_dump(exclude_unset=True)
+        actor_id = current_user.get("id")
+        if actor_id is None:
+            raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
         if not payload:
             raise HTTPException(status_code=400, detail="Sin campos para actualizar")
+        payload["actualizado_por"] = actor_id
         return {"message": await actualizar_timbrado(id, payload)}
     except ValueError as exc:
         raise HTTPException(status_code=400, detail=str(exc))

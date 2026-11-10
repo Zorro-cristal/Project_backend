@@ -13,20 +13,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
-async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
+async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_proveedor(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor parcialmente", description="Actualiza parcialmente un proveedor existente por su ID.")
-async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest):
-    return await actualizarProveedorApi(id, requestBody)
+async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'editar'))):
+    return await actualizarProveedorApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('proveedor', 'crear'))], summary="Crear proveedor", description="Crea un nuevo proveedor.")
-async def agregarProveedorApi(requestBody: ProveedorRequest):
+async def agregarProveedorApi(requestBody: ProveedorRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_proveedor(payload)
     return {"message": result}
 

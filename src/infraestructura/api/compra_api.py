@@ -16,8 +16,12 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra", description="Actualiza una compra existente por su ID.")
-async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest):
+async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     try:
         result = await actualizar_compra(id, payload)
     except ValueError as exc:
@@ -26,13 +30,17 @@ async def actualizarCompraApi(id: int, requestBody: CompraUpdateRequest):
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar compra parcialmente", description="Actualiza parcialmente una compra existente por su ID.")
-async def patchCompraApi(id: int, requestBody: CompraUpdateRequest):
-    return await actualizarCompraApi(id, requestBody)
+async def patchCompraApi(id: int, requestBody: CompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
+    return await actualizarCompraApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Crear compra", description="Crea una nueva compra.")
-async def agregarCompraApi(requestBody: CompraRequest):
+async def agregarCompraApi(requestBody: CompraRequest, current_user: dict = Depends(permiso_requerido('compra', 'crear'))):
     payload = requestBody.model_dump()
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     try:
         # tipo_credito obligatorio: 0=contado, 1=crédito
         tipo_credito = payload.get('tipo_credito')

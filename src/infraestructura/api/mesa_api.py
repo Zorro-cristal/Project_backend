@@ -13,9 +13,17 @@ from ..services.prediccion_mesas_service import (entrenar_modelo,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('mesa', 'editar'))], summary="Actualizar mesa", description="Actualiza una mesa existente por su ID.")
-async def actualizarMesaApi(id: int, requestBody: MesaUpdateRequest):
+@router.put("/{id}", summary="Actualizar mesa", description="Actualiza una mesa existente por su ID.")
+async def actualizarMesaApi(
+	id: int,
+	requestBody: MesaUpdateRequest,
+	current_user: dict = Depends(permiso_requerido('mesa', 'editar')),
+):
 	payload = requestBody.model_dump(exclude_unset=True)
+	actor_id = current_user.get("id")
+	if actor_id is None:
+		raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+	payload["actualizado_por"] = actor_id
 	try:
 		result = await actualizar_mesa(id, payload)
 	except ValueError as exc:
@@ -23,14 +31,25 @@ async def actualizarMesaApi(id: int, requestBody: MesaUpdateRequest):
 	return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('mesa', 'editar'))], summary="Actualizar mesa parcialmente", description="Actualiza parcialmente una mesa existente por su ID.")
-async def patchMesaApi(id: int, requestBody: MesaUpdateRequest):
-	return await actualizarMesaApi(id, requestBody)
+@router.patch("/{id}", summary="Actualizar mesa parcialmente", description="Actualiza parcialmente una mesa existente por su ID.")
+async def patchMesaApi(
+	id: int,
+	requestBody: MesaUpdateRequest,
+	current_user: dict = Depends(permiso_requerido('mesa', 'editar')),
+):
+	return await actualizarMesaApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('mesa', 'crear'))], summary="Crear mesa", description="Crea una nueva mesa.")
-async def agregarMesaApi(requestBody: MesaRequest):
+@router.post("/", summary="Crear mesa", description="Crea una nueva mesa.")
+async def agregarMesaApi(
+	requestBody: MesaRequest,
+	current_user: dict = Depends(permiso_requerido('mesa', 'crear')),
+):
 	payload = requestBody.model_dump()
+	actor_id = current_user.get("id")
+	if actor_id is None:
+		raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+	payload["actualizado_por"] = actor_id
 	try:
 		result = await crear_mesa(payload)
 	except ValueError as exc:
@@ -113,4 +132,3 @@ async def predecir_mesas(
 		raise HTTPException(status_code=400, detail=str(exc)) from exc
 	except Exception as exc:  # pragma: no cover
 		raise HTTPException(status_code=500, detail=f"Error inesperado al predecir: {exc}") from exc
-

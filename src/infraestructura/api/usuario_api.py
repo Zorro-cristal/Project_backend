@@ -43,20 +43,34 @@ async def login(request_body: UsuarioLoginRequest):
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('Usuarios', 'editar'))], summary="Actualizar usuario", description="Actualiza un usuario existente por su ID.")
-async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
+async def actualizarUsuarioApi(id: int, requestBody: UsuarioUpdateRequest, current_user: dict = Depends(permiso_requerido('Usuarios', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_usuario(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Usuarios', 'editar'))], summary="Actualizar usuario parcialmente", description="Actualiza parcialmente un usuario existente por su ID.")
-async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest):
-    return await actualizarUsuarioApi(id, requestBody)
+async def patchUsuarioApi(id: int, requestBody: UsuarioUpdateRequest, current_user: dict = Depends(permiso_requerido('Usuarios', 'editar'))):
+    return await actualizarUsuarioApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('Usuarios', 'crear'))], summary="Crear usuario", description="Crea un nuevo usuario.")
-async def agregarUsuarioApi(requestBody: UsuarioRequest):
+async def agregarUsuarioApi(requestBody: UsuarioRequest, current_user: dict = Depends(permiso_requerido('Usuarios', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     try:
         result = await crear_usuario(payload)
     except ValueError as exc:

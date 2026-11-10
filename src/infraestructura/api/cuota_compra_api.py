@@ -1,23 +1,26 @@
 from fastapi import APIRouter, Depends, Query
 
 from src.infraestructura.api.dependencies import permiso_requerido
-from src.shell.adapters.requests.cuota_compra_request import CuotaCompraUpdateRequest
-from src.shell.adapters.requests.cuota_venta_request import GenerarCuotasRequest
+from src.shell.adapters.requests.cuota_compra_request import \
+    CuotaCompraUpdateRequest
+from src.shell.adapters.requests.cuota_venta_request import \
+    GenerarCuotasRequest
 
-from ..services.cuota_compra_service import (
-    calcular_saldo_fifo,
-    crear_cuotas_para_compra,
-    recalcular_estado_cuotas,
-    actualizar_cuota_compra,
-)
+from ..services.cuota_compra_service import (actualizar_cuota_compra,
+                                             calcular_saldo_fifo,
+                                             crear_cuotas_para_compra,
+                                             recalcular_estado_cuotas)
 
 router = APIRouter()
 
 
 @router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('compra', 'crear'))], summary="Generar cuotas compra", description="Genera cuotas automáticamente para una compra a crédito.")
-async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest):
+async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('compra', 'crear'))):
     payload = requestBody.model_dump()
-
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     cuotas = await crear_cuotas_para_compra(
         id_compra=id,
         total_cuotas=payload['total_cuotas'],
@@ -32,8 +35,12 @@ async def generarCuotasCompraApi(id: int, requestBody: GenerarCuotasRequest):
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('compra', 'editar'))], summary="Actualizar cuota compra", description="Actualiza una cuota de compra existente por su ID.")
-async def actualizarCuotaCompraApi(id: int, requestBody: CuotaCompraUpdateRequest):
+async def actualizarCuotaCompraApi(id: int, requestBody: CuotaCompraUpdateRequest, current_user: dict = Depends(permiso_requerido('compra', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
     if not payload:
         raise ValueError("No hay campos para actualizar")
 

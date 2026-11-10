@@ -24,8 +24,15 @@ router = APIRouter()
     summary="Actualizar producto",
     description="Actualiza un producto existente por su ID.",
 )
-async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest):
+async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_producto(id, payload)
     return {"message": result}
 
@@ -36,8 +43,8 @@ async def actualizarProductoApi(id: int, requestBody: ProductoUpdateRequest):
     summary="Actualizar producto parcialmente",
     description="Actualiza parcialmente un producto existente por su ID.",
 )
-async def patchProductoApi(id: int, requestBody: ProductoUpdateRequest):
-    return await actualizarProductoApi(id, requestBody)
+async def patchProductoApi(id: int, requestBody: ProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
+    return await actualizarProductoApi(id, requestBody, current_user)
 
 
 @router.post(
@@ -46,8 +53,15 @@ async def patchProductoApi(id: int, requestBody: ProductoUpdateRequest):
     summary="Crear producto",
     description="Crea un nuevo producto.",
 )
-async def agregarProductoApi(requestBody: ProductoRequest):
+async def agregarProductoApi(requestBody: ProductoRequest, current_user: dict = Depends(permiso_requerido('producto', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_producto(payload)
     return {"message": result}
 

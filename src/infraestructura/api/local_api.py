@@ -19,8 +19,15 @@ router = APIRouter()
     summary="Actualizar local",
     description="Actualiza un local existente por su ID.",
 )
-async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest):
+async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('local', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_local(id, payload)
     return {"message": result}
 
@@ -31,8 +38,8 @@ async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest):
     summary="Actualizar local parcialmente",
     description="Actualiza parcialmente un local existente por su ID.",
 )
-async def patchLocalApi(id: int, requestBody: LocalUpdateRequest):
-    return await actualizarLocalApi(id, requestBody)
+async def patchLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('local', 'editar'))):
+    return await actualizarLocalApi(id, requestBody, current_user)
 
 
 @router.post(
@@ -41,8 +48,15 @@ async def patchLocalApi(id: int, requestBody: LocalUpdateRequest):
     summary="Crear local",
     description="Crea un nuevo local.",
 )
-async def agregarLocalApi(requestBody: LocalRequest):
+async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depends(permiso_requerido('local', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_local(payload)
     return {"message": result}
 

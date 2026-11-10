@@ -13,8 +13,15 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('reserva', 'editar'))], summary="Actualizar reserva", description="Actualiza una reserva existente por su ID.")
-async def actualizarReservaApi(id: int, requestBody: ReservaUpdateRequest):
+async def actualizarReservaApi(id: int, requestBody: ReservaUpdateRequest, current_user: dict = Depends(permiso_requerido('reserva', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     try:
         result = await actualizar_reserva(id, payload)
     except ValueError as exc:
@@ -27,8 +34,15 @@ async def patchReservaApi(id: int, requestBody: ReservaUpdateRequest):
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('reserva', 'crear'))], summary="Crear reserva", description="Crea una nueva reserva.")
-async def agregarReservaApi(requestBody: ReservaRequest):
+async def agregarReservaApi(requestBody: ReservaRequest, current_user: dict = Depends(permiso_requerido('reserva', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     try:
         result = await crear_reserva(payload)
     except ValueError as exc:

@@ -13,20 +13,34 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock", description="Actualiza un stock existente por su ID.")
-async def actualizarStockApi(id: int, requestBody: StockUpdateRequest):
+async def actualizarStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('stock', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_stock(id, payload)
     return {"message": result}
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('stock', 'editar'))], summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
-async def patchStockApi(id: int, requestBody: StockUpdateRequest):
-    return await actualizarStockApi(id, requestBody)
+async def patchStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('stock', 'editar'))):
+    return await actualizarStockApi(id, requestBody, current_user)
 
 
 @router.post("/", dependencies=[Depends(permiso_requerido('stock', 'crear'))], summary="Crear stock", description="Crea un nuevo stock.")
-async def agregarStockApi(requestBody: StockRequest):
+async def agregarStockApi(requestBody: StockRequest, current_user: dict = Depends(permiso_requerido('stock', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_stock(payload)
     return {"message": result}
 

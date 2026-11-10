@@ -15,18 +15,32 @@ from ..services.permiso_rol_service import (actualizar_permiso_rol,
 router = APIRouter()
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('permiso_rol', 'editar'))], summary="Actualizar asignación de permiso a rol", description="Actualiza los niveles de acceso de un permiso en un rol.")
-async def actualizarPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest):
+async def actualizarPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest, current_user: dict = Depends(permiso_requerido('permiso_rol', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await actualizar_permiso_rol(id, payload)
     return {"message": result}
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('permiso_rol', 'editar'))], summary="Actualizar asignación parcialmente", description="Actualiza parcialmente los niveles de acceso.")
-async def patchPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest):
-    return await actualizarPermisoRolApi(id, requestBody)
+async def patchPermisoRolApi(id: int, requestBody: PermisoRolUpdateRequest, current_user: dict = Depends(permiso_requerido('permiso_rol', 'editar'))):
+    return await actualizarPermisoRolApi(id, requestBody, current_user)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('permiso_rol', 'crear'))], summary="Asignar permiso a rol", description="Asigna un permiso a un rol con niveles específicos de acceso.")
-async def agregarPermisoRolApi(requestBody: PermisoRolRequest):
+async def agregarPermisoRolApi(requestBody: PermisoRolRequest, current_user: dict = Depends(permiso_requerido('permiso_rol', 'crear'))):
     payload = requestBody.model_dump()
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     result = await crear_permiso_rol(payload)
     return {"message": result}
 

@@ -88,5 +88,5 @@ app = CORSMiddleware(
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
-    max_age=86400,
+    max_age=14400,
 )

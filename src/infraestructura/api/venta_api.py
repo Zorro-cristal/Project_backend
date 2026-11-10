@@ -20,8 +20,15 @@ router = APIRouter()
 
 
 @router.put("/{id}", dependencies=[Depends(permiso_requerido('venta', 'editar'))], summary="Actualizar venta", description="Actualiza una venta existente por su ID.")
-async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest):
+async def actualizarVentaApi(id: int, requestBody: VentaUpdateRequest, current_user: dict = Depends(permiso_requerido('venta', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
+    
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+    
     try:
         result = await actualizar_venta(id, payload)
     except ValueError as exc:
@@ -203,9 +210,18 @@ async def obtenerDetalleVentaPorVentaIdApi(id: int):
 # Endpoints específicos para ventas con crédito (ahora redundantes - usar POST / con tipo_credito)
 
 @router.post("/contado", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta al contado", description="Crea una venta al contado y registra el pago automáticamente.")
-async def crearVentaContadoApi(requestBody: VentaBase):
-    """Crea una venta al contado (tipo_credito=0) y registra el pago en pagos_venta."""
+async def crearVentaContadoApi(
+    requestBody: VentaBase,
+    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+):
     payload = requestBody.model_dump()
+
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+
     payload['tipo_credito'] = 0
     try:
         result = await crear_venta(payload)
@@ -215,9 +231,18 @@ async def crearVentaContadoApi(requestBody: VentaBase):
 
 
 @router.post("/credito", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta a crédito", description="Crea una venta a crédito y genera las cuotas automáticamente.")
-async def crearVentaCreditoApi(requestBody: VentaBase):
-    """Crea una venta a crédito (tipo_credito=1) y genera las cuotas."""
+async def crearVentaCreditoApi(
+    requestBody: VentaBase,
+    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+):
     payload = requestBody.model_dump()
+
+    # Propagar el actor autenticado antes de persistir
+    actor_id = current_user.get("id")
+    if actor_id is None:
+        raise HTTPException(status_code=401, detail="No se pudo determinar el usuario autenticado.")
+    payload["actualizado_por"] = actor_id
+
     payload['tipo_credito'] = 1
     try:
         result = await crear_venta(payload)
