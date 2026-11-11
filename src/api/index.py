@@ -1,5 +1,6 @@
 import logging
 import traceback
+from urllib.parse import urlsplit
 
 from fastapi import FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -23,15 +24,20 @@ fastapi_app = FastAPI()
 origins = settings.ALLOWED_ORIGINS_LIST
 if not origins or origins == ["*"]:
     origins = [
-        "http://localhost:3000",
         "http://localhost:5173",
         "https://projectfrontend-psi.vercel.app",
         "https://project-backend-gamma-seven.vercel.app",
     ]
     logger.warning(f"CORS using FALLBACK origins: {origins}")
-elif "http://localhost:5173" not in origins:
-    origins.append("http://localhost:5173")
-    logger.warning(f"CORS added localhost: {origins}")
+else:
+    origins = [
+        origin
+        for origin in origins
+        if urlsplit(origin).hostname != "localhost"
+        or origin.lower() == "http://localhost:5173"
+    ]
+    if "http://localhost:5173" not in origins:
+        origins.append("http://localhost:5173")
 
 logger.info(f"Final CORS origins: {origins}")
 
@@ -85,6 +91,10 @@ fastapi_app.include_router(api_router)
 app = CORSMiddleware(
     app=fastapi_app,
     allow_origins=origins,
+    allow_origin_regex=(
+        r"https://projectfrontend(?:-[a-zA-Z0-9-]+)?\.vercel\.app"
+        r"|http://localhost:5173"
+    ),
     allow_credentials=True,
     allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers=["*"],
