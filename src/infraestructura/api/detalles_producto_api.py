@@ -23,7 +23,7 @@ async def actualizarDetalleProductoApi(cod_barra: str, requestBody: DetalleProdu
     return {"message": result}
 
 @router.patch("/{cod_barra}", dependencies=[Depends(permiso_requerido('Productos', 'editar'))], summary="Actualizar detalle de producto parcialmente", description="Actualiza parcialmente un detalle de producto existente por su código de barra.")
-async def patchDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('producto', 'editar'))):
+async def patchDetalleProductoApi(cod_barra: str, requestBody: DetalleProductoUpdateRequest, current_user: dict = Depends(permiso_requerido('Productos', 'editar'))):
     return await actualizarDetalleProductoApi(cod_barra, requestBody, current_user)
 
 @router.post("/", dependencies=[Depends(permiso_requerido('Productos', 'crear'))], summary="Crear detalle de producto", description="Crea un nuevo detalle de producto.")

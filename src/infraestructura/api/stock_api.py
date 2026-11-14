@@ -27,7 +27,7 @@ async def actualizarStockApi(id: int, requestBody: StockUpdateRequest, current_u
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Stocks', 'editar'))], summary="Actualizar stock parcialmente", description="Actualiza parcialmente un stock existente por su ID.")
-async def patchStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('stock', 'editar'))):
+async def patchStockApi(id: int, requestBody: StockUpdateRequest, current_user: dict = Depends(permiso_requerido('Stocks', 'editar'))):
     return await actualizarStockApi(id, requestBody, current_user)
 
 

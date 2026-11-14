@@ -12,8 +12,8 @@ from ..services.cliente_service import (actualizar_cliente, crear_cliente,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente", description="Actualiza un cliente existente por su ID.")
-async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('cliente', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Clientes', 'editar'))], summary="Actualizar cliente", description="Actualiza un cliente existente por su ID.")
+async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('Clientes', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -23,13 +23,13 @@ async def actualizarClienteApi(id: int, requestBody: ClienteUpdateRequest, curre
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('cliente', 'editar'))], summary="Actualizar cliente parcialmente", description="Actualiza parcialmente un cliente existente por su ID.")
-async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('cliente', 'editar'))):
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Clientes', 'editar'))], summary="Actualizar cliente parcialmente", description="Actualiza parcialmente un cliente existente por su ID.")
+async def patchClienteApi(id: int, requestBody: ClienteUpdateRequest, current_user: dict = Depends(permiso_requerido('Clientes', 'editar'))):
     return await actualizarClienteApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('cliente', 'crear'))], summary="Crear cliente", description="Crea un nuevo cliente.")
-async def agregarClienteApi(requestBody: ClienteRequest, current_user: dict = Depends(permiso_requerido('cliente', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Clientes', 'crear'))], summary="Crear cliente", description="Crea un nuevo cliente.")
+async def agregarClienteApi(requestBody: ClienteRequest, current_user: dict = Depends(permiso_requerido('Clientes', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:

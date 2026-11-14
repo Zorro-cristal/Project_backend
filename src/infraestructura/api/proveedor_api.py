@@ -12,8 +12,8 @@ from ..services.proveedor_service import (actualizar_proveedor,
 router = APIRouter()
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
-async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Proveedores', 'editar'))], summary="Actualizar proveedor", description="Actualiza un proveedor existente por su ID.")
+async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('Proveedores', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -26,13 +26,13 @@ async def actualizarProveedorApi(id: int, requestBody: ProveedorUpdateRequest, c
     return {"message": result}
 
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('proveedor', 'editar'))], summary="Actualizar proveedor parcialmente", description="Actualiza parcialmente un proveedor existente por su ID.")
-async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'editar'))):
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Proveedores', 'editar'))], summary="Actualizar proveedor parcialmente", description="Actualiza parcialmente un proveedor existente por su ID.")
+async def patchProveedorApi(id: int, requestBody: ProveedorUpdateRequest, current_user: dict = Depends(permiso_requerido('Proveedores', 'editar'))):
     return await actualizarProveedorApi(id, requestBody, current_user)
 
 
-@router.post("/", dependencies=[Depends(permiso_requerido('proveedor', 'crear'))], summary="Crear proveedor", description="Crea un nuevo proveedor.")
-async def agregarProveedorApi(requestBody: ProveedorRequest, current_user: dict = Depends(permiso_requerido('proveedor', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Proveedores', 'crear'))], summary="Crear proveedor", description="Crea un nuevo proveedor.")
+async def agregarProveedorApi(requestBody: ProveedorRequest, current_user: dict = Depends(permiso_requerido('Proveedores', 'crear'))):
     payload = requestBody.model_dump()
     
     # Propagar el actor autenticado antes de persistir

@@ -11,8 +11,8 @@ from ..services.categoria_service import (actualizar_categoria,
 
 router = APIRouter()
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('categoria', 'editar'))], summary="Actualizar categoría", description="Actualiza una categoría existente por su ID.")
-async def actualizarCategoriaApi(id: int, requestBody: CategoriaUpdateRequest, current_user: dict = Depends(permiso_requerido('categoria', 'editar'))):
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Categorias', 'editar'))], summary="Actualizar categoría", description="Actualiza una categoría existente por su ID.")
+async def actualizarCategoriaApi(id: int, requestBody: CategoriaUpdateRequest, current_user: dict = Depends(permiso_requerido('Categorias', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     actor_id = current_user.get("id")
     if actor_id is None:
@@ -21,12 +21,12 @@ async def actualizarCategoriaApi(id: int, requestBody: CategoriaUpdateRequest, c
     result = await actualizar_categoria(id, payload)
     return {"message": result}
 
-@router.patch("/{id}", dependencies=[Depends(permiso_requerido('categoria', 'editar'))], summary="Actualizar categoría parcialmente", description="Actualiza parcialmente una categoría existente por su ID.")
-async def patchCategoriaApi(id: int, requestBody: CategoriaUpdateRequest, current_user: dict = Depends(permiso_requerido('categoria', 'editar'))):
+@router.patch("/{id}", dependencies=[Depends(permiso_requerido('Categorias', 'editar'))], summary="Actualizar categoría parcialmente", description="Actualiza parcialmente una categoría existente por su ID.")
+async def patchCategoriaApi(id: int, requestBody: CategoriaUpdateRequest, current_user: dict = Depends(permiso_requerido('Categorias', 'editar'))):
     return await actualizarCategoriaApi(id, requestBody, current_user)
 
-@router.post("/", dependencies=[Depends(permiso_requerido('categoria', 'crear'))], summary="Crear categoría", description="Crea una nueva categoría.")
-async def agregarCategoriaApi(requestBody: CategoriaRequest, current_user: dict = Depends(permiso_requerido('categoria', 'crear'))):
+@router.post("/", dependencies=[Depends(permiso_requerido('Categorias', 'crear'))], summary="Crear categoría", description="Crea una nueva categoría.")
+async def agregarCategoriaApi(requestBody: CategoriaRequest, current_user: dict = Depends(permiso_requerido('Categorias', 'crear'))):
     payload = requestBody.model_dump()
     actor_id = current_user.get("id")
     if actor_id is None:

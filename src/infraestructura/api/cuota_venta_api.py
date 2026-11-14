@@ -13,8 +13,8 @@ from ..services.cuota_venta_service import (actualizar_cuota,
 router = APIRouter()
 
 
-@router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('Ventas', 'crear'))], summary="Generar cuotas", description="Genera cuotas automáticamente para una venta a crédito.")
-async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('Ventas', 'crear'))):
+@router.post("/{id}/generar-cuotas", dependencies=[Depends(permiso_requerido('Cuotas_venta', 'crear'))], summary="Generar cuotas", description="Genera cuotas automáticamente para una venta a crédito.")
+async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest, current_user: dict = Depends(permiso_requerido('Cuotas_venta', 'crear'))):
     """Genera cuotas para una venta."""
     payload = requestBody.model_dump()
 
@@ -43,7 +43,7 @@ async def generarCuotasApi(id: int, requestBody: GenerarCuotasRequest, current_u
 
 
 
-@router.put("/{id}", dependencies=[Depends(permiso_requerido('Ventas', 'editar'))], summary="Actualizar cuota", description="Actualiza una cuota existente.")
+@router.put("/{id}", dependencies=[Depends(permiso_requerido('Cuotas_venta', 'editar'))], summary="Actualizar cuota", description="Actualiza una cuota existente.")
 async def actualizarCuotaApi(id: int, requestBody: CuotaVentaUpdateRequest):
     """Actualiza una cuota."""
     payload = requestBody.model_dump(exclude_unset=True)
@@ -54,14 +54,14 @@ async def actualizarCuotaApi(id: int, requestBody: CuotaVentaUpdateRequest):
     return {"message": resultado}
 
 
-@router.post("/{id}/recalcular", dependencies=[Depends(permiso_requerido('Ventas', 'leer'))], summary="Recalcular estado de cuotas", description="Recalcula el estado de todas las cuotas usando lógica FIFO.")
+@router.post("/{id}/recalcular", dependencies=[Depends(permiso_requerido('Cuotas_venta', 'leer'))], summary="Recalcular estado de cuotas", description="Recalcula el estado de todas las cuotas usando lógica FIFO.")
 async def recalcularCuotasApi(id: int, total_pagado: float = Query(..., description="Total de dinero pagado")):
     """Recalcula los estados de cuotas con FIFO."""
     resultado = await recalcular_estado_cuotas(id, total_pagado)
     return {"message": resultado}
 
 
-@router.get("/{id_venta}/informacion", dependencies=[Depends(permiso_requerido('Ventas', 'leer'))], summary="Obtener información de cuota de venta", description="Retorna información completa de cuotas, pagos y la venta asociada.")
+@router.get("/{id_venta}/informacion", dependencies=[Depends(permiso_requerido('Cuotas_venta', 'leer'))], summary="Obtener información de cuota de venta", description="Retorna información completa de cuotas, pagos y la venta asociada.")
 async def obtenerInformacionCuotaVentaApi(id_venta: int):
     """Obtiene información completa de cuotas de una venta.
 

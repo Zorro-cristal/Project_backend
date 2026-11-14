@@ -19,7 +19,7 @@ router = APIRouter()
     summary="Actualizar rol",
     description="Actualiza un rol existente por su ID.",
 )
-async def actualizarRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('rol', 'editar'))):
+async def actualizarRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('Roles', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -38,7 +38,7 @@ async def actualizarRolApi(id: int, requestBody: RolUpdateRequest, current_user:
     summary="Actualizar rol parcialmente",
     description="Actualiza parcialmente un rol existente por su ID.",
 )
-async def patchRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('rol', 'editar'))):
+async def patchRolApi(id: int, requestBody: RolUpdateRequest, current_user: dict = Depends(permiso_requerido('Roles', 'editar'))):
     return await actualizarRolApi(id, requestBody, current_user)
 
 
@@ -63,7 +63,7 @@ async def agregarRolApi(requestBody: RolRequest, current_user: dict = Depends(pe
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("rol", "leer"))],
+    dependencies=[Depends(permiso_requerido("Roles", "leer"))],
     summary="Obtener roles",
     description="Obtiene una lista de roles con filtros opcionales.",
     response_model=RolListResponse,
@@ -93,7 +93,7 @@ async def obtenerRolesApi(
 
 @router.get(
     "/{id_rol}",
-    dependencies=[Depends(permiso_requerido("rol", "leer"))],
+    dependencies=[Depends(permiso_requerido("Roles", "leer"))],
     summary="Obtener rol por ID",
     description="Obtiene la información de un rol junto con sus permisos activos (permiso.estado == 1).",
     response_model=RolSingleResponse,

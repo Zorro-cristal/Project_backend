@@ -28,7 +28,7 @@ async def actualizarIngredienteApi(id: int, requestBody: IngredienteUpdateReques
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Ingredientes', 'editar'))], summary="Actualizar ingrediente parcialmente", description="Actualiza parcialmente un ingrediente existente por su ID.")
-async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('ingrediente', 'editar'))):
+async def patchIngredienteApi(id: int, requestBody: IngredienteUpdateRequest, current_user: dict = Depends(permiso_requerido('Ingredientes', 'editar'))):
     return await actualizarIngredienteApi(id, requestBody, current_user)
 
 

@@ -29,7 +29,7 @@ async def actualizarEgresoApi(id: int, requestBody: EgresoUpdateRequest, current
 
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Egresos', 'editar'))], summary="Actualizar egreso parcialmente", description="Actualiza parcialmente un egreso existente por su ID.")
-async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('egreso', 'editar'))):
+async def patchEgresoApi(id: int, requestBody: EgresoUpdateRequest, current_user: dict = Depends(permiso_requerido('Egresos', 'editar'))):
     return await actualizarEgresoApi(id, requestBody, current_user)
 
 

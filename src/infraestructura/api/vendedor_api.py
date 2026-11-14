@@ -26,7 +26,7 @@ async def actualizarVendedorApi(id: int, requestBody: VendedorUpdateRequest, cur
     return {"message": result}
 
 @router.patch("/{id}", dependencies=[Depends(permiso_requerido('Vendedores', 'editar'))], summary="Actualizar vendedor parcialmente", description="Actualiza parcialmente un vendedor existente por su ID.")
-async def patchVendedorApi(id: int, requestBody: VendedorUpdateRequest, current_user: dict = Depends(permiso_requerido('vendedor', 'editar'))):
+async def patchVendedorApi(id: int, requestBody: VendedorUpdateRequest, current_user: dict = Depends(permiso_requerido('Vendedores', 'editar'))):
     return await actualizarVendedorApi(id, requestBody, current_user)
 
 

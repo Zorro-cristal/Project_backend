@@ -19,7 +19,7 @@ router = APIRouter()
     summary="Actualizar local",
     description="Actualiza un local existente por su ID.",
 )
-async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('local', 'editar'))):
+async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('Locales', 'editar'))):
     payload = requestBody.model_dump(exclude_unset=True)
     
     # Propagar el actor autenticado antes de persistir
@@ -38,7 +38,7 @@ async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest, current_u
     summary="Actualizar local parcialmente",
     description="Actualiza parcialmente un local existente por su ID.",
 )
-async def patchLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('local', 'editar'))):
+async def patchLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: dict = Depends(permiso_requerido('Locales', 'editar'))):
     return await actualizarLocalApi(id, requestBody, current_user)
 
 
@@ -63,7 +63,7 @@ async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depend
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("local", "leer"))],
+    dependencies=[Depends(permiso_requerido("Locales", "leer"))],
     summary="Obtener locales",
     description="Obtiene una lista de locales con filtros opcionales.",
     response_model=LocalListResponse,
