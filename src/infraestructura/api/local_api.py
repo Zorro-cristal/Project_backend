@@ -15,7 +15,7 @@ router = APIRouter()
 
 @router.put(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("local", "editar"))],
+    dependencies=[Depends(permiso_requerido("Locales", "editar"))],
     summary="Actualizar local",
     description="Actualiza un local existente por su ID.",
 )
@@ -34,7 +34,7 @@ async def actualizarLocalApi(id: int, requestBody: LocalUpdateRequest, current_u
 
 @router.patch(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("local", "editar"))],
+    dependencies=[Depends(permiso_requerido("Locales", "editar"))],
     summary="Actualizar local parcialmente",
     description="Actualiza parcialmente un local existente por su ID.",
 )
@@ -44,7 +44,7 @@ async def patchLocalApi(id: int, requestBody: LocalUpdateRequest, current_user: 
 
 @router.post(
     "/",
-    dependencies=[Depends(permiso_requerido("local", "crear"))],
+    dependencies=[Depends(permiso_requerido("Locales", "crear"))],
     summary="Crear local",
     description="Crea un nuevo local.",
 )
@@ -63,7 +63,7 @@ async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depend
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("Locales", "leer"))],
+    dependencies=[Depends(permiso_requerido("Localeses", "leer"))],
     summary="Obtener locales",
     description="Obtiene una lista de locales con filtros opcionales.",
     response_model=LocalListResponse,

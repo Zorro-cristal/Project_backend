@@ -18,7 +18,7 @@ router = APIRouter()
 
 
 
-@router.get("/", dependencies=[Depends(permiso_requerido("timbrado", "leer"))])
+@router.get("/", dependencies=[Depends(permiso_requerido("Timbrados", "leer"))])
 async def listar_timbrados(
     id: Optional[int] = None,
     fin_vigencia_inicio: Optional[str] = None,
@@ -40,7 +40,7 @@ async def listar_timbrados(
         raise HTTPException(status_code=400, detail=str(exc))
 
 
-@router.get("/{id}", dependencies=[Depends(permiso_requerido("timbrado", "leer"))])
+@router.get("/{id}", dependencies=[Depends(permiso_requerido("Timbrados", "leer"))])
 async def obtener_timbrado(id: int):
     try:
         timbrado = await obtener_timbrado_por_id(id)
@@ -53,10 +53,10 @@ async def obtener_timbrado(id: int):
 
 @router.post(
     "/",
-    dependencies=[Depends(permiso_requerido("timbrado", "crear"))],
+    dependencies=[Depends(permiso_requerido("Timbrados", "crear"))],
     summary="Crear timbrado",
 )
-async def crear_timbrado_api(body: TimbradoBase, current_user: dict = Depends(permiso_requerido("timbrado", "crear"))):
+async def crear_timbrado_api(body: TimbradoBase, current_user: dict = Depends(permiso_requerido("Timbrados", "crear"))):
     try:
         payload = body.model_dump()
         actor_id = current_user.get("id")
@@ -70,10 +70,10 @@ async def crear_timbrado_api(body: TimbradoBase, current_user: dict = Depends(pe
 
 @router.put(
     "/{id}",
-    dependencies=[Depends(permiso_requerido("timbrado", "editar"))],
+    dependencies=[Depends(permiso_requerido("Timbrados", "editar"))],
     summary="Actualizar timbrado",
 )
-async def actualizar_timbrado_api(id: int, body: TimbradoUpdate, current_user: dict = Depends(permiso_requerido("timbrado", "editar"))):
+async def actualizar_timbrado_api(id: int, body: TimbradoUpdate, current_user: dict = Depends(permiso_requerido("Timbrados", "editar"))):
     try:
         payload = body.model_dump(exclude_unset=True)
         actor_id = current_user.get("id")
@@ -89,7 +89,7 @@ async def actualizar_timbrado_api(id: int, body: TimbradoUpdate, current_user: d
 
 @router.get(
     "/secuencias-venta",
-    dependencies=[Depends(permiso_requerido("timbrado", "leer"))],
+    dependencies=[Depends(permiso_requerido("Timbrados", "leer"))],
     summary="Listar secuencias_venta",
 )
 async def listar_secuencias_venta(
@@ -117,7 +117,7 @@ async def listar_secuencias_venta(
 
 @router.post(
     "/emitir-cod-num-venta",
-    dependencies=[Depends(permiso_requerido("timbrado", "crear"))],
+    dependencies=[Depends(permiso_requerido("Timbrados", "crear"))],
     summary="Emitir cod_num de venta (sin RPC/SQL)",
     description="Genera cod_num_completo y actualiza secuencias_venta. Nota: no es atómico ante concurrencia sin lock/SQL.",
 )

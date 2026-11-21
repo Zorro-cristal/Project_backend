@@ -43,13 +43,13 @@ async def patchVentaApi(id: int, requestBody: VentaUpdateRequest):
 
 @router.post(
     "/",
-    dependencies=[Depends(permiso_requerido("venta", "crear"))],
+    dependencies=[Depends(permiso_requerido('Ventas', "crear"))],
     summary="Crear venta",
     description="Crea una nueva venta.",
 )
 async def agregarVentaApi(
     requestBody: VentaBase,
-    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+    current_user: dict = Depends(permiso_requerido('Ventas', "crear")),
 ):
     payload = requestBody.model_dump()
 
@@ -104,7 +104,7 @@ async def agregarVentaApi(
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("venta", "leer"))],
+    dependencies=[Depends(permiso_requerido('Ventas', "leer"))],
     summary="Obtener ventas",
     description="Obtiene una lista de ventas con filtros opcionales.",
     response_model=VentaListResponse,
@@ -212,7 +212,7 @@ async def obtenerDetalleVentaPorVentaIdApi(id: int):
 @router.post("/contado", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta al contado", description="Crea una venta al contado y registra el pago automáticamente.")
 async def crearVentaContadoApi(
     requestBody: VentaBase,
-    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+    current_user: dict = Depends(permiso_requerido('Ventas', "crear")),
 ):
     payload = requestBody.model_dump()
 
@@ -233,7 +233,7 @@ async def crearVentaContadoApi(
 @router.post("/credito", dependencies=[Depends(permiso_requerido('venta', 'crear'))], summary="Crear venta a crédito", description="Crea una venta a crédito y genera las cuotas automáticamente.")
 async def crearVentaCreditoApi(
     requestBody: VentaBase,
-    current_user: dict = Depends(permiso_requerido("venta", "crear")),
+    current_user: dict = Depends(permiso_requerido('Ventas', "crear")),
 ):
     payload = requestBody.model_dump()
 
