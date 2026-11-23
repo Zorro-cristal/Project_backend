@@ -63,7 +63,7 @@ async def agregarRolApi(requestBody: RolRequest, current_user: dict = Depends(pe
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("Roleses", "leer"))],
+    dependencies=[Depends(permiso_requerido("Roles", "leer"))],
     summary="Obtener roles",
     description="Obtiene una lista de roles con filtros opcionales.",
     response_model=RolListResponse,
@@ -93,7 +93,7 @@ async def obtenerRolesApi(
 
 @router.get(
     "/{id_rol}",
-    dependencies=[Depends(permiso_requerido("Roleses", "leer"))],
+    dependencies=[Depends(permiso_requerido("Roles", "leer"))],
     summary="Obtener rol por ID",
     description="Obtiene la información de un rol junto con sus permisos activos (permiso.estado == 1).",
     response_model=RolSingleResponse,
