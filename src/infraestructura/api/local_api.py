@@ -63,7 +63,7 @@ async def agregarLocalApi(requestBody: LocalRequest, current_user: dict = Depend
 
 @router.get(
     "/",
-    dependencies=[Depends(permiso_requerido("Localeses", "leer"))],
+    dependencies=[Depends(permiso_requerido("Locales", "leer"))],
     summary="Obtener locales",
     description="Obtiene una lista de locales con filtros opcionales.",
     response_model=LocalListResponse,
